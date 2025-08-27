@@ -223,6 +223,7 @@ def write_implementations(implementations: list[Implementation], template: str) 
 
 
 def write_plugins_bound(implementations: list[Implementation], template: str) -> str:
+    """Replace the plugin bound blocks in `template` with the given implementations."""
     for core_like in _get_cores():
         cname = core_like.__class__.__name__
 
