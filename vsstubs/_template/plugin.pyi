@@ -1,0 +1,36 @@
+from inspect import Signature
+from typing import Any, Final, Iterator, NamedTuple
+
+class FuncData:
+    def __call__(self, **kwargs: Any) -> Any: ...
+
+class Func:
+    def __call__(self, **kwargs: Any) -> Any: ...
+
+class Function:
+    plugin: Final[Plugin]
+    name: Final[str]
+    signature: Final[str]
+    return_signature: Final[str]
+    @property
+    def __signature__(self) -> Signature: ...
+    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
+    def __repr__(self) -> str: ...
+
+class PluginVersion(NamedTuple):
+    major: int
+    minor: int
+
+class Plugin:
+    identifier: Final[str]
+    namespace: Final[str]
+    name: Final[str]
+
+    def __getattr__(self, name: str) -> Function: ...
+    def functions(self) -> Iterator[Function]: ...
+    @property
+    def version(self) -> PluginVersion: ...
+    @property
+    def plugin_path(self) -> str: ...
+    def __dir__(self) -> list[str]: ...
+    def __repr__(self) -> str: ...

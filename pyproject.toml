@@ -1,0 +1,114 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vs-stubs"
+dynamic = ["version"]
+description = "Stub files for VapourSynth integration or typing support."
+readme = "README.md"
+requires-python = ">=3.13"
+license = { text = "MIT" }
+authors = [
+    { name = "Vardë", email = "ichunjo.le.terrible@gmail.com" }
+]
+keywords = ["stubs", "typing", "python"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Typing :: Typed"
+]
+
+dependencies = ["VapourSynth>=72", "typer[all]"]
+
+
+[project.urls]
+Homepage = "https://github.com/yourusername/vs-stubs"
+Repository = "https://github.com/yourusername/vs-stubs"
+Issues = "https://github.com/yourusername/vs-stubs/issues"
+
+[project.scripts]
+vsstubs = "vsstubs.cli:app"
+
+[dependency-groups]
+dev = [
+    "mypy~=1.17.1",
+    "ruff~=0.12.10",
+]
+
+[tool.hatch.version]
+path = "vsstubs/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "vsstubs",
+]
+include = [
+    "vsstubs/_template/*.pyi",
+    "vsstubs/py.typed",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "vsstubs",
+    "vsstubs/_template/*.pyi",
+    "pyproject.toml",
+    "README.md",
+    "LICENSE"
+]
+
+[tool.mypy]
+exclude = []
+# Flags changed by --strict
+warn_return_any = false
+extra_checks = false
+
+# Misc
+warn_unreachable = true
+
+allow_redefinition_new = true
+local_partial_types = true
+implicit_reexport = false
+strict = true
+
+show_column_numbers = true
+pretty = true
+color_output = true
+error_summary = true
+
+[tool.ruff]
+target-version = "py313"
+extend-exclude = []
+line-length = 120
+
+[tool.ruff.format]
+docstring-code-format = true
+exclude = ["test.pyi", "test2.pyi"]
+
+[tool.ruff.lint]
+exclude = []
+extend-select = [
+    "E",
+    "C4",
+    "I",
+    "PYI",
+    "Q",
+    "SIM",
+    "N",
+    "W",
+    "RUF"
+]
+ignore = ["PYI041"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.*" = ["F401", "F403"]
+"vsstubs/_template/**.pyi" = [
+    "PYI002",
+    "PYI046",
+    "PYI029",
+    "F822",
+    "N801",
+    "N805",
+]
