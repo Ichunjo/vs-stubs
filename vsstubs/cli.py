@@ -22,7 +22,13 @@ def _show_version(value: bool) -> None:
 
 
 input_opt = Option("--input", "-i", "-I", help="Path to the input .pyi file")
-output_opt = Option("--output", "-o", "-O", help="Path to write the output .pyi file")
+output_opt = Option(
+    "--output",
+    "-o",
+    "-O",
+    help="Path to write the output .pyi file. Default is vapoursynth-stubs/__init__.pyi inside the site-package folder",
+    show_default=False,
+)
 template_opt = Option(
     "--template", "-T", help="Export blank template; excludes existing plugins unless --load or --add is used"
 )

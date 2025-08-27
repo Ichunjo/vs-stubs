@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "vs-stubs"
 dynamic = ["version"]
-description = "Stub files for VapourSynth integration or typing support."
+description = "Typing stubs for VapourSynth"
 readme = "README.md"
 requires-python = ">=3.13"
 license = { text = "MIT" }
@@ -14,20 +14,25 @@ authors = [
 ]
 keywords = ["stubs", "typing", "python"]
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3 :: Only",
-    "License :: OSI Approved :: MIT License",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Utilities",
     "Operating System :: OS Independent",
-    "Typing :: Typed"
+    "Typing :: Typed",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
 ]
 
 dependencies = ["VapourSynth>=72", "typer[all]"]
 
 
 [project.urls]
-Homepage = "https://github.com/yourusername/vs-stubs"
-Repository = "https://github.com/yourusername/vs-stubs"
-Issues = "https://github.com/yourusername/vs-stubs/issues"
+Homepage = "https://github.com/Ichunjo/vs-stubs"
+Repository = "https://github.com/Ichunjo/vs-stubs"
+Issues = "https://github.com/Ichunjo/vs-stubs/issues"
 
 [project.scripts]
 vsstubs = "vsstubs.cli:app"
