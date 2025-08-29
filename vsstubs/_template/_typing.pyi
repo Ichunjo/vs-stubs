@@ -12,7 +12,7 @@ _VSValueIterable: TypeAlias = (
     | _SupportsIter[RawFrame]
     | _SupportsIter[VideoFrame]
     | _SupportsIter[AudioFrame]
-    | _SupportsIter[RawNode[RawFrame]]
+    | _SupportsIter[RawNode]
     | _SupportsIter[VideoNode]
     | _SupportsIter[AudioNode]
     | _SupportsIter[Callable[..., Any]]
@@ -22,7 +22,7 @@ _VSValueIterable: TypeAlias = (
     | _GetItemIterable[RawFrame]
     | _GetItemIterable[VideoFrame]
     | _GetItemIterable[AudioFrame]
-    | _GetItemIterable[RawNode[RawFrame]]
+    | _GetItemIterable[RawNode]
     | _GetItemIterable[VideoNode]
     | _GetItemIterable[AudioNode]
 )
@@ -33,7 +33,7 @@ _VSValue: TypeAlias = (
     | RawFrame
     | VideoFrame
     | AudioFrame
-    | RawNode[RawFrame]
+    | RawNode
     | VideoNode
     | AudioNode
     | Callable[..., Any]

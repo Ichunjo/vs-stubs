@@ -21,14 +21,14 @@ from .frames import AudioFrame, RawFrame, VideoFrame
 from .logging import LogHandle
 from .plugin import Plugin
 
-class RawNode[_RawFrameT: RawFrame]:
+class RawNode:
     @overload
-    def get_frame_async(self, n: int) -> Future[_RawFrameT]: ...
+    def get_frame_async(self, n: int) -> Future[RawFrame]: ...
     @overload
-    def get_frame_async(self, n: int, cb: Callable[[_RawFrameT | None, Exception | None], None]) -> None: ...
+    def get_frame_async(self, n: int, cb: Callable[[RawFrame | None, Exception | None], None]) -> None: ...
     def frames(
         self, prefetch: int | None = None, backlog: int | None = None, close: bool = False
-    ) -> Iterator[_RawFrameT]: ...
+    ) -> Iterator[RawFrame]: ...
     def clear_cache(self) -> None: ...
     def is_inspectable(self, version: int | None = None) -> bool: ...
     @property
@@ -52,7 +52,7 @@ _CurrentFrame: TypeAlias = int
 _TotalFrames: TypeAlias = int
 
 # Behave like a Sequence
-class VideoNode(RawNode[VideoFrame]):
+class VideoNode(RawNode):
     format: Final[VideoFormat]
     width: Final[int]
     height: Final[int]
@@ -60,6 +60,13 @@ class VideoNode(RawNode[VideoFrame]):
     fps_num: Final[int]
     fps_den: Final[int]
     fps: Final[Fraction]
+    @overload  # type: ignore[override]
+    def get_frame_async(self, n: int) -> Future[VideoFrame]: ...
+    @overload
+    def get_frame_async(self, n: int, cb: Callable[[VideoFrame | None, Exception | None], None]) -> None: ...  # pyright: ignore[reportIncompatibleMethodOverride]
+    def frames(
+        self, prefetch: int | None = None, backlog: int | None = None, close: bool = False
+    ) -> Iterator[VideoFrame]: ...
     def __getattr__(self, name: str) -> Plugin: ...
     def get_frame(self, n: int) -> VideoFrame: ...
     def set_output(self, index: int = 0, alpha: Self | None = None, alt_output: Literal[0, 1, 2] = 0) -> None: ...
@@ -83,7 +90,7 @@ class VideoNode(RawNode[VideoFrame]):
 # </plugins/bound/VideoNode>
 
 # Behave like a Sequence
-class AudioNode(RawNode[AudioFrame]):
+class AudioNode(RawNode):
     sample_type: Final[SampleType]
     bits_per_sample: Final[int]
     bytes_per_sample: Final[int]
@@ -92,6 +99,13 @@ class AudioNode(RawNode[AudioFrame]):
     sample_rate: Final[int]
     num_samples: Final[int]
     num_frames: Final[int]
+    @overload  # type: ignore[override]
+    def get_frame_async(self, n: int) -> Future[AudioFrame]: ...
+    @overload
+    def get_frame_async(self, n: int, cb: Callable[[AudioFrame | None, Exception | None], None]) -> None: ...  # pyright: ignore[reportIncompatibleMethodOverride]
+    def frames(
+        self, prefetch: int | None = None, backlog: int | None = None, close: bool = False
+    ) -> Iterator[AudioFrame]: ...
     def __getattr__(self, name: str) -> Plugin: ...
     def get_frame(self, n: int) -> AudioFrame: ...
     def set_output(self, index: int = 0) -> None: ...

@@ -12,14 +12,14 @@ _PropValue: TypeAlias = (
     | str
     | bytes
     | RawFrame
-    | RawNode[RawFrame]
+    | RawNode
     | Callable[..., Any]
     | list[int]
     | list[float]
     | list[str]
     | list[bytes]
     | list[RawFrame]
-    | list[RawNode[RawFrame]]
+    | list[RawNode]
     | list[Callable[..., Any]]
 )
 
