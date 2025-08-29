@@ -1,4 +1,4 @@
-from typing import Any, Callable, Iterable, Mapping, Protocol, TypeAlias, TypeVar
+from typing import Any, Callable, Iterable, Iterator, Mapping, Protocol, TypeAlias, TypeVar
 
 from .frames import AudioFrame, RawFrame, VideoFrame
 from .nodes import AudioNode, RawNode, VideoNode
@@ -47,10 +47,10 @@ _VT_co = TypeVar("_VT_co", covariant=True)
 _T_co = TypeVar("_T_co", covariant=True)
 
 class _SupportsIter(Protocol[_T_co]):
-    def __iter__(self) -> _T_co: ...
+    def __iter__(self) -> Iterator[_T_co]: ...
 
 class _SequenceLike(Protocol[_T_co]):
-    def __iter__(self) -> _T_co: ...
+    def __iter__(self) -> Iterator[_T_co]: ...
     def __len__(self) -> int: ...
 
 class _GetItemIterable(Protocol[_T_co]):
