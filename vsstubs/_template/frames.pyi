@@ -7,8 +7,7 @@ from .constants import SampleType
 from .formats import ChannelLayout, VideoFormat
 from .props import FrameProps
 
-class FramePtr:
-    def __dealloc__(self) -> None: ...
+class FramePtr: ...
 
 # These memoryview-likes don't exist at runtime.
 class _video_view(memoryview):  # type: ignore[misc]
