@@ -5,6 +5,11 @@ from .nodes import AudioNode, RawNode, VideoNode
 from .plugin import Plugin
 
 _AnyStr: TypeAlias = str | bytes | bytearray
+
+_VSValueSingle: TypeAlias = (
+    int | float | _AnyStr | RawFrame | VideoFrame | AudioFrame | RawNode | VideoNode | AudioNode | Callable[..., Any]
+)
+
 _VSValueIterable: TypeAlias = (
     _SupportsIter[int]
     | _SupportsIter[_AnyStr]
@@ -25,20 +30,9 @@ _VSValueIterable: TypeAlias = (
     | _GetItemIterable[RawNode]
     | _GetItemIterable[VideoNode]
     | _GetItemIterable[AudioNode]
+    | _GetItemIterable[Callable[..., Any]]
 )
-_VSValue: TypeAlias = (
-    int
-    | float
-    | _AnyStr
-    | RawFrame
-    | VideoFrame
-    | AudioFrame
-    | RawNode
-    | VideoNode
-    | AudioNode
-    | Callable[..., Any]
-    | _VSValueIterable
-)
+_VSValue: TypeAlias = _VSValueSingle | _VSValueIterable
 
 _VSPlugin: TypeAlias = Plugin  # noqa: PYI047
 

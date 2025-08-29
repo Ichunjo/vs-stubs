@@ -1,10 +1,8 @@
-from typing import Any, Callable, Iterable, Iterator, Mapping, NoReturn, TypeAlias, TypeVar, overload
+from typing import Any, Callable, Iterator, Literal, MutableMapping, TypeAlias, overload
 
-from ._typing import _SupportsKeysAndGetItem, _VSValue
-from .frames import RawFrame
-from .nodes import RawNode
-
-_T = TypeVar("_T")
+from ._typing import _VSValue
+from .frames import AudioFrame, RawFrame, VideoFrame
+from .nodes import AudioNode, RawNode, VideoNode
 
 _PropValue: TypeAlias = (
     int
@@ -12,58 +10,41 @@ _PropValue: TypeAlias = (
     | str
     | bytes
     | RawFrame
+    | VideoFrame
+    | AudioFrame
     | RawNode
+    | VideoNode
+    | AudioNode
     | Callable[..., Any]
     | list[int]
     | list[float]
     | list[str]
     | list[bytes]
     | list[RawFrame]
+    | list[VideoFrame]
+    | list[AudioFrame]
     | list[RawNode]
+    | list[VideoNode]
+    | list[AudioNode]
     | list[Callable[..., Any]]
 )
 
-# Behave like a MutableSequence but for some reason, it was implemented as a Mapping.
 # Only the _PropValue types are allowed in FrameProps but passing _VSValue is allowed.
 # Just keep in mind that _SupportsIter and _GetItemIterable will only yield their keys if they're Mapping-like.
 # Consider storing Mapping-likes as two separate props. One for the keys and one for the values as list.
-class FrameProps(Mapping[str, _PropValue]):
-    @overload
-    def __contains__(self, name: str) -> bool: ...  # type: ignore[overload-overlap]
-    @overload
-    def __contains__(self, name: object) -> NoReturn: ...
+class FrameProps(MutableMapping[str, _PropValue]):
     def __getitem__(self, name: str) -> _PropValue: ...
     def __setitem__(self, name: str, value: _PropValue) -> None: ...
     def __delitem__(self, name: str) -> None: ...
-    def __setattr__(self, name: str, value: _PropValue) -> None: ...
-    def __delattr__(self, name: str) -> None: ...
-    def __getattr__(self, name: str) -> _PropValue: ...
-    def keys(self) -> set[str]: ...  # type: ignore[override]
-    def values(self) -> set[_PropValue]: ...  # type: ignore[override]
-    def items(self) -> set[tuple[str, _PropValue]]: ...  # type: ignore[override]
-    @overload  # type: ignore[override]
-    def get(self, key: str, default: None = None) -> _PropValue | None: ...
-    @overload
-    def get(self, key: str, default: _PropValue) -> _PropValue: ...
-    @overload
-    def get(self, key: str, default: _T) -> _PropValue | _T: ...  # pyright: ignore[reportIncompatibleMethodOverride, reportOverlappingOverload]
-    @overload
-    def pop(self, key: str) -> _PropValue: ...
-    @overload
-    def pop(self, key: str, default: _PropValue) -> _PropValue: ...
-    @overload
-    def pop(self, key: str, default: _T) -> _PropValue | _T: ...  # pyright: ignore[reportOverlappingOverload]
-    def popitem(self) -> tuple[str, _PropValue]: ...
-    def setdefault(self, key: str, default: _VSValue = 0) -> _PropValue: ...
-    @overload
-    def update(self, m: _SupportsKeysAndGetItem[str, _VSValue], /) -> None: ...
-    @overload
-    def update(self, m: Iterable[tuple[str, _VSValue]], /) -> None: ...
-    @overload
-    def update(self, **kwargs: _VSValue) -> None: ...
-    def clear(self) -> None: ...
-    def copy(self) -> dict[str, _PropValue]: ...
     def __iter__(self) -> Iterator[str]: ...
     def __len__(self) -> int: ...
+    def __setattr__(self, name: str, value: _VSValue) -> None: ...
+    def __delattr__(self, name: str) -> None: ...
+    def __getattr__(self, name: str) -> _PropValue: ...
+    @overload
+    def setdefault(self, key: str, default: Literal[0] = 0, /) -> _PropValue | Literal[0]: ...
+    @overload
+    def setdefault(self, key: str, default: _VSValue, /) -> _PropValue: ...  # pyright: ignore[reportIncompatibleMethodOverride]
+    def copy(self) -> dict[str, _PropValue]: ...
     def __dir__(self) -> list[str]: ...
     def __repr__(self) -> str: ...
