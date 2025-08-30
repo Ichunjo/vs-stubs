@@ -93,8 +93,14 @@ class _VSCallback_std_FrameEval_eval_1(Protocol):
 class _VSCallback_std_FrameEval_eval_2(Protocol):
     def __call__(self, *, n: int, f: list[VideoFrame]) -> VideoNode: ...
 
+class _VSCallback_std_FrameEval_eval_3(Protocol):
+    def __call__(self, *, n: int, f: VideoFrame | list[VideoFrame]) -> VideoNode: ...
+
 _VSCallback_std_FrameEval_eval: TypeAlias = (  # noqa: PYI047
-    _VSCallback_std_FrameEval_eval_0 | _VSCallback_std_FrameEval_eval_1 | _VSCallback_std_FrameEval_eval_2
+    _VSCallback_std_FrameEval_eval_0
+    | _VSCallback_std_FrameEval_eval_1
+    | _VSCallback_std_FrameEval_eval_2
+    | _VSCallback_std_FrameEval_eval_3
 )
 
 class _VSCallback_std_Lut_function_0(Protocol):
@@ -119,8 +125,13 @@ class _VSCallback_std_ModifyFrame_selector_0(Protocol):
 class _VSCallback_std_ModifyFrame_selector_1(Protocol):
     def __call__(self, *, n: int, f: list[VideoFrame]) -> VideoFrame: ...
 
+class _VSCallback_std_ModifyFrame_selector_2(Protocol):
+    def __call__(self, *, n: int, f: VideoFrame | list[VideoFrame]) -> VideoFrame: ...
+
 _VSCallback_std_ModifyFrame_selector: TypeAlias = (  # noqa: PYI047
-    _VSCallback_std_ModifyFrame_selector_0 | _VSCallback_std_ModifyFrame_selector_1
+    _VSCallback_std_ModifyFrame_selector_0
+    | _VSCallback_std_ModifyFrame_selector_1
+    | _VSCallback_std_ModifyFrame_selector_2
 )
 
 class _VSCallback_resize2_Custom_custom_kernel(Protocol):
