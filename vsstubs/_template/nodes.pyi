@@ -15,6 +15,7 @@ from warnings import deprecated
 
 from ._typing import _SupportsInt, _VSValue
 from .constants import FilterMode, MessageType, SampleType, VapourSynthAPIVersion, VapourSynthVersion
+from .env import CoreTimings
 from .formats import ChannelLayout, VideoFormat
 from .frames import AudioFrame, RawFrame, VideoFrame
 from .logging import LogHandle
@@ -115,6 +116,7 @@ class AudioNode(RawNode):
 # </plugins/bound/AudioNode>
 
 class Core:
+    timings: Final[CoreTimings]
     def __repr__(self) -> str: ...
     def __str__(self) -> str: ...
     def __dir__(self) -> list[str]: ...
