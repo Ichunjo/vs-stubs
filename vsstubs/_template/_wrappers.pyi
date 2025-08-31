@@ -2,6 +2,7 @@ from typing import Callable, Concatenate
 
 from .plugin import Function, Plugin
 
+_VSPlugin = Plugin
 _VSFunction = Function
 
 class _Wrapper:

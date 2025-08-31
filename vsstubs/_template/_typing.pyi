@@ -2,7 +2,6 @@ from typing import Any, Callable, Iterable, Iterator, Mapping, Protocol
 
 from .frames import AudioFrame, RawFrame, VideoFrame
 from .nodes import AudioNode, RawNode, VideoNode
-from .plugin import Plugin
 
 type _AnyStr = str | bytes | bytearray
 
@@ -33,7 +32,6 @@ type _VSValueIterable = (
     | _GetItemIterable[Callable[..., Any]]
 )
 type _VSValue = _VSValueSingle | _VSValueIterable
-_VSPlugin = Plugin
 
 class _SupportsIter[_T](Protocol):
     def __iter__(self) -> Iterator[_T]: ...
