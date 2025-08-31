@@ -8,7 +8,6 @@ from typing import (
     Iterator,
     Literal,
     Self,
-    TypeAlias,
     overload,
 )
 from warnings import deprecated
@@ -58,8 +57,8 @@ class RawNode:
     def clear_cache(self) -> None: ...
     def is_inspectable(self, version: int | None = None) -> bool: ...
 
-_CurrentFrame: TypeAlias = int
-_TotalFrames: TypeAlias = int
+type _CurrentFrame = int
+type _TotalFrames = int
 
 # Behave like a Sequence
 class VideoNode(RawNode):

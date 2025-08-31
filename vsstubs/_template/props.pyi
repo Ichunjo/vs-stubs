@@ -1,10 +1,10 @@
-from typing import Any, Callable, Iterator, Literal, MutableMapping, TypeAlias, overload
+from typing import Any, Callable, Iterator, Literal, MutableMapping, overload
 
 from ._typing import _VSValue
 from .frames import AudioFrame, RawFrame, VideoFrame
 from .nodes import AudioNode, RawNode, VideoNode
 
-_PropValue: TypeAlias = (
+type _PropValue = (
     int
     | float
     | str

@@ -12,7 +12,6 @@ from typing import (
     NamedTuple,
     Protocol,
     Sequence,
-    TypeAlias,
     Union,
     get_args,
     get_origin,
@@ -23,8 +22,8 @@ from vapoursynth import AudioNode, Core, VideoNode
 
 from .constants import _ATTR_IMPL_END, _ATTR_IMPL_START, _IMPL_END, _IMPL_START
 
-_CoreLike: TypeAlias = Core | VideoNode | AudioNode  # noqa: PYI047
-_CoreLikeStr: TypeAlias = str
+type _CoreLike = Core | VideoNode | AudioNode  # noqa: PYI047
+type _CoreLikeStr = str
 
 
 class PluginInterface(NamedTuple):

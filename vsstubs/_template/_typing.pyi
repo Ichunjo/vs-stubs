@@ -1,16 +1,16 @@
-from typing import Any, Callable, Iterable, Iterator, Mapping, Protocol, TypeAlias, TypeVar
+from typing import Any, Callable, Iterable, Iterator, Mapping, Protocol
 
 from .frames import AudioFrame, RawFrame, VideoFrame
 from .nodes import AudioNode, RawNode, VideoNode
 from .plugin import Plugin
 
-_AnyStr: TypeAlias = str | bytes | bytearray
+type _AnyStr = str | bytes | bytearray
 
-_VSValueSingle: TypeAlias = (
+type _VSValueSingle = (
     int | float | _AnyStr | RawFrame | VideoFrame | AudioFrame | RawNode | VideoNode | AudioNode | Callable[..., Any]
 )
 
-_VSValueIterable: TypeAlias = (
+type _VSValueIterable = (
     _SupportsIter[int]
     | _SupportsIter[_AnyStr]
     | _SupportsIter[float]
@@ -32,26 +32,21 @@ _VSValueIterable: TypeAlias = (
     | _GetItemIterable[AudioNode]
     | _GetItemIterable[Callable[..., Any]]
 )
-_VSValue: TypeAlias = _VSValueSingle | _VSValueIterable
+type _VSValue = _VSValueSingle | _VSValueIterable
+_VSPlugin = Plugin
 
-_VSPlugin: TypeAlias = Plugin  # noqa: PYI047
+class _SupportsIter[_T](Protocol):
+    def __iter__(self) -> Iterator[_T]: ...
 
-_KT = TypeVar("_KT")
-_VT_co = TypeVar("_VT_co", covariant=True)
-_T_co = TypeVar("_T_co", covariant=True)
-
-class _SupportsIter(Protocol[_T_co]):
-    def __iter__(self) -> Iterator[_T_co]: ...
-
-class _SequenceLike(Protocol[_T_co]):
-    def __iter__(self) -> Iterator[_T_co]: ...
+class _SequenceLike[_T](Protocol):
+    def __iter__(self) -> Iterator[_T]: ...
     def __len__(self) -> int: ...
 
-class _GetItemIterable(Protocol[_T_co]):
-    def __getitem__(self, i: int, /) -> _T_co: ...
+class _GetItemIterable[_T](Protocol):
+    def __getitem__(self, i: int, /) -> _T: ...
 
-class _SupportsKeysAndGetItem(Protocol[_KT, _VT_co]):
-    def __getitem__(self, key: _KT, /) -> _VT_co: ...
+class _SupportsKeysAndGetItem[_KT, _VT](Protocol):
+    def __getitem__(self, key: _KT, /) -> _VT: ...
     def keys(self) -> Iterable[_KT]: ...
 
 class _SupportsInt(Protocol):
@@ -96,7 +91,7 @@ class _VSCallback_std_FrameEval_eval_2(Protocol):
 class _VSCallback_std_FrameEval_eval_3(Protocol):
     def __call__(self, *, n: int, f: VideoFrame | list[VideoFrame]) -> VideoNode: ...
 
-_VSCallback_std_FrameEval_eval: TypeAlias = (  # noqa: PYI047
+type _VSCallback_std_FrameEval_eval = (  # noqa: PYI047
     _VSCallback_std_FrameEval_eval_0
     | _VSCallback_std_FrameEval_eval_1
     | _VSCallback_std_FrameEval_eval_2
@@ -109,7 +104,7 @@ class _VSCallback_std_Lut_function_0(Protocol):
 class _VSCallback_std_Lut_function_1(Protocol):
     def __call__(self, *, x: float) -> float: ...
 
-_VSCallback_std_Lut_function: TypeAlias = _VSCallback_std_Lut_function_0 | _VSCallback_std_Lut_function_1  # noqa: PYI047
+type _VSCallback_std_Lut_function = _VSCallback_std_Lut_function_0 | _VSCallback_std_Lut_function_1  # noqa: PYI047
 
 class _VSCallback_std_Lut2_function_0(Protocol):
     def __call__(self, *, x: int, y: int) -> int: ...
@@ -117,7 +112,7 @@ class _VSCallback_std_Lut2_function_0(Protocol):
 class _VSCallback_std_Lut2_function_1(Protocol):
     def __call__(self, *, x: float, y: float) -> float: ...
 
-_VSCallback_std_Lut2_function: TypeAlias = _VSCallback_std_Lut2_function_0 | _VSCallback_std_Lut2_function_1  # noqa: PYI047
+type _VSCallback_std_Lut2_function = _VSCallback_std_Lut2_function_0 | _VSCallback_std_Lut2_function_1  # noqa: PYI047
 
 class _VSCallback_std_ModifyFrame_selector_0(Protocol):
     def __call__(self, *, n: int, f: VideoFrame) -> VideoFrame: ...
@@ -128,7 +123,7 @@ class _VSCallback_std_ModifyFrame_selector_1(Protocol):
 class _VSCallback_std_ModifyFrame_selector_2(Protocol):
     def __call__(self, *, n: int, f: VideoFrame | list[VideoFrame]) -> VideoFrame: ...
 
-_VSCallback_std_ModifyFrame_selector: TypeAlias = (  # noqa: PYI047
+type _VSCallback_std_ModifyFrame_selector = (  # noqa: PYI047
     _VSCallback_std_ModifyFrame_selector_0
     | _VSCallback_std_ModifyFrame_selector_1
     | _VSCallback_std_ModifyFrame_selector_2
