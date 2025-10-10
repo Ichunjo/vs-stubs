@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ["stubs", "typing", "python"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Code Generators",
@@ -26,7 +26,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 
-dependencies = ["VapourSynth>=72", "typer[all]"]
+dependencies = ["VapourSynth>=73", "typer[all]"]
 
 
 [project.urls]
