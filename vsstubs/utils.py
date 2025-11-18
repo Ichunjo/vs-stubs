@@ -41,32 +41,17 @@ def _get_typed_dict_repr(d: type) -> str:
     return f'{name} = TypedDict("{name}", {sig})'
 
 
-def _clean_signature(signature: str) -> str:
-    return signature.replace("vapoursynth.", "").replace("str | bytes | bytearray", "_AnyStr")
+def _replace_known_callback_signature(
+    param: Parameter, interface: PluginInterface, function: FunctionInterface
+) -> Parameter:
+    ann = VSCallbackTypeLike(
+        _VSCALLBACK_SIGNATURE.format(plugin=interface.namespace, func=function.name, param=param.name)
+    )
 
+    if not isinstance(param.annotation, VSCallbackTypeLike):
+        ann = UnionLike[*(ann if isinstance(arg, VSCallbackTypeLike) else arg for arg in param.annotation.__args__)]
 
-def _replace_known_callback_signatures(
-    param_names: set[str], parameters: dict[str, Parameter], interface: PluginInterface, function: FunctionInterface
-) -> None:
-    for name in param_names:
-        param = parameters[name]
-
-        if not isinstance(param.annotation, UnionLike):
-            raise NotImplementedError
-
-        param = param.replace(
-            annotation=UnionLike(
-                [
-                    VSCallbackTypeLike(
-                        _VSCALLBACK_SIGNATURE.format(plugin=interface.namespace, func=function.name, param=name)
-                    )
-                    if isinstance(arg, VSCallbackTypeLike)
-                    else arg
-                    for arg in param.annotation._args
-                ]
-            )
-        )
-        parameters[name] = param
+    return param.replace(annotation=ann)
 
 
 def _index_by_namespace[HasNameSpaceT: HasNameSpace](impls: Iterable[HasNameSpaceT]) -> dict[str, HasNameSpaceT]:

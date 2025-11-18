@@ -8,7 +8,7 @@ from inspect import Parameter
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence, is_typeddict
 
-from vapoursynth import Error, VideoNode, core
+from vapoursynth import Error, core
 
 from .constants import (
     _ATTR_IMPL_END,
@@ -21,21 +21,8 @@ from .constants import (
     _PLUGINS_IMPL_START,
     _callback_signatures,
 )
-from .types import (
-    FunctionInterface,
-    Implementation,
-    PluginInterface,
-    _CoreLike,
-    parse_type,
-)
-from .utils import (
-    _clean_signature,
-    _get_cores,
-    _get_dir,
-    _get_plugins,
-    _get_typed_dict_repr,
-    _replace_known_callback_signatures,
-)
+from .types import FunctionInterface, Implementation, PluginInterface, VideoNodeType, _CoreLike, parse_type
+from .utils import _get_cores, _get_dir, _get_plugins, _get_typed_dict_repr, _replace_known_callback_signature
 
 
 def load_plugins(paths: Iterable[Path]) -> set[str]:
@@ -105,29 +92,26 @@ def construct_implementation(interface: PluginInterface) -> Implementation:
             parameters = function.signature.parameters.copy()
 
             for k, v in parameters.items():
-                # Workaround for Union types as they have bad printable representation of themself
-                # TODO: 3.14 apparently fixes that?
                 parameters[k] = v.replace(annotation=parse_type(v.annotation))
 
             # Replaces the anonymous callback types to known signatures.
             if param_names := _callback_signatures.get(interface.namespace, {}).get(function.name):
-                _replace_known_callback_signatures(param_names, parameters, interface, function)
+                for name in param_names:
+                    parameters[name] = _replace_known_callback_signature(parameters[name], interface, function)
 
             signature = function.signature.replace(
                 parameters=(Parameter("self", Parameter.POSITIONAL_OR_KEYWORD), *parameters.values()),
                 # If a function returns Any, it's probably a APIv3 plugin.
                 # We assume it always returns a VideoNode but we know it's not always the case...
-                return_annotation=VideoNode
+                return_annotation=VideoNodeType()
                 if function.signature.return_annotation == Any
                 else parse_type(function.signature.return_annotation, True),
             )
 
-            func = _clean_signature(f"def {function.name}{signature}: ...")
-
-            functions_list.append(func)
+            functions_list.append(f"def {function.name}{signature}: ...")
 
             if is_typeddict(td := signature.return_annotation):
-                extras.append(_clean_signature(_get_typed_dict_repr(td)))
+                extras.append(_get_typed_dict_repr(td))
 
         functions_map[core_name] = functions_list
 

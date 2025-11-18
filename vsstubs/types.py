@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Callable as abc_Callable
-from collections.abc import Sequence as abc_Sequence
-from ctypes import Union as ctypes_Union
+import collections.abc
+import sys
 from functools import cache
 from inspect import Signature
-from types import GenericAlias, NoneType, UnionType
+from types import GenericAlias, NoneType
 from typing import (
     Any,
     Mapping,
@@ -18,7 +17,7 @@ from typing import (
     runtime_checkable,
 )
 
-from vapoursynth import AudioNode, Core, VideoNode
+from vapoursynth import AudioNode, Core, Func, VideoNode
 
 from .constants import _ATTR_IMPL_END, _ATTR_IMPL_START, _IMPL_END, _IMPL_START
 
@@ -96,6 +95,13 @@ class TypeLike:
         return self.__repr__()
 
 
+class AnyStr(TypeLike):
+    __slots__ = ()
+
+    def __repr__(self) -> str:
+        return "_AnyStr"
+
+
 class IntLike(TypeLike):
     """Any object that can be converted by cpython.number.PyNumber_Long."""
 
@@ -114,29 +120,40 @@ class FloatLike(TypeLike):
         return "_FloatLike"
 
 
-class UnionLike(TypeLike):
-    """Union-like type to represent Union types with the modern | operator."""
+if sys.version_info >= (3, 14):
+    UnionLike = Union
+else:
 
-    __slots__ = ("_args",)
+    class UnionTypeLike(type):
+        def __getitem__(cls, t: tuple[Any, ...]) -> UnionLike:
+            return UnionLike(*t)
 
-    def __init__(self, args: Sequence[Any]) -> None:
-        self._args = args
+    class UnionLike(TypeLike, metaclass=UnionTypeLike):
+        """
+        Union-like type to represent Union types with the modern | operator.
+        Only needed for python <3.14, see <https://docs.python.org/3/whatsnew/3.14.html#typing>
+        """
 
-    def __repr__(self) -> str:
-        repr_types = list[str]()
+        __slots__ = ("__args__",)
 
-        for t in self._args:
-            if t is NoneType:
-                repr_types.append("None")
-            elif isinstance(t, type):
-                repr_types.append(t.__name__)
-            elif isinstance(t, GenericAlias):
-                parameters = ", ".join(ta.__name__ for ta in t.__args__)
-                repr_types.append(t.__origin__.__name__ + f"[{parameters}]")
-            else:
-                repr_types.append(repr(t))
+        def __init__(self, *t: Any) -> None:
+            self.__args__ = t
 
-        return " | ".join(repr_types)
+        def __repr__(self) -> str:
+            repr_types = list[str]()
+
+            for t in self.__args__:
+                if t is NoneType:
+                    repr_types.append("None")
+                elif isinstance(t, type):
+                    repr_types.append(t.__name__)
+                elif isinstance(t, GenericAlias):
+                    parameters = ", ".join(ta.__name__ for ta in t.__args__)
+                    repr_types.append(t.__origin__.__name__ + f"[{parameters}]")
+                else:
+                    repr_types.append(repr(t))
+
+            return " | ".join(repr_types)
 
 
 class VSCallbackTypeLike(TypeLike):
@@ -144,11 +161,21 @@ class VSCallbackTypeLike(TypeLike):
 
     __slots__ = "repr"
 
-    def __init__(self, repr: str) -> None:
+    def __init__(self, repr: str = "_VSCallback") -> None:
         self.repr = repr
 
     def __repr__(self) -> str:
         return self.repr
+
+
+class VideoNodeType(TypeLike):
+    def __repr__(self) -> str:
+        return "VideoNode"
+
+
+class AudioNodeType(TypeLike):
+    def __repr__(self) -> str:
+        return "AudioNode"
 
 
 class SequenceLike(TypeLike):
@@ -170,21 +197,37 @@ def parse_type(utype: Any, is_return: bool = False) -> Any:
     if utype is float:
         return FloatLike()
 
+    if utype is VideoNode:
+        return VideoNodeType()
+
+    if utype is AudioNode:
+        return AudioNodeType()
+
     if (origin := get_origin(utype)) is None:
         return utype
 
     parsed = tuple(parse_type(arg, is_return) for arg in get_args(utype))
 
-    if isinstance(origin, UnionType) or origin is ctypes_Union or origin is Union:
-        return UnionLike(parsed)
+    if origin is Union:
+        match parsed:
+            case (func_t, VSCallbackTypeLike(), *_) if issubclass(func_t, Func):
+                return UnionLike[VSCallbackTypeLike(), *parsed[2:]]
 
-    if origin is abc_Sequence:
+            case parsed if set(parsed) >= {str, bytes, bytearray}:
+                parsed = list(parsed)
+                parsed[parsed.index(str) : parsed.index(bytearray) + 1] = [AnyStr()]
+                return UnionLike[*parsed]
+
+            case _:
+                return UnionLike[*parsed]
+
+    if origin is collections.abc.Sequence:
         if is_return:
             return GenericAlias(list, parsed)
         return SequenceLike(parsed)
 
-    if origin is abc_Callable:
-        return VSCallbackTypeLike("_VSCallback")
+    if origin is collections.abc.Callable:
+        return VSCallbackTypeLike()
 
     return GenericAlias(origin, parsed)
 
