@@ -209,3 +209,7 @@ __marimo__/
 
 # vsjet
 .vsjet
+
+# Test files (I know this is bad)
+test.*
+test_*.*
