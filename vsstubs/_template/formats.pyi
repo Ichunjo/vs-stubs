@@ -1,5 +1,6 @@
 from typing import Final, Iterator, Literal, Self, TypedDict
 
+from ._typing import _IntLike
 from .constants import AudioChannels, ColorFamily, SampleType
 
 class _VideoFormatDict(TypedDict):
@@ -37,9 +38,9 @@ class VideoFormat:
         *,
         color_family: ColorFamily = ...,
         sample_type: SampleType = ...,
-        bits_per_sample: int = ...,
-        subsampling_w: int = ...,
-        subsampling_h: int = ...,
+        bits_per_sample: _IntLike = ...,
+        subsampling_w: _IntLike = ...,
+        subsampling_h: _IntLike = ...,
     ) -> Self: ...
     def _as_dict(self) -> _VideoFormatDict: ...
 

@@ -96,6 +96,24 @@ class TypeLike:
         return self.__repr__()
 
 
+class IntLike(TypeLike):
+    """Any object that can be converted by cpython.number.PyNumber_Long."""
+
+    __slots__ = ()
+
+    def __repr__(self) -> str:
+        return "_IntLike"
+
+
+class FloatLike(TypeLike):
+    """Any object that can be converted by cpython.number.PyNumber_Float."""
+
+    __slots__ = ()
+
+    def __repr__(self) -> str:
+        return "_FloatLike"
+
+
 class UnionLike(TypeLike):
     """Union-like type to represent Union types with the modern | operator."""
 
@@ -146,6 +164,12 @@ class SequenceLike(TypeLike):
 
 @cache
 def parse_type(utype: Any, is_return: bool = False) -> Any:
+    if utype is int:
+        return IntLike()
+
+    if utype is float:
+        return FloatLike()
+
     if (origin := get_origin(utype)) is None:
         return utype
 

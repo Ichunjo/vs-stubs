@@ -1,18 +1,21 @@
-from typing import Any, Callable, Iterable, Iterator, Mapping, Protocol
+from collections.abc import Buffer
+from typing import Any, Callable, Iterable, Iterator, Mapping, Protocol, SupportsFloat, SupportsIndex, SupportsInt
 
 from .frames import AudioFrame, RawFrame, VideoFrame
 from .nodes import AudioNode, RawNode, VideoNode
 
 type _AnyStr = str | bytes | bytearray
+type _IntLike = SupportsInt | SupportsIndex | Buffer
+type _FloatLike = SupportsFloat | SupportsIndex | Buffer
 
 type _VSValueSingle = (
     int | float | _AnyStr | RawFrame | VideoFrame | AudioFrame | RawNode | VideoNode | AudioNode | Callable[..., Any]
 )
 
 type _VSValueIterable = (
-    _SupportsIter[int]
+    _SupportsIter[_IntLike]
+    | _SupportsIter[_FloatLike]
     | _SupportsIter[_AnyStr]
-    | _SupportsIter[float]
     | _SupportsIter[RawFrame]
     | _SupportsIter[VideoFrame]
     | _SupportsIter[AudioFrame]
@@ -20,8 +23,8 @@ type _VSValueIterable = (
     | _SupportsIter[VideoNode]
     | _SupportsIter[AudioNode]
     | _SupportsIter[Callable[..., Any]]
-    | _GetItemIterable[int]
-    | _GetItemIterable[float]
+    | _GetItemIterable[_IntLike]
+    | _GetItemIterable[_FloatLike]
     | _GetItemIterable[_AnyStr]
     | _GetItemIterable[RawFrame]
     | _GetItemIterable[VideoFrame]
@@ -41,14 +44,11 @@ class _SequenceLike[_T](Protocol):
     def __len__(self) -> int: ...
 
 class _GetItemIterable[_T](Protocol):
-    def __getitem__(self, i: int, /) -> _T: ...
+    def __getitem__(self, i: SupportsIndex, /) -> _T: ...
 
 class _SupportsKeysAndGetItem[_KT, _VT](Protocol):
     def __getitem__(self, key: _KT, /) -> _VT: ...
     def keys(self) -> Iterable[_KT]: ...
-
-class _SupportsInt(Protocol):
-    def __int__(self) -> int: ...
 
 class _VSCallback(Protocol):
     def __call__(self, *args: Any, **kwargs: Any) -> _VSValue: ...
@@ -60,22 +60,22 @@ class _VSCallback_akarin_PropExpr_dict(Protocol):
         self,
     ) -> Mapping[
         str,
-        int
-        | float
+        _IntLike
+        | _FloatLike
         | _AnyStr
-        | _SupportsIter[int]
+        | _SupportsIter[_IntLike]
         | _SupportsIter[_AnyStr]
-        | _SupportsIter[float]
-        | _GetItemIterable[int]
-        | _GetItemIterable[float]
+        | _SupportsIter[_FloatLike]
+        | _GetItemIterable[_IntLike]
+        | _GetItemIterable[_FloatLike]
         | _GetItemIterable[_AnyStr],
     ]: ...
 
 class _VSCallback_descale_Decustom_custom_kernel(Protocol):
-    def __call__(self, *, x: float) -> float: ...
+    def __call__(self, *, x: float) -> _FloatLike: ...
 
 class _VSCallback_descale_ScaleCustom_custom_kernel(Protocol):
-    def __call__(self, *, x: float) -> float: ...
+    def __call__(self, *, x: float) -> _FloatLike: ...
 
 class _VSCallback_std_FrameEval_eval_0(Protocol):
     def __call__(self, *, n: int) -> VideoNode: ...
@@ -97,18 +97,18 @@ type _VSCallback_std_FrameEval_eval = (  # noqa: PYI047
 )
 
 class _VSCallback_std_Lut_function_0(Protocol):
-    def __call__(self, *, x: int) -> int: ...
+    def __call__(self, *, x: int) -> _IntLike: ...
 
 class _VSCallback_std_Lut_function_1(Protocol):
-    def __call__(self, *, x: float) -> float: ...
+    def __call__(self, *, x: float) -> _FloatLike: ...
 
 type _VSCallback_std_Lut_function = _VSCallback_std_Lut_function_0 | _VSCallback_std_Lut_function_1  # noqa: PYI047
 
 class _VSCallback_std_Lut2_function_0(Protocol):
-    def __call__(self, *, x: int, y: int) -> int: ...
+    def __call__(self, *, x: int, y: int) -> _IntLike: ...
 
 class _VSCallback_std_Lut2_function_1(Protocol):
-    def __call__(self, *, x: float, y: float) -> float: ...
+    def __call__(self, *, x: float, y: float) -> _FloatLike: ...
 
 type _VSCallback_std_Lut2_function = _VSCallback_std_Lut2_function_0 | _VSCallback_std_Lut2_function_1  # noqa: PYI047
 
@@ -128,4 +128,4 @@ type _VSCallback_std_ModifyFrame_selector = (  # noqa: PYI047
 )
 
 class _VSCallback_resize2_Custom_custom_kernel(Protocol):
-    def __call__(self, *, x: float) -> float: ...
+    def __call__(self, *, x: float) -> _FloatLike: ...
