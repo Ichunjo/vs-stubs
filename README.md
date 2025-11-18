@@ -44,61 +44,60 @@ output_stubs(None, "output.pyi", template=True)
 ## CLI Reference
 
 ```
-Usage: vsstubs [OPTIONS] COMMAND [ARGS]...
+ Usage: vsstubs [OPTIONS] COMMAND [ARGS]...
 
-vs-stubs command line interface
+ vs-stubs command line interface
 
-╭─ Options ────────────────────────────────────────────────────────────────────────────╮
-│ --input               -i,-I      PATH  Path to the input .pyi file [default: None]   │
-│ --output              -o,-O      PATH  Path to write the output .pyi file. Default   │
-│                                        is vapoursynth-stubs/__init__.pyi inside the  │
-│                                        site-package folder                           │
-│ --template            -T               Export blank template; excludes existing      │
-│                                        plugins unless --load or --add is used        │
-│ --load                -L         PATH  Load plugins from a folder or a single        │
-│                                        library file                                  │
-│                                        [default: None]                               │
-│ --check               -C               Check for new plugins or new plugin           │
-│                                        signatures                                    │
-│ --quiet                                Suppress non-error output                     │
-│ --version             -V               Show version info and exit                    │
-│ --install-completion                   Install completion for the current shell.     │
-│ --show-completion                      Show completion for the current shell, to     │
-│                                        copy it or customize the installation.        │
-│ --help                                 Show this message and exit.                   │
-╰──────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ───────────────────────────────────────────────────────────────────────────╮
-│ add      Add or update the specified plugins in the stubs                            │
-│ remove   Remove the specified plugins from the stubs                                 │
-╰──────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ──────────────────────────────────────────────────────────────────────────────────╮
+│ --template  -T        Export blank template; excludes existing plugins unless --load or    │
+│                       --add is used                                                        │
+│ --check     -C        Check for new plugins or new plugin signatures                       │
+│ --help                Show this message and exit.                                          │
+╰────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ I/O options ──────────────────────────────────────────────────────────────────────────────╮
+│ --input   -i,-I      PATH  Path to the input .pyi file                                     │
+│ --output  -o,-O      TEXT  Path to write the output .pyi file. Use '@' to overwrite the    │
+│                            input file.                                                     │
+│                            [default: (vapoursynth-stubs/__init__.pyi inside the            │
+│                            site-package folder)]                                           │
+│ --load    -L         PATH  Load plugins from a folder or a single library file             │
+╰────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Informations ─────────────────────────────────────────────────────────────────────────────╮
+│ --quiet              Suppress non-error output                                             │
+│ --version  -V        Show version info and exit                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ─────────────────────────────────────────────────────────────────────────────────╮
+│ add      Add or update the specified plugins in the stubs                                  │
+│ remove   Remove the specified plugins from the stubs                                       │
+╰────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
 ---
 
 ## Examples
 
-* Simply update the VapourSynth stubs:
+- Simply update the VapourSynth stubs:
 
   ```bash
   vsstubs
   ```
 
-* Generate a template stubs:
+- Generate a template stubs:
 
   ```bash
   vsstubs -o out.pyi --template
   ```
 
-* Add plugin stubs:
+- Add plugin stubs:
 
   ```bash
-  vsstubs -i out.pyi -o out.pyi add resize2
+  vsstubs -i out.pyi -o @ add resize2
   ```
 
-* Remove plugin stubs:
+- Remove plugin stubs (On Powershell you will need to escape the `@` character):
 
-  ```bash
-  vsstubs -i out.pyi -o out.pyi remove resize2
+  ```pwsh
+  vsstubs -i out.pyi -o "@" remove resize2
   ```
 
 ---
@@ -110,6 +109,9 @@ MIT
 ---
 
 ## Why use this over `vsrepo genstubs`?
+
+- **Much faster** than `genstubs`.
+- **More accurate typing**: the generated stubs better reflect the actual signatures of plugins, core classes, and functions.
 - **Modern Python typing**.
 - Easier to **maintain** and **extend** than `genstubs`.
 - More **flexible workflow**: supports generating blank templates, checking for new plugin signatures, and selectively adding/removing plugins.
