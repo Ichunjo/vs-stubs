@@ -25,7 +25,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 
-dependencies = ["VapourSynth>=73", "typer"]
+dependencies = ["vapoursynth>=73", "typer", "rich"]
 
 
 [project.urls]
