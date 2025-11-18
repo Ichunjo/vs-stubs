@@ -10,7 +10,13 @@ from .utils import _echo_quiet, _get_default_stubs_path
 __all__ = ["__version__", "app"]
 
 
-app = Typer(invoke_without_command=True, help="vs-stubs command line interface")
+app = Typer(
+    invoke_without_command=True,
+    help="[bold]vs-stubs command line interface[/bold]",
+    rich_markup_mode="rich",
+    pretty_exceptions_enable=False,
+    add_completion=False,
+)
 
 
 def _show_version(value: bool) -> None:
@@ -21,21 +27,54 @@ def _show_version(value: bool) -> None:
         raise Exit()
 
 
-input_opt = Option("--input", "-i", "-I", help="Path to the input .pyi file")
+input_opt = Option(
+    "--input",
+    "-i",
+    "-I",
+    help="Path to the input .pyi file",
+    rich_help_panel="I/O options",
+)
 output_opt = Option(
     "--output",
     "-o",
     "-O",
-    help="Path to write the output .pyi file. Default is vapoursynth-stubs/__init__.pyi inside the site-package folder",
-    show_default=False,
+    help="Path to write the output .pyi file. Use '@' to overwrite the input file.",
+    show_default="vapoursynth-stubs/__init__.pyi inside the site-package folder",
+    rich_help_panel="I/O options",
+)
+load_opt = Option(
+    "--load",
+    "-L",
+    help="Load plugins from a folder or a single library file",
+    rich_help_panel="I/O options",
 )
 template_opt = Option(
-    "--template", "-T", help="Export blank template; excludes existing plugins unless --load or --add is used"
+    "--template",
+    "-T",
+    help="Export blank template; excludes existing plugins unless --load or --add is used",
 )
-load_opt = Option("--load", "-L", help="Load plugins from a folder or a single library file")
-check_opt = Option("--check", "-C", help="Check for new plugins or new plugin signatures")
-quiet_opt = Option("--quiet", help="Suppress non-error output")
-version_opt = Option("--version", "-V", callback=_show_version, is_eager=True, help="Show version info and exit")
+check_opt = Option(
+    "--check",
+    "-C",
+    help="Check for new plugins or new plugin signatures",
+)
+quiet_opt = Option(
+    "--quiet",
+    help="Suppress non-error output",
+    rich_help_panel="Informations",
+)
+debug_opt = Option(
+    "--debug",
+    hidden=True,
+)
+version_opt = Option(
+    "--version",
+    "-V",
+    callback=_show_version,
+    is_eager=True,
+    help="Show version info and exit",
+    rich_help_panel="Informations",
+)
 
 
 @app.command(help="Add or update the specified plugins in the stubs")
@@ -84,12 +123,12 @@ def cli_main(
     """
     Generate or modify VapourSynth stubs
     """
-    if version:
-        raise Exit()
-
     if quiet:
         global echo
         echo = _echo_quiet
+
+    if version:
+        raise Exit()
 
     if check:
         echo("Checking stubs...")
