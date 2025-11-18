@@ -117,6 +117,7 @@ def output_stubs(
     tmpl = write_implementations(implementations, tmpl)
     tmpl = write_plugins_bound(implementations, tmpl)
 
+    output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(tmpl)
 
 
