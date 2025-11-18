@@ -9,9 +9,7 @@ description = "Typing stubs for VapourSynth"
 readme = "README.md"
 requires-python = ">=3.13"
 license = { text = "MIT" }
-authors = [
-    { name = "Vardë", email = "ichunjo.le.terrible@gmail.com" }
-]
+authors = [{ name = "Vardë", email = "ichunjo.le.terrible@gmail.com" }]
 keywords = ["stubs", "typing", "python"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -24,9 +22,10 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 
-dependencies = ["VapourSynth>=73", "typer[all]"]
+dependencies = ["VapourSynth>=73", "typer"]
 
 
 [project.urls]
@@ -38,22 +37,14 @@ Issues = "https://github.com/Ichunjo/vs-stubs/issues"
 vsstubs = "vsstubs.cli:app"
 
 [dependency-groups]
-dev = [
-    "mypy~=1.18.2",
-    "ruff~=0.14.0",
-]
+dev = ["mypy~=1.18.2", "ruff~=0.14.0"]
 
 [tool.hatch.version]
 path = "vsstubs/_version.py"
 
 [tool.hatch.build.targets.wheel]
-packages = [
-    "vsstubs",
-]
-include = [
-    "vsstubs/_template/*.pyi",
-    "vsstubs/py.typed",
-]
+packages = ["vsstubs"]
+include = ["vsstubs/_template/*.pyi", "vsstubs/py.typed"]
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -61,7 +52,7 @@ include = [
     "vsstubs/_template/*.pyi",
     "pyproject.toml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
 ]
 
 [tool.mypy]
@@ -94,18 +85,7 @@ exclude = ["test.pyi", "test2.pyi"]
 
 [tool.ruff.lint]
 exclude = []
-extend-select = [
-    "E",
-    "C4",
-    "I",
-    "PYI",
-    "Q",
-    "SIM",
-    "N",
-    "W",
-    "RUF"
-]
-ignore = ["PYI041"]
+extend-select = ["E", "C4", "I", "PYI", "Q", "SIM", "N", "W", "RUF"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.*" = ["F401", "F403"]
