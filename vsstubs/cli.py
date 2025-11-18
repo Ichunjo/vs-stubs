@@ -1,6 +1,10 @@
+from logging import DEBUG, basicConfig
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Annotated
 
+from rich.console import Console
+from rich.logging import RichHandler
 from typer import Context, Exit, Option, Typer, echo
 
 from ._version import __version__
@@ -118,6 +122,7 @@ def cli_main(
     load: Annotated[list[Path] | None, load_opt] = None,
     check: Annotated[bool, check_opt] = False,
     quiet: Annotated[bool, quiet_opt] = False,
+    debug: Annotated[bool, debug_opt] = False,
     version: Annotated[bool, version_opt] = False,
 ) -> None:
     """
@@ -126,6 +131,9 @@ def cli_main(
     if quiet:
         global echo
         echo = _echo_quiet
+
+    if debug:
+        basicConfig(level=DEBUG, handlers=[RichHandler(level=DEBUG, console=Console(stderr=True))])
 
     if version:
         raise Exit()
@@ -145,7 +153,7 @@ def cli_main(
     else:
         output_file = _get_default_stubs_path() if not output else Path(output).with_suffix(".pyi")
 
-    ctx.obj = type("obj", (type,), {})
+    ctx.obj = SimpleNamespace()
     ctx.obj.input_file = input_file
     ctx.obj.output = output_file
     ctx.obj.template = template

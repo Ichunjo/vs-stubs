@@ -1,3 +1,4 @@
+from logging import getLogger
 from pathlib import Path
 
 from typer import echo, style
@@ -11,8 +12,10 @@ from .stubs import (
     write_plugins_bound,
 )
 from .template import get_template
-from .types import Implementation
+from .types import Implementation, parse_type
 from .utils import _echo_quiet, _get_cores, _index_by_namespace, running_via_cli
+
+log = getLogger(__name__)
 
 
 def output_stubs(
@@ -96,6 +99,9 @@ def output_stubs(
     if add or remove:
         impl_map = _index_by_namespace(implementations)
 
+        log.debug("add: %s", add)
+        log.debug("remove: %s", remove)
+
         if add:
             pinters_map = _index_by_namespace(pinters)
 
@@ -115,6 +121,8 @@ def output_stubs(
                 del impl_map[ns]
 
         implementations = list(impl_map.values())
+
+    log.debug("parse_type: %s", parse_type.cache_info())
 
     tmpl = write_implementations(implementations, tmpl)
     tmpl = write_plugins_bound(implementations, tmpl)
