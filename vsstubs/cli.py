@@ -113,7 +113,7 @@ def remove(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
 def cli_main(
     ctx: Context,
     input_file: Annotated[Path | None, input_opt] = None,
-    output: Annotated[Path | None, output_opt] = None,
+    output: Annotated[str | None, output_opt] = None,
     template: Annotated[bool, template_opt] = False,
     load: Annotated[list[Path] | None, load_opt] = None,
     check: Annotated[bool, check_opt] = False,
@@ -137,16 +137,22 @@ def cli_main(
     else:
         echo("Running stub generation...")
 
-    output = _get_default_stubs_path() if not output else output.with_suffix(".pyi")
+    if output == "@":
+        if input_file is None:
+            echo("[red]You must provide an input_file when output is '@'[/red]")
+            raise Exit(1)
+        output_file = input_file
+    else:
+        output_file = _get_default_stubs_path() if not output else Path(output).with_suffix(".pyi")
 
     ctx.obj = type("obj", (type,), {})
     ctx.obj.input_file = input_file
-    ctx.obj.output = output
+    ctx.obj.output = output_file
     ctx.obj.template = template
     ctx.obj.load = load
     ctx.obj.check = check
     ctx.obj.quiet = quiet
 
     if ctx.invoked_subcommand is None:
-        output_stubs(input_file, output, template, load, check)
+        output_stubs(input_file, output_file, template, load, check)
         raise Exit()
