@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import sys
 from functools import cache
 from inspect import Parameter
 from pathlib import Path
-from sys import argv
 from typing import Any, Iterable, Sequence
 
 from vapoursynth import GRAY8, Plugin, core, register_on_destroy
@@ -21,10 +21,15 @@ from .types import (
 
 
 def running_via_cli() -> bool:
-    if __name__ == "__main__":
+    # When launched via the installed script (entry point)
+    if Path(sys.argv[0]).stem == "vsstubs":
         return True
 
-    return bool(argv and argv[0].endswith("vsstubs"))
+    # When launched as: python -m vsstubs
+    # The main module will be vsstubs.__main__, but argv[0] will be python.
+    # So we detect that by checking the *module* that is actually running
+    main_mod = sys.modules.get("__main__")
+    return bool(main_mod and main_mod.__package__ == "vsstubs")
 
 
 def _get_typed_dict_repr(d: type) -> str:

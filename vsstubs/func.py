@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from typer import echo
+from typer import echo, style
 
 from .stubs import (
     construct_implementation,
@@ -13,9 +13,6 @@ from .stubs import (
 from .template import get_template
 from .types import Implementation
 from .utils import _echo_quiet, _get_cores, _index_by_namespace, running_via_cli
-
-if not running_via_cli():
-    echo = _echo_quiet
 
 
 def output_stubs(
@@ -53,6 +50,11 @@ def output_stubs(
 
         remove: A set of plugin names to remove from the stubs.
     """
+
+    if not running_via_cli():
+        global echo
+        echo = _echo_quiet
+
     if load:
         echo(f"Loading plugins from: {load}")
         plugins_to_add = load_plugins(load)
@@ -99,7 +101,7 @@ def output_stubs(
 
             for ns in add:
                 if ns not in pinters_map:
-                    echo(f'"{ns}" isn\'t a valid plugin namespace.')
+                    echo(style(f'"{ns}" isn\'t a valid plugin namespace.', "yellow"))
                     continue
 
                 impl_map[ns] = construct_implementation(pinters_map[ns])
@@ -107,7 +109,7 @@ def output_stubs(
         if remove:
             for ns in remove:
                 if ns not in impl_map:
-                    echo(f'"{ns}" isn\'t a valid plugin namespace.')
+                    echo(style(f'"{ns}" isn\'t a valid plugin namespace.', "yellow"))
                     continue
 
                 del impl_map[ns]
