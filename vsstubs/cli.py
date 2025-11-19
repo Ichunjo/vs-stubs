@@ -35,16 +35,20 @@ input_opt = Option(
     "--input",
     "-i",
     "-I",
-    help="Path to the input .pyi file",
+    help="Path to the input .pyi file. Use '-' for piping.",
     rich_help_panel="I/O options",
+    allow_dash=True,
+    path_type=str,
 )
 output_opt = Option(
     "--output",
     "-o",
     "-O",
-    help="Path to write the output .pyi file. Use '@' to overwrite the input file.",
+    help="Path to write the output .pyi file. '@' to overwrite the input file. '-' for piping.",
     show_default="vapoursynth-stubs/__init__.pyi inside the site-package folder",
     rich_help_panel="I/O options",
+    allow_dash=True,
+    path_type=str,
 )
 load_opt = Option(
     "--load",
@@ -116,7 +120,7 @@ def remove(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
 @app.callback()
 def cli_main(
     ctx: Context,
-    input_file: Annotated[Path | None, input_opt] = None,
+    input: Annotated[str | None, input_opt] = None,
     output: Annotated[str | None, output_opt] = None,
     template: Annotated[bool, template_opt] = False,
     load: Annotated[list[Path] | None, load_opt] = None,
@@ -128,6 +132,7 @@ def cli_main(
     """
     Generate or modify VapourSynth stubs
     """
+
     if quiet:
         console.quiet = True
 
@@ -139,16 +144,25 @@ def cli_main(
 
     if check:
         console.print("Checking stubs...")
-        if input_file is None:
-            input_file = _get_default_stubs_path()
+        if input is None:
+            input = str(_get_default_stubs_path())
     else:
         console.print("Running stub generation...")
+
+    if input == "-":
+        input_file = sys.stdin
+    elif isinstance(input, str):
+        input_file = Path(input)
+    else:
+        input_file = _get_default_stubs_path()
 
     if output == "@":
         if input_file is None:
             console.print("[red]Error: You must provide an input_file when output is '@'.[/red]")
             raise Exit(1)
         output_file = input_file
+    elif output == "-":
+        output_file = sys.stdout
     else:
         output_file = _get_default_stubs_path() if not output else Path(output).with_suffix(".pyi")
 

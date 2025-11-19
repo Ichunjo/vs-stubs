@@ -5,6 +5,7 @@ from collections import defaultdict
 from functools import cache
 from inspect import Parameter
 from logging import getLogger
+from os import PathLike
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence, is_typeddict
 
@@ -27,7 +28,7 @@ from .utils import _get_cores, _get_dir, _get_plugins, _get_typed_dict_repr, _re
 log = getLogger(__name__)
 
 
-def load_plugins(paths: Iterable[Path]) -> set[str]:
+def load_plugins(paths: Iterable[str | PathLike[str]]) -> set[str]:
     """
     Load the plugins from a list of dll or path folders.
 
@@ -36,6 +37,8 @@ def load_plugins(paths: Iterable[Path]) -> set[str]:
     old_plugins = {p.namespace for p in core.plugins()}
 
     for path in paths:
+        path = Path(path)
+
         if not path.exists():
             raise ValueError(f'This path "{path}" doesn\'t exist.')
 
@@ -126,9 +129,8 @@ def construct_implementation(interface: PluginInterface) -> Implementation:
     return Implementation(interface.namespace, functions_map, interface.description, extras)
 
 
-def get_implementations_from_input(file: Path) -> list[Implementation]:
+def get_implementations_from_input(text: str) -> list[Implementation]:
     """Parse a file to extract plugin implementations."""
-    text = file.read_text()
 
     plugins_impl_block_matched = re.search(rf"{_PLUGINS_IMPL_START}(.*?){_PLUGINS_IMPL_END}", text, re.DOTALL)
 

@@ -1,6 +1,7 @@
 from logging import getLogger
+from os import PathLike
 from pathlib import Path
-from typing import Any
+from typing import IO, Any, Sequence
 
 from rich.console import Console
 
@@ -20,10 +21,10 @@ log, console = getLogger(__name__), Console(stderr=True)
 
 
 def output_stubs(
-    input_file: Path | None,
-    output: Path,
+    input_file: str | PathLike[str] | IO[str] | None,
+    output: str | PathLike[str] | IO[str],
     template: bool = False,
-    load: list[Path] | None = None,
+    load: Sequence[str | PathLike[str]] | None = None,
     check: bool = False,
     add: set[str] | None = None,
     remove: set[str] | None = None,
@@ -67,8 +68,9 @@ def output_stubs(
     pinters = retrieve_plugins(cores)
 
     if input_file:
-        tmpl = input_file.read_text()
-        implementations = get_implementations_from_input(input_file)
+        tmpl = Path(input_file).read_text() if isinstance(input_file, (str, PathLike)) else input_file.read()
+
+        implementations = get_implementations_from_input(tmpl)
 
         if check:
             old_impl = _index_by_namespace(implementations)
@@ -131,8 +133,14 @@ def output_stubs(
     tmpl = write_implementations(implementations, tmpl)
     tmpl = write_plugins_bound(implementations, tmpl)
 
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(tmpl)
+    log.debug("output %s", output)
+
+    if isinstance(output, (str, PathLike)):
+        output = Path(output)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(tmpl)
+    else:
+        output.write(tmpl)
 
     console.print("[green]Done![/green]")
 
