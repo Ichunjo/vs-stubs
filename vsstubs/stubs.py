@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from contextlib import suppress
 from functools import cache
 from inspect import Parameter
+from logging import getLogger
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence, is_typeddict
 
@@ -24,6 +24,8 @@ from .constants import (
 from .types import FunctionInterface, Implementation, PluginInterface, VideoNodeType, _CoreLike, parse_type
 from .utils import _get_cores, _get_dir, _get_plugins, _get_typed_dict_repr, _replace_known_callback_signature
 
+log = getLogger(__name__)
+
 
 def load_plugins(paths: Iterable[Path]) -> set[str]:
     """
@@ -41,8 +43,10 @@ def load_plugins(paths: Iterable[Path]) -> set[str]:
             core.std.LoadAllPlugins(str(path))
         else:
             # std.LoadAllPlugins silently skips the plugins that fail to load.
-            with suppress(Error):
+            try:
                 core.std.LoadPlugin(str(path))
+            except Error as e:
+                log.exception(e)
 
     return {p.namespace for p in _get_plugins()} - old_plugins
 
@@ -99,13 +103,17 @@ def construct_implementation(interface: PluginInterface) -> Implementation:
                 for name in param_names:
                     parameters[name] = _replace_known_callback_signature(parameters[name], interface, function)
 
+            # If a function returns Any, it's probably a APIv3 plugin.
+            # We assume it always returns a VideoNode but we know it's not always the case...
+            if function.signature.return_annotation == Any:
+                return_annotation = VideoNodeType()
+                log.debug("APIv3 plugin detected: '%s.%s.%s'", core_name, interface.namespace, function.name)
+            else:
+                return_annotation = parse_type(function.signature.return_annotation, True)
+
             signature = function.signature.replace(
                 parameters=(Parameter("self", Parameter.POSITIONAL_OR_KEYWORD), *parameters.values()),
-                # If a function returns Any, it's probably a APIv3 plugin.
-                # We assume it always returns a VideoNode but we know it's not always the case...
-                return_annotation=VideoNodeType()
-                if function.signature.return_annotation == Any
-                else parse_type(function.signature.return_annotation, True),
+                return_annotation=return_annotation,
             )
 
             functions_list.append(f"def {function.name}{signature}: ...")
