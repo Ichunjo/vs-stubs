@@ -5,11 +5,11 @@ from typing import Annotated
 
 from rich.console import Console
 from rich.logging import RichHandler
-from typer import Context, Exit, Option, Typer, echo
+from typer import Context, Exit, Option, Typer
 
 from ._version import __version__
-from .func import output_stubs
-from .utils import _echo_quiet, _get_default_stubs_path
+from .func import console, output_stubs
+from .utils import _get_default_stubs_path
 
 __all__ = ["__version__", "app"]
 
@@ -27,7 +27,7 @@ def _show_version(value: bool) -> None:
     """Show version info and exit"""
 
     if value:
-        echo(f"vs-stubs version {__version__}")
+        console.print(f"vs-stubs version {__version__}")
         raise Exit()
 
 
@@ -83,7 +83,7 @@ version_opt = Option(
 
 @app.command(help="Add or update the specified plugins in the stubs")
 def add(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
-    echo(f"Adding plugins: {', '.join(plugins)}")
+    console.print(f"Adding plugins: {', '.join(plugins)}")
 
     output_stubs(
         ctx.obj.input_file,
@@ -99,7 +99,7 @@ def add(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
 
 @app.command(help="Remove the specified plugins from the stubs")
 def remove(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
-    echo(f"Removing plugins: {', '.join(plugins)}")
+    console.print(f"Removing plugins: {', '.join(plugins)}")
 
     output_stubs(
         ctx.obj.input_file,
@@ -129,8 +129,7 @@ def cli_main(
     Generate or modify VapourSynth stubs
     """
     if quiet:
-        global echo
-        echo = _echo_quiet
+        console.quiet = True
 
     if debug:
         basicConfig(level=DEBUG, handlers=[RichHandler(level=DEBUG, console=Console(stderr=True))])
@@ -139,15 +138,15 @@ def cli_main(
         raise Exit()
 
     if check:
-        echo("Checking stubs...")
+        console.print("Checking stubs...")
         if input_file is None:
             input_file = _get_default_stubs_path()
     else:
-        echo("Running stub generation...")
+        console.print("Running stub generation...")
 
     if output == "@":
         if input_file is None:
-            echo("[red]You must provide an input_file when output is '@'[/red]")
+            console.print("[red]Error: You must provide an input_file when output is '@'.[/red]")
             raise Exit(1)
         output_file = input_file
     else:

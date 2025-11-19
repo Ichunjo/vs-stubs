@@ -1,7 +1,8 @@
 from logging import getLogger
 from pathlib import Path
+from typing import Any
 
-from typer import echo, style
+from rich.console import Console
 
 from .stubs import (
     construct_implementation,
@@ -13,9 +14,9 @@ from .stubs import (
 )
 from .template import get_template
 from .types import Implementation, parse_type
-from .utils import _echo_quiet, _get_cores, _index_by_namespace, running_via_cli
+from .utils import _get_cores, _index_by_namespace, running_via_cli
 
-log = getLogger(__name__)
+log, console = getLogger(__name__), Console(stderr=True)
 
 
 def output_stubs(
@@ -55,11 +56,10 @@ def output_stubs(
     """
 
     if not running_via_cli():
-        global echo
-        echo = _echo_quiet
+        console.quiet = True
 
     if load:
-        echo(f"Loading plugins from: {load}")
+        console.print(f"Loading plugins from: {load}")
         plugins_to_add = load_plugins(load)
         add = plugins_to_add if not add else add | plugins_to_add
 
@@ -80,10 +80,12 @@ def output_stubs(
             only_new = new_keys - old_keys
 
             if only_old or only_new:
-                echo(
+                console.print(
+                    f"[yellow]"
                     f"Mismatched plugin(s): "
                     f"only in input={', '.join(sorted(only_old)) or 'none'}, "
                     f"only new={', '.join(sorted(only_new)) or 'none'}"
+                    "[/yellow]"
                 )
 
             for ns in old_keys & new_keys:
@@ -102,12 +104,14 @@ def output_stubs(
         log.debug("add: %s", add)
         log.debug("remove: %s", remove)
 
+        warn_msg = '[yellow]"{ns}" isn\'t a valid plugin namespace.[/yellow]'
+
         if add:
             pinters_map = _index_by_namespace(pinters)
 
             for ns in add:
                 if ns not in pinters_map:
-                    echo(style(f'"{ns}" isn\'t a valid plugin namespace.', "yellow"))
+                    console.print(warn_msg.format(ns=ns))
                     continue
 
                 impl_map[ns] = construct_implementation(pinters_map[ns])
@@ -115,7 +119,7 @@ def output_stubs(
         if remove:
             for ns in remove:
                 if ns not in impl_map:
-                    echo(style(f'"{ns}" isn\'t a valid plugin namespace.', "yellow"))
+                    console.print(warn_msg.format(ns=ns))
                     continue
 
                 del impl_map[ns]
@@ -130,13 +134,15 @@ def output_stubs(
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(tmpl)
 
+    console.print("[green]Done![/green]")
+
 
 def _compare_plugins(old: Implementation, new: Implementation, ns: str) -> None:
-    checks = [
+    checks: list[tuple[str, Any, Any]] = [
         ("functions", dict(old.functions), dict(new.functions)),
         ("description", old.description, new.description),
         ("extra types", old.extra_types, new.extra_types),
     ]
     for field, old_val, new_val in checks:
         if old_val != new_val:
-            echo(f'For the plugin {ns}, the "{field}" differ.')
+            console.print(f'For the plugin {ns}, the "{field}" differ.')

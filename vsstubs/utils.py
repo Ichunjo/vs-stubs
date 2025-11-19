@@ -63,9 +63,6 @@ def _index_by_namespace[HasNameSpaceT: HasNameSpace](impls: Iterable[HasNameSpac
     return {impl.namespace: impl for impl in impls}
 
 
-def _echo_quiet(*args: Any, **kwargs: Any) -> None: ...
-
-
 @cache
 def _get_default_stubs_path() -> Path:
     import vapoursynth
