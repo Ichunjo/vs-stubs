@@ -1,4 +1,5 @@
-from logging import DEBUG, basicConfig
+import sys
+from logging import DEBUG, basicConfig, getLogger
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Annotated
@@ -14,6 +15,8 @@ from .utils import _get_default_stubs_path
 __all__ = ["__version__", "app"]
 
 
+log = getLogger(__name__)
+
 app = Typer(
     invoke_without_command=True,
     help="[bold]vs-stubs command line interface[/bold]",
@@ -27,7 +30,7 @@ def _show_version(value: bool) -> None:
     """Show version info and exit"""
 
     if value:
-        console.print(f"vs-stubs version {__version__}")
+        console.print(f"{__version__}")
         raise Exit()
 
 
@@ -53,22 +56,22 @@ output_opt = Option(
 load_opt = Option(
     "--load",
     "-L",
-    help="Load plugins from a folder or a single library file",
+    help="Load plugins from a folder or a single library file.",
     rich_help_panel="I/O options",
 )
 template_opt = Option(
     "--template",
     "-T",
-    help="Export blank template; excludes existing plugins unless --load or --add is used",
+    help="Export blank template; excludes existing plugins unless --load or --add is used.",
 )
 check_opt = Option(
     "--check",
     "-C",
-    help="Check for new plugins or new plugin signatures",
+    help="Check for new plugins or new plugin signatures.",
 )
 quiet_opt = Option(
     "--quiet",
-    help="Suppress non-error output",
+    help="Suppress message output.",
     rich_help_panel="Informations",
 )
 debug_opt = Option(
@@ -80,7 +83,7 @@ version_opt = Option(
     "-V",
     callback=_show_version,
     is_eager=True,
-    help="Show version info and exit",
+    help="Show version info and exit.",
     rich_help_panel="Informations",
 )
 
