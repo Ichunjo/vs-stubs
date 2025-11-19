@@ -152,12 +152,7 @@ def cli_main(
     else:
         console.print("Running stub generation...")
 
-    if input == "-":
-        input_file = sys.stdin
-    elif isinstance(input, str):
-        input_file = Path(input)
-    else:
-        input_file = _get_default_stubs_path()
+    input_file = sys.stdin if input == "-" else input
 
     if output == "@":
         if input_file is None:
