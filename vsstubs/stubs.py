@@ -22,7 +22,15 @@ from .constants import (
     _PLUGINS_IMPL_START,
     _callback_signatures,
 )
-from .types import FunctionInterface, Implementation, PluginInterface, VideoNodeType, _CoreLike, parse_type
+from .types import (
+    FunctionInterface,
+    Implementation,
+    PluginInterface,
+    VideoNodeType,
+    WrappedFunction,
+    _CoreLike,
+    parse_type,
+)
 from .utils import _get_cores, _get_dir, _get_plugins, _get_typed_dict_repr, _replace_known_callback_signature
 
 log = getLogger(__name__)
@@ -89,11 +97,11 @@ def retrieve_plugins(core_like: Sequence[_CoreLike]) -> Sequence[PluginInterface
 def construct_implementation(interface: PluginInterface) -> Implementation:
     """Contructs a full implementation block with all the functions for all the cores-like."""
 
-    functions_map = dict[str, list[str]]()
+    functions_map = dict[str, list[WrappedFunction]]()
     extras = list[str]()
 
     for core_name, functions in interface.functions.items():
-        functions_list = list[str]()
+        functions_list = list[WrappedFunction]()
 
         for function in functions:
             parameters = function.signature.parameters.copy()
@@ -119,7 +127,7 @@ def construct_implementation(interface: PluginInterface) -> Implementation:
                 return_annotation=return_annotation,
             )
 
-            functions_list.append(f"def {function.name}{signature}: ...")
+            functions_list.append(WrappedFunction(f"{function.name}{signature}: ..."))
 
             if is_typeddict(td := signature.return_annotation):
                 extras.append(_get_typed_dict_repr(td))
@@ -132,26 +140,27 @@ def construct_implementation(interface: PluginInterface) -> Implementation:
 def get_implementations_from_input(text: str) -> list[Implementation]:
     """Parse a file to extract plugin implementations."""
 
-    plugins_impl_block_matched = re.search(rf"{_PLUGINS_IMPL_START}(.*?){_PLUGINS_IMPL_END}", text, re.DOTALL)
+    plugins_impl_block_regex = rf"{_PLUGINS_IMPL_START}(.*?){_PLUGINS_IMPL_END}"
+
+    plugins_impl_block_matched = re.search(plugins_impl_block_regex, text, re.DOTALL)
 
     if not plugins_impl_block_matched:
         return []
 
-    # Regex to capture class blocks like "_Core_bound", "_VideoNode_bound" or _AudioNode_bound"
-    plugins_impl_block_pattern = re.compile(
-        r"class _(\w+)_bound:\s*class Plugin.*?:([\s\S]*?)(?=\n\s*class _\w+_bound:|\Z)", re.MULTILINE
-    )
-    # Regex to capture full function definition lines
-    func_pattern = re.compile(r"^\s*def [\s\S]+?-> [\w\[\], |]+: \.\.\.", re.MULTILINE)
+    # Regex to capture class blocks like "_Core_bound", "_VideoNode_bound" or "_AudioNode_bound"
+    plugins_impl_block_pattern_text = r"class _(\w+)_bound:\s*class Plugin.*?:([\s\S]*?)(?=\n\s*class _\w+_bound:|\Z)"
+    plugins_impl_block_pattern = re.compile(plugins_impl_block_pattern_text, re.MULTILINE)
+
+    # Regex to capture decorator + full function definition lines
+    func_pattern_text = r"^\s*(?:@([^\n]*))?\s*\n?\s*def ([\s\S]+?-> [\w\[\], |]+: \.\.\.)"
+    func_pattern = re.compile(func_pattern_text, re.MULTILINE)
 
     implementations = list[Implementation]()
 
     # Regex to capture <implementation/{plugin_name}>
-    for name, body in re.findall(
-        rf"{_IMPL_START.format(name='([^>]+)')}(.*?){_IMPL_END.format(name='\\1')}",
-        plugins_impl_block_matched.group(),
-        re.DOTALL,
-    ):
+    impl_capture_regex = rf"{_IMPL_START.format(name='([^>]+)')}(.*?){_IMPL_END.format(name='\\1')}"
+
+    for name, body in re.findall(impl_capture_regex, plugins_impl_block_matched.group(), re.DOTALL):
         if not body:
             raise ValueError(f"No plugin implementation block found for {name}.")
 
@@ -161,12 +170,15 @@ def get_implementations_from_input(text: str) -> list[Implementation]:
         while not body_lines[0].startswith("class") and body_lines[0]:
             extras.append(body_lines.pop(0))
 
-        functions = defaultdict[str, list[str]](list)
+        functions = defaultdict[str, list[WrappedFunction]](list)
 
         for core_like, fbody in plugins_impl_block_pattern.findall(body):
-            funcs = func_pattern.findall(fbody)
-            # Normalize each function definition into one stripped line
-            functions[core_like].extend(" ".join(f.split()).replace("( ", "(").replace(", )", ")") for f in funcs)
+            for decorator, func_def in func_pattern.findall(fbody):
+                # Normalize the function definition into one stripped line
+                normalized_func = " ".join(func_def.split()).replace("( ", "(").replace(", )", ")")
+
+                # Store functions under the core_like key
+                functions[core_like].append(WrappedFunction(normalized_func, decorator))
 
         doc = _extract_description(text, name, functions)
 
@@ -181,7 +193,7 @@ def _search_core_impl(core_name: str, text: str) -> re.Match[str] | None:
     return re.search(rf"{_CORE_IMPL_START}(.*?){_CORE_IMPL_END}".format(core_name=core_name), text, re.DOTALL)
 
 
-def _extract_description(text: str, ns: str, functions: Mapping[str, Sequence[str]]) -> str:
+def _extract_description(text: str, ns: str, functions: Mapping[str, Sequence[WrappedFunction]]) -> str:
     core_name = next(iter(functions))
 
     core_impl_matched = _search_core_impl(core_name, text)

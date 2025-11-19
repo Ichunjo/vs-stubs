@@ -56,9 +56,14 @@ class Attribute(NamedTuple):
         )
 
 
+class WrappedFunction(NamedTuple):
+    signature: str
+    wrapper: str = "_Wrapper.Function"
+
+
 class Implementation(NamedTuple):
     namespace: str
-    functions: Mapping[_CoreLikeStr, Sequence[str]]
+    functions: Mapping[_CoreLikeStr, Sequence[WrappedFunction]]
     description: str
     extra_types: Sequence[str] | None = None
 
@@ -77,8 +82,8 @@ class Implementation(NamedTuple):
             stub.append(indent * 2 + "class Plugin(_VSPlugin):")
 
             for func in funcs:
-                stub.append(indent * 3 + "@_Wrapper.Function")
-                stub.append(indent * 3 + func)
+                stub.append(indent * 3 + "@" + func.wrapper)
+                stub.append(indent * 3 + "def " + func.signature)
             else:
                 stub[-1] = stub[-1] + "\n"
 

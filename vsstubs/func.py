@@ -133,7 +133,7 @@ def output_stubs(
     tmpl = write_implementations(implementations, tmpl)
     tmpl = write_plugins_bound(implementations, tmpl)
 
-    log.debug("output %s", output)
+    log.debug("output: %r", output)
 
     if isinstance(output, (str, PathLike)):
         output = Path(output)
