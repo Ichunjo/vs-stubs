@@ -165,9 +165,7 @@ def get_implementations_from_input(text: str) -> list[Implementation]:
         if not body:
             raise ValueError(f"No plugin implementation block found for {name}.")
 
-        body_lines = [s for s in body.splitlines() if s]
-
-        extras = list(takewhile(lambda s: not s.startswith("class"), body_lines))
+        extras = list(takewhile(lambda s: not s.startswith("class"), (s for s in body.splitlines() if s)))
 
         functions = defaultdict[str, list[WrappedFunction]](list)
 
