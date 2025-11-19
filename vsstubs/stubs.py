@@ -4,6 +4,7 @@ import re
 from collections import defaultdict
 from functools import cache
 from inspect import Parameter
+from itertools import takewhile
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
@@ -164,11 +165,9 @@ def get_implementations_from_input(text: str) -> list[Implementation]:
         if not body:
             raise ValueError(f"No plugin implementation block found for {name}.")
 
-        extras = list[str]()
         body_lines = [s for s in body.splitlines() if s]
 
-        while not body_lines[0].startswith("class") and body_lines[0]:
-            extras.append(body_lines.pop(0))
+        extras = list(takewhile(lambda s: not s.startswith("class"), body_lines))
 
         functions = defaultdict[str, list[WrappedFunction]](list)
 
