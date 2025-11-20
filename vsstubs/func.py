@@ -26,6 +26,7 @@ def output_stubs(
     template: bool = False,
     load: Sequence[str | PathLike[str]] | None = None,
     check: bool = False,
+    update: bool = False,
     add: set[str] | None = None,
     remove: set[str] | None = None,
 ) -> None:
@@ -51,6 +52,8 @@ def output_stubs(
         check: If True, validate the generated stubs against newly discovered plugins or signatures,
             reporting any discrepancies.
 
+        update: If True, only update the current stubs from the input_file.
+
         add: A set of plugin names to add or update in the stubs.
 
         remove: A set of plugin names to remove from the stubs.
@@ -73,6 +76,8 @@ def output_stubs(
         implementations = get_implementations_from_input(tmpl)
 
         if check:
+            console.print("Checking stubs...")
+
             old_impl = _index_by_namespace(implementations)
             new_impl = _index_by_namespace((construct_implementation(pinter) for pinter in pinters))
 
@@ -92,6 +97,12 @@ def output_stubs(
 
             for ns in old_keys & new_keys:
                 _compare_plugins(old_impl[ns], new_impl[ns], ns)
+        elif update:
+            impl_ns = [i.namespace for i in implementations]
+
+            console.print(f"Updating stubs... Found {len(impl_ns)} plugins to update: {impl_ns}")
+
+            implementations = [construct_implementation(pinter) for pinter in pinters if pinter.namespace in impl_ns]
 
     elif template:
         tmpl = get_template()

@@ -69,6 +69,11 @@ check_opt = Option(
     "-C",
     help="Check for new plugins or new plugin signatures.",
 )
+update_opt = Option(
+    "--update",
+    "-U",
+    help="Update the current stubs from the input.",
+)
 quiet_opt = Option(
     "--quiet",
     help="Suppress message output.",
@@ -98,6 +103,7 @@ def add(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
         ctx.obj.template,
         ctx.obj.load,
         False,
+        False,
         set(plugins),
         None,
     )
@@ -114,6 +120,7 @@ def remove(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
         ctx.obj.template,
         ctx.obj.load,
         False,
+        False,
         None,
         set(plugins),
     )
@@ -128,6 +135,7 @@ def cli_main(
     template: Annotated[bool, template_opt] = False,
     load: Annotated[list[Path] | None, load_opt] = None,
     check: Annotated[bool, check_opt] = False,
+    update: Annotated[bool, update_opt] = False,
     quiet: Annotated[bool, quiet_opt] = False,
     debug: Annotated[bool, debug_opt] = False,
     version: Annotated[bool, version_opt] = False,
@@ -145,10 +153,8 @@ def cli_main(
     if version:
         raise Exit()
 
-    if check:
-        console.print("Checking stubs...")
-        if input is None:
-            input = str(_get_default_stubs_path())
+    if (check or update) and input is None:
+        input = str(_get_default_stubs_path())
     else:
         console.print("Running stub generation...")
 
@@ -173,5 +179,5 @@ def cli_main(
     ctx.obj.quiet = quiet
 
     if ctx.invoked_subcommand is None:
-        output_stubs(input_file, output_file, template, load, check)
+        output_stubs(input_file, output_file, template, load, check, update)
         raise Exit()
