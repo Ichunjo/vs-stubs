@@ -28,3 +28,8 @@ _callback_signatures = {
         "Custom": {"custom_kernel"},
     },
 }
+
+_wrappers = {
+    "Core": {"FrameEval", "ModifyFrame"},
+    "VideoNode": {"FrameEval", "ModifyFrame"},
+}

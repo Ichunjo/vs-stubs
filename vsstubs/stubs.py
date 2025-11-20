@@ -22,6 +22,7 @@ from .constants import (
     _PLUGINS_IMPL_END,
     _PLUGINS_IMPL_START,
     _callback_signatures,
+    _wrappers,
 )
 from .types import (
     FunctionInterface,
@@ -128,7 +129,13 @@ def construct_implementation(interface: PluginInterface) -> Implementation:
                 return_annotation=return_annotation,
             )
 
-            functions_list.append(WrappedFunction(f"{function.name}{signature}: ..."))
+            wrapper = (
+                f"_Wrapper_{core_name}_bound_{function.name}.Function"
+                if function.name in _wrappers.get(core_name, set())
+                else None
+            )
+
+            functions_list.append(WrappedFunction(f"{function.name}{signature}: ...", wrapper))
 
             if is_typeddict(td := signature.return_annotation):
                 extras.append(_get_typed_dict_repr(td))
