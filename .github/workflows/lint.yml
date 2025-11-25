@@ -1,0 +1,51 @@
+name: Lint Python code with Ruff & mypy
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  VAPOURSYNTH_VERSION: 73
+
+jobs:
+  lint:
+    strategy:
+      matrix:
+        python-version: [3.13, 3.14]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Set up VapourSynth ${{ env.VAPOURSYNTH_VERSION }}
+        uses: Jaded-Encoding-Thaumaturgy/setup-vapoursynth@v1
+        with:
+          vapoursynth-version: ${{ env.VAPOURSYNTH_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Run Ruff check
+        id: ruff-check
+        run: uv run ruff check .
+
+      - name: Run Ruff format
+        id: ruff-format
+        if: success() || (failure() && steps.ruff-check.conclusion == 'failure')
+        run: uv run ruff format --check --diff
+
+      - name: Running mypy
+        if: success() || (failure() && (steps.ruff-check.conclusion == 'failure' || steps.ruff-format.conclusion == 'failure'))
+        run: uv run mypy .

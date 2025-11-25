@@ -1,0 +1,56 @@
+name: Publish releases to PyPI
+on:
+  release:
+    types: published
+  workflow_dispatch:
+
+env:
+  VAPOURSYNTH_VERSION: 72
+  PYTHON_VERSION: 3.14
+
+jobs:
+  package_build:
+    name: Build and push to PyPI
+    runs-on: ubuntu-latest
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/vsstubs
+
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+
+      - name: Set up VapourSynth ${{ env.VAPOURSYNTH_VERSION }}
+        uses: Jaded-Encoding-Thaumaturgy/setup-vapoursynth@v1
+        with:
+          vapoursynth-version: ${{ env.VAPOURSYNTH_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Build
+        run: uvx hatch build
+
+      - name: Check the output
+        run: uv run twine check --strict dist/*
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Upload dist/ files to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.tar.gz
+            dist/*.whl
