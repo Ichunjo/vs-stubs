@@ -57,6 +57,7 @@ include = [
 [tool.mypy]
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
 
+exclude = ["stubs/vapoursynth"]
 exclude_gitignore = true
 
 # Flags changed by --strict
@@ -78,6 +79,7 @@ error_summary = true
 
 [tool.ruff]
 line-length = 120
+extend-exclude = ["stubs/vapoursynth/__init__.pyi"]
 
 [tool.ruff.format]
 docstring-code-format = true
