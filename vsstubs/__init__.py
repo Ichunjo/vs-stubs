@@ -1,6 +1,15 @@
 """Typing stubs for VapourSynth."""
 
-from .cli import __version__
 from .func import output_stubs
 
-__all__ = ["__version__", "output_stubs"]
+__version__: str
+__version_tuple__: tuple[int | str, ...]
+
+try:
+    from ._version import __version__, __version_tuple__
+except ImportError:
+    __version__ = "0.0.0+unknown"
+    __version_tuple__ = (0, 0, 0, "+unknown")
+
+
+__all__ = ["output_stubs"]

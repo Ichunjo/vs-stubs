@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "versioningit"]
 build-backend = "hatchling.build"
 
 [project]
@@ -39,7 +39,18 @@ vsstubs = "vsstubs.cli:app"
 dev = ["mypy~=1.18.2", "ruff~=0.14.0", "twine"]
 
 [tool.hatch.version]
-path = "vsstubs/_version.py"
+source = "versioningit"
+default-version = "0.0.0+unknown"
+next-version = "minor"
+write = { file = "vsstubs/_version.py", template = "__version__ = \"{normalized_version}\"\n__version_tuple__ = {version_tuple}" }
+
+[tool.hatch.version.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+dirty = "{next_version}+dirty"
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.dirty"
+
+[tool.hatch.build]
+artifacts = ["vsstubs/_version.py"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["vsstubs"]
