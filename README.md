@@ -48,28 +48,30 @@ output_stubs(None, "output.pyi", template=True)
 
  vs-stubs command line interface
 
-╭─ Options ──────────────────────────────────────────────────────────────────────────────────╮
-│ --template  -T        Export blank template; excludes existing plugins unless --load or    │
-│                       --add is used                                                        │
-│ --check     -C        Check for new plugins or new plugin signatures                       │
-│ --help                Show this message and exit.                                          │
-╰────────────────────────────────────────────────────────────────────────────────────────────╯
-╭─ I/O options ──────────────────────────────────────────────────────────────────────────────╮
-│ --input   -i,-I      PATH  Path to the input .pyi file                                     │
-│ --output  -o,-O      TEXT  Path to write the output .pyi file. Use '@' to overwrite the    │
-│                            input file.                                                     │
-│                            [default: (vapoursynth-stubs/__init__.pyi inside the            │
-│                            site-package folder)]                                           │
-│ --load    -L         PATH  Load plugins from a folder or a single library file             │
-╰────────────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Informations ─────────────────────────────────────────────────────────────────────────────╮
-│ --quiet              Suppress non-error output                                             │
-│ --version  -V        Show version info and exit                                            │
-╰────────────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ─────────────────────────────────────────────────────────────────────────────────╮
-│ add      Add or update the specified plugins in the stubs                                  │
-│ remove   Remove the specified plugins from the stubs                                       │
-╰────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ─────────────────────────────────────────────────────────────────────╮
+│ --template  -T        Export blank template; excludes existing plugins unless │
+│                       --load or --add is used.                                │
+│ --check     -C        Check for new plugins or new plugin signatures.         │
+│ --update    -U        Update the current stubs from the input.                │
+│ --help                Show this message and exit.                             │
+╰───────────────────────────────────────────────────────────────────────────────╯
+╭─ I/O options ─────────────────────────────────────────────────────────────────╮
+│ --input   -i,-I      TEXT  Path to the input .pyi file. Use '-' for piping.   │
+│ --output  -o,-O      TEXT  Path to write the output .pyi file. '@' to         │
+│                            overwrite the input file. '-' for piping.          │
+│                            [default: (vapoursynth-stubs/__init__.pyi inside   │
+│                            the site-package folder)]                          │
+│ --load    -L         PATH  Load plugins from a folder or a single library     │
+│                            file.                                              │
+╰───────────────────────────────────────────────────────────────────────────────╯
+╭─ Informations ────────────────────────────────────────────────────────────────╮
+│ --quiet              Suppress message output.                                 │
+│ --version  -V        Show version info and exit.                              │
+╰───────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ────────────────────────────────────────────────────────────────────╮
+│ add      Add or update the specified plugins in the stubs                     │
+│ remove   Remove the specified plugins from the stubs                          │
+╰───────────────────────────────────────────────────────────────────────────────╯
 ```
 
 ---
