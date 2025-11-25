@@ -27,7 +27,6 @@ classifiers = [
 
 dependencies = ["vapoursynth>=73", "typer", "rich"]
 
-
 [project.urls]
 Homepage = "https://github.com/Ichunjo/vs-stubs"
 Repository = "https://github.com/Ichunjo/vs-stubs"
@@ -56,7 +55,10 @@ include = [
 ]
 
 [tool.mypy]
-exclude = []
+mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
+
+exclude_gitignore = true
+
 # Flags changed by --strict
 warn_return_any = false
 extra_checks = false
@@ -75,16 +77,12 @@ color_output = true
 error_summary = true
 
 [tool.ruff]
-target-version = "py313"
-extend-exclude = []
 line-length = 120
 
 [tool.ruff.format]
 docstring-code-format = true
-exclude = ["test.pyi", "test2.pyi"]
 
 [tool.ruff.lint]
-exclude = []
 extend-select = ["E", "C4", "I", "PYI", "Q", "SIM", "N", "W", "RUF"]
 
 [tool.ruff.lint.per-file-ignores]
