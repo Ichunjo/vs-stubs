@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "vs-stubs"
+name = "vsstubs"
 dynamic = ["version"]
 description = "Typing stubs for VapourSynth"
 readme = "README.md"
