@@ -70,11 +70,11 @@ def _extract_imports(code: str) -> tuple[defaultdict[str, set[str]], str]:
 def get_template() -> str:
     """Get the clean and merged template."""
 
-    noqa = "# This file is auto-generated. DO NOT EDIT."
-    noqa += "# ruff: noqa"
-    noqa += "# flake8: noqa"
-    noqa += "# fmt: off"
-    noqa += "isort: skip_file"
+    noqa = "# This file is auto-generated. DO NOT EDIT.\n"
+    noqa += "# ruff: noqa\n"
+    noqa += "# flake8: noqa\n"
+    noqa += "# fmt: off\n"
+    noqa += "# isort: skip_file\n"
 
     imports = defaultdict[str, set[str]](set)
     code = ""
