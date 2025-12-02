@@ -36,14 +36,11 @@ jobs:
         with:
           vapoursynth-version: ${{ env.VAPOURSYNTH_VERSION }}
 
-      - name: Install dependencies
-        run: uv sync --locked
-
       - name: Build
         run: uvx hatch build
 
       - name: Check the output
-        run: uv run twine check --strict dist/*
+        run: uvx twine check --strict dist/*
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
