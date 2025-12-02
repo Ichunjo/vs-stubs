@@ -1,6 +1,7 @@
+from collections.abc import Iterator
 from ctypes import c_void_p
 from types import TracebackType
-from typing import Final, Iterator, Literal, Self, SupportsIndex
+from typing import Final, Literal, Self, SupportsIndex
 
 from ._typing import _IntLike, _SupportsKeysAndGetItem, _VSValue
 from .constants import SampleType

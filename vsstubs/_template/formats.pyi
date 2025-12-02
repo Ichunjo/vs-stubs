@@ -1,4 +1,5 @@
-from typing import Final, Iterator, Literal, Self, TypedDict
+from collections.abc import Iterator
+from typing import Final, Literal, Self, TypedDict
 
 from ._typing import _IntLike
 from .constants import AudioChannels, ColorFamily, SampleType

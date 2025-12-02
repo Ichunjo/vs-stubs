@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from ctypes import c_void_p
-from typing import Any, Callable, Final, Literal, Self, final, overload
+from typing import Any, Final, Literal, Self, final, overload
 from weakref import ReferenceType
 
 from ._typing import _IntLike

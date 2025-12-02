@@ -2,15 +2,14 @@ from __future__ import annotations
 
 import collections.abc
 import sys
+from collections.abc import Mapping, Sequence
 from functools import cache
 from inspect import Signature
 from types import GenericAlias, NoneType
 from typing import (
     Any,
-    Mapping,
     NamedTuple,
     Protocol,
-    Sequence,
     Union,
     get_args,
     get_origin,

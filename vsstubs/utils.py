@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import sys
+from collections.abc import Iterable, Sequence
 from functools import cache
 from inspect import Parameter
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any
 
 from vapoursynth import GRAY8, Plugin, core, register_on_destroy
 

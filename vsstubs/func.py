@@ -1,7 +1,8 @@
+from collections.abc import Sequence
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
-from typing import IO, Any, Sequence
+from typing import IO, Any
 
 from rich.console import Console
 
@@ -79,7 +80,7 @@ def output_stubs(
             console.print("Checking stubs...")
 
             old_impl = _index_by_namespace(implementations)
-            new_impl = _index_by_namespace((construct_implementation(pinter) for pinter in pinters))
+            new_impl = _index_by_namespace(construct_implementation(pinter) for pinter in pinters)
 
             old_keys, new_keys = set(old_impl), set(new_impl)
 

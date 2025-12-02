@@ -1,6 +1,7 @@
+from collections.abc import Iterator
 from enum import Enum
 from inspect import Signature
-from typing import Any, Iterator
+from typing import Any
 
 from .formats import VideoFormat
 from .plugin import Function

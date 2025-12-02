@@ -1,8 +1,8 @@
 import re
 from collections import defaultdict
+from collections.abc import Iterator
 from importlib import resources
 from pathlib import Path
-from typing import Iterator
 
 _template_filenames = (
     "__all__",
@@ -70,7 +70,7 @@ def _extract_imports(code: str) -> tuple[defaultdict[str, set[str]], str]:
 def get_template() -> str:
     """Get the clean and merged template."""
 
-    noqa = "# ruff: noqa: RUF100, E501, PYI002, PYI029, PYI046, PYI047, N801, N802, N803, N805, I001"
+    noqa = "# ruff: noqa: RUF100, E501, PYI002, PYI029, PYI046, PYI047, N801, N802, N803, N805, I001 UP013"
 
     imports = defaultdict[str, set[str]](set)
     code = ""

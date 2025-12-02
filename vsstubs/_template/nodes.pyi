@@ -1,6 +1,7 @@
+from collections.abc import Callable, Iterator
 from concurrent.futures import Future
 from fractions import Fraction
-from typing import IO, Any, Callable, Final, Iterator, Literal, Self, overload
+from typing import IO, Any, Final, Literal, Self, overload
 from warnings import deprecated
 
 from ._typing import _IntLike, _VSValue

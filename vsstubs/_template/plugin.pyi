@@ -1,5 +1,6 @@
+from collections.abc import Iterator
 from inspect import Signature
-from typing import Any, Final, Iterator, NamedTuple
+from typing import Any, Final, NamedTuple
 
 class FuncData:
     def __call__(self, **kwargs: Any) -> Any: ...

@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
+from collections.abc import Iterable, Mapping, Sequence
 from functools import cache
 from inspect import Parameter
 from itertools import takewhile
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence, is_typeddict
+from typing import Any, is_typeddict
 
 from vapoursynth import Error, core
 

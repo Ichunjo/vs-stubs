@@ -1,4 +1,5 @@
-from typing import Any, Callable, Iterator, Literal, MutableMapping, overload
+from collections.abc import Callable, Iterator, MutableMapping
+from typing import Any, Literal, overload
 
 from ._typing import _VSValue
 from .frames import AudioFrame, RawFrame, VideoFrame
