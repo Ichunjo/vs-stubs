@@ -107,6 +107,15 @@ class AudioNode(RawNode):
     def frames(
         self, prefetch: int | None = None, backlog: int | None = None, close: bool = False
     ) -> Iterator[AudioFrame]: ...
+    def output(
+        self,
+        fileobj: IO[bytes],
+        wav: bool = False,
+        w64: bool = False,
+        progress_update: Callable[[_CurrentFrame, _TotalFrames], None] | None = None,
+        prefetch: int = 0,
+        backlog: int = -1,
+    ) -> None: ...
 
 # <plugins/bound/AudioNode>
 # </plugins/bound/AudioNode>
