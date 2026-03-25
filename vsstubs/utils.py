@@ -70,7 +70,7 @@ def _get_default_stubs_path() -> Path:
     if sys.prefix != sys.base_prefix:
         import vapoursynth
 
-        return Path(vapoursynth.__file__).parent / "vapoursynth-stubs" / "__init__.pyi"
+        return Path(vapoursynth.__file__).parent.parent / "vapoursynth-stubs" / "__init__.pyi"
 
     return Path(site.getusersitepackages()) / "vapoursynth-stubs" / "__init__.pyi"
 
