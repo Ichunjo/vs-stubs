@@ -2,7 +2,16 @@
 
 **Typing stubs for [VapourSynth](http://www.vapoursynth.com/)**
 
-`vs-stubs` provides Python type stubs for VapourSynth plugins and core functions. This helps editors, IDEs, and static type checkers (e.g. `mypy`, `pyright`) understand VapourSynth’s API.
+`vs-stubs` provides Python type stubs for VapourSynth plugins and core functions.
+This helps editors, IDEs, and static type checkers (e.g. `mypy`, `pyright`) understand VapourSynth's API.
+
+Out of the box, `vs-stubs` ships a `vapoursynth-stubs` package containing pre-generated stubs that shadow the VapourSynth core and a set of commonly used plugins,
+enabling immediate type checking without additional setup.
+
+Note that `vs-stubs` does not include or install any actual VapourSynth plugins. Only their type definitions.
+
+However, due to the dynamic nature of VapourSynth's plugin system, any newly installed plugins are not automatically reflected in these stubs.
+When adding plugins, you will need to regenerate stubs to keep the type information accurate and in sync with your environment.
 
 ---
 
