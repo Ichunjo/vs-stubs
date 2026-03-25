@@ -101,19 +101,3 @@ output_stubs(None, "output.pyi", template=True)
   ```pwsh
   vsstubs -i out.pyi -o "@" remove resize2
   ```
-
----
-
-## License
-
-MIT
-
----
-
-## Why use this over `vsrepo genstubs`?
-
-- **Much faster** than `genstubs`.
-- **More accurate typing**: the generated stubs better reflect the actual signatures of plugins, core classes, and functions.
-- **Modern Python typing**.
-- Easier to **maintain** and **extend** than `genstubs`.
-- More **flexible workflow**: supports generating blank templates, checking for new plugin signatures, and selectively adding/removing plugins.
