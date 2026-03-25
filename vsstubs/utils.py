@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import site
 import sys
 from collections.abc import Iterable, Sequence
 from functools import cache
@@ -66,9 +67,12 @@ def _index_by_namespace[HasNameSpaceT: HasNameSpace](impls: Iterable[HasNameSpac
 
 @cache
 def _get_default_stubs_path() -> Path:
-    import vapoursynth
+    if sys.prefix != sys.base_prefix:
+        import vapoursynth
 
-    return Path(vapoursynth.__file__).parent / "vapoursynth-stubs" / "__init__.pyi"
+        return Path(vapoursynth.__file__).parent / "vapoursynth-stubs" / "__init__.pyi"
+
+    return Path(site.getusersitepackages()) / "vapoursynth-stubs" / "__init__.pyi"
 
 
 @cache
