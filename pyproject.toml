@@ -8,6 +8,8 @@ dynamic = ["version"]
 description = "Typing stubs for VapourSynth"
 readme = "README.md"
 requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Vardë", email = "ichunjo.le.terrible@gmail.com" }]
 keywords = ["stubs", "typing", "python"]
 classifiers = [
