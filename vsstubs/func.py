@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
+from types import NoneType
 from typing import IO, Any
 
 from rich.console import Console
@@ -16,14 +17,14 @@ from .stubs import (
 )
 from .template import get_template
 from .types import Implementation, parse_type
-from .utils import _get_cores, _index_by_namespace, running_via_cli
+from .utils import _get_cores, _get_default_stubs_path, _index_by_namespace, running_via_cli
 
 log, console = getLogger(__name__), Console(stderr=True)
 
 
 def output_stubs(
     input_file: str | PathLike[str] | IO[str] | None,
-    output: str | PathLike[str] | IO[str],
+    output: str | PathLike[str] | IO[str] | None,
     template: bool = False,
     load: Sequence[str | PathLike[str]] | None = None,
     check: bool = False,
@@ -147,8 +148,8 @@ def output_stubs(
 
     log.debug("output: %r", output)
 
-    if isinstance(output, (str, PathLike)):
-        output = Path(output)
+    if isinstance(output, (str, PathLike, NoneType)):
+        output = Path(output) if output else _get_default_stubs_path()
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(tmpl)
     else:
