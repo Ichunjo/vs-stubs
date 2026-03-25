@@ -13,7 +13,7 @@ from inspect import Signature
 from logging import Handler, LogRecord, StreamHandler
 from types import MappingProxyType, TracebackType
 from typing import Any, Concatenate, Final, IO, Literal, NamedTuple, Protocol, Self, SupportsFloat, SupportsIndex, SupportsInt, TextIO, TypedDict, final, overload
-from warnings import deprecated
+from typing_extensions import deprecated  # Can be replaced by from warnings for 3.13 and above
 from weakref import ReferenceType
 
 

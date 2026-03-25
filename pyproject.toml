@@ -7,8 +7,7 @@ name = "vsstubs"
 dynamic = ["version"]
 description = "Typing stubs for VapourSynth"
 readme = "README.md"
-requires-python = ">=3.13"
-license = { text = "MIT" }
+requires-python = ">=3.12"
 authors = [{ name = "Vardë", email = "ichunjo.le.terrible@gmail.com" }]
 keywords = ["stubs", "typing", "python"]
 classifiers = [
@@ -21,11 +20,12 @@ classifiers = [
     "Typing :: Typed",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
 ]
 
-dependencies = ["vapoursynth>=73", "typer", "rich"]
+dependencies = ["vapoursynth>=73", "typer", "rich", "typing_extensions>=4.15.0"]
 
 [project.urls]
 Homepage = "https://github.com/Ichunjo/vs-stubs"

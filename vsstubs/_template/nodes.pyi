@@ -2,7 +2,8 @@ from collections.abc import Callable, Iterator
 from concurrent.futures import Future
 from fractions import Fraction
 from typing import IO, Any, Final, Literal, Self, overload
-from warnings import deprecated
+
+from typing_extensions import deprecated  # Can be replaced by from warnings for 3.13 and above
 
 from ._typing import _IntLike, _VSValue
 from .constants import FilterMode, MessageType, SampleType, VapourSynthAPIVersion, VapourSynthVersion
