@@ -8,11 +8,10 @@ from rich.console import Console
 from rich.logging import RichHandler
 from typer import Context, Exit, Option, Typer
 
-from ._version import __version__
 from .func import console, output_stubs
 from .utils import _get_default_stubs_path
 
-__all__ = ["__version__", "app"]
+__all__ = ["app"]
 
 
 log = getLogger(__name__)
@@ -30,7 +29,9 @@ def _show_version(value: bool) -> None:
     """Show version info and exit"""
 
     if value:
-        console.print(f"{__version__}")
+        import importlib.metadata
+
+        console.print(f"{importlib.metadata.version('vsstubs')}")
         raise Exit()
 
 
