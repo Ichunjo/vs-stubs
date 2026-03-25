@@ -32,7 +32,7 @@ def _show_version(value: bool) -> None:
         import importlib.metadata
 
         console.print(f"{importlib.metadata.version('vsstubs')}")
-        raise Exit()
+        raise Exit
 
 
 input_opt = Option(
@@ -108,7 +108,7 @@ def add(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
         set(plugins),
         None,
     )
-    raise Exit()
+    raise Exit
 
 
 @app.command(help="Remove the specified plugins from the stubs")
@@ -125,7 +125,7 @@ def remove(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
         None,
         set(plugins),
     )
-    raise Exit()
+    raise Exit
 
 
 @app.callback()
@@ -152,7 +152,7 @@ def cli_main(
         basicConfig(level=DEBUG, handlers=[RichHandler(level=DEBUG, console=Console(stderr=True))])
 
     if version:
-        raise Exit()
+        raise Exit
 
     if (check or update) and input is None:
         input = str(_get_default_stubs_path())
@@ -181,4 +181,4 @@ def cli_main(
 
     if ctx.invoked_subcommand is None:
         output_stubs(input_file, output_file, template, load, check, update)
-        raise Exit()
+        raise Exit
