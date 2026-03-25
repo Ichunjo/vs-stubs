@@ -27,7 +27,12 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 
-dependencies = ["vapoursynth>=73", "typer", "rich", "typing_extensions>=4.15.0"]
+dependencies = [
+    "vapoursynth>=73",
+    "typer>=0.24.0",
+    "rich>=14.3.0",
+    "typing_extensions>=4.15.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/Ichunjo/vs-stubs"
@@ -38,7 +43,7 @@ Issues = "https://github.com/Ichunjo/vs-stubs/issues"
 vsstubs = "vsstubs.cli:app"
 
 [dependency-groups]
-dev = ["mypy>=1.18.2,<1.20.0", "ruff>=0.14,<0.16"]
+dev = ["mypy>=1.19.0,<1.20.0", "ruff>=0.15,<0.16"]
 
 [tool.hatch.version]
 source = "versioningit"
