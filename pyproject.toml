@@ -58,11 +58,8 @@ distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.dirty"
 include = ["stubs", "vsstubs", "vsstubs/_template/*.pyi"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["vsstubs", "stubs"]
+packages = ["vsstubs"]
 include = ["vsstubs/_template/*.pyi", "vsstubs/py.typed"]
-
-[tool.hatch.build.targets.wheel.sources]
-"stubs/vapoursynth" = "vapoursynth-stubs"
 
 [tool.mypy]
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
