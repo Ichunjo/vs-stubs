@@ -43,7 +43,7 @@ Issues = "https://github.com/Ichunjo/vs-stubs/issues"
 vsstubs = "vsstubs.cli:app"
 
 [dependency-groups]
-dev = ["mypy>=1.19.0,<1.20.0", "ruff>=0.15,<0.16"]
+dev = ["mypy>=1.20.0,<1.21.0", "ruff>=0.15,<0.16"]
 
 [tool.hatch.version]
 source = "versioningit"
