@@ -267,6 +267,7 @@ def has_policy() -> bool: ...
 def register_on_destroy(callback: Callable[..., None]) -> None: ...
 def unregister_on_destroy(callback: Callable[..., None]) -> None: ...
 def _try_enable_introspection(version: int | None = None) -> bool: ...
+
 @final
 class _FastManager:
     def __enter__(self) -> None: ...
@@ -762,6 +763,33 @@ type _PropValue = (
 class FrameProps(MutableMapping[str, _PropValue]):
     def __repr__(self) -> str: ...
     def __dir__(self) -> list[str]: ...
+    @overload
+    def __getitem__(
+        self,
+        name: Literal[
+            "_ChromaLocation",
+            "_Range",
+            "_Primaries",
+            "_Matrix",
+            "_Transfer",
+            "_FieldBased",
+            "_DurationNum",
+            "_DurationDen",
+            "_Combed",
+            "_Field",
+            "_SARNum",
+            "_SARDen",
+            "_SceneChangeNext",
+            "_SceneChangePrev",
+        ],
+    ) -> int: ...
+    @overload
+    def __getitem__(self, name: Literal["_AbsoluteTime"]) -> float: ...
+    @overload
+    def __getitem__(self, name: Literal["_PictType"]) -> bytes: ...
+    @overload
+    def __getitem__(self, name: Literal["_Alpha"]) -> VideoFrame: ...
+    @overload
     def __getitem__(self, name: str) -> _PropValue: ...
     def __setitem__(self, name: str, value: _VSValue) -> None: ...
     def __delitem__(self, name: str) -> None: ...
@@ -775,6 +803,65 @@ class FrameProps(MutableMapping[str, _PropValue]):
     @overload
     def setdefault(self, key: str, default: _VSValue, /) -> _PropValue: ...  # pyright: ignore[reportIncompatibleMethodOverride]
     def copy(self) -> dict[str, _PropValue]: ...
+    @overload  # type: ignore[override]
+    def get(
+        self,
+        key: Literal[
+            "_ChromaLocation",
+            "_Range",
+            "_Primaries",
+            "_Matrix",
+            "_Transfer",
+            "_FieldBased",
+            "_DurationNum",
+            "_DurationDen",
+            "_Combed",
+            "_Field",
+            "_SARNum",
+            "_SARDen",
+            "_SceneChangeNext",
+            "_SceneChangePrev",
+        ],
+        /,
+    ) -> int | None: ...
+    @overload
+    def get[T](
+        self,
+        key: Literal[
+            "_ChromaLocation",
+            "_Range",
+            "_Primaries",
+            "_Matrix",
+            "_Transfer",
+            "_FieldBased",
+            "_DurationNum",
+            "_DurationDen",
+            "_Combed",
+            "_Field",
+            "_SARNum",
+            "_SARDen",
+            "_SceneChangeNext",
+            "_SceneChangePrev",
+        ],
+        default: T,
+        /,
+    ) -> int | T: ...
+    @overload
+    def get(self, key: Literal["_AbsoluteTime"], /) -> float | None: ...
+    @overload
+    def get[T](self, key: Literal["_AbsoluteTime"], default: T, /) -> float | T: ...
+    @overload
+    def get(self, key: Literal["_PictType"], /) -> bytes | None: ...
+    @overload
+    def get[T](self, key: Literal["_PictType"], default: T, /) -> bytes | T: ...
+    @overload
+    def get(self, key: Literal["_Alpha"], /) -> VideoFrame | None: ...
+    @overload
+    def get[T](self, key: Literal["_Alpha"], default: T, /) -> VideoFrame | T: ...
+    @overload
+    def get(self, key: str, /) -> _PropValue | None: ...
+    @overload
+    def get[T](self, key: str, default: T, /) -> _PropValue | T: ...  # pyright: ignore[reportIncompatibleMethodOverride]
 
 class FuncData:
     def __call__(self, **kwargs: Any) -> Any: ...
@@ -1031,6 +1118,10 @@ class RawNode:
     @property
     def _name(self) -> str: ...
     @property
+    def _plugin_id(self) -> str: ...
+    @property
+    def _plugin_ns(self) -> str: ...
+    @property
     def _inputs(self) -> dict[str, _VSValue]: ...
     def get_frame(self, n: _IntLike) -> RawFrame: ...
     @overload
@@ -1109,6 +1200,15 @@ class AudioNode(RawNode):
     def frames(
         self, prefetch: int | None = None, backlog: int | None = None, close: bool = False
     ) -> Iterator[AudioFrame]: ...
+    def output(
+        self,
+        fileobj: IO[bytes],
+        wav: bool = False,
+        w64: bool = False,
+        progress_update: Callable[[_CurrentFrame, _TotalFrames], None] | None = None,
+        prefetch: int = 0,
+        backlog: int = -1,
+    ) -> None: ...
 
 # <plugins/bound/AudioNode>
 # <attribute/AudioNode_bound/std>
