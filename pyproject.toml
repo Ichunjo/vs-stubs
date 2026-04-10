@@ -28,7 +28,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "vapoursynth>=74rc1",
+    "vapoursynth>=74",
     "typer>=0.24.0",
     "rich>=14.3.0",
     "typing_extensions>=4.15.0",
