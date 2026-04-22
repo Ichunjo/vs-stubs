@@ -26,15 +26,35 @@ You can use `vsstubs` via the command line or as a Python module.
 
 ### Command Line
 
-```bash
-vsstubs
-```
+- Simply update the VapourSynth stubs:
 
-Example:
+  ```bash
+  vsstubs
+  ```
 
-```bash
-vsstubs -o output.pyi --template
-```
+- Installing from the wheel output for a proper installation:
+
+  ```powershell
+  pip install $(vsstubs --wheel)
+  ```
+
+- Generate a template stubs:
+
+  ```bash
+  vsstubs -o out.pyi --template
+  ```
+
+- Add plugin stubs:
+
+  ```bash
+  vsstubs -i out.pyi -o @ add resize2
+  ```
+
+- Remove plugin stubs (On Powershell you will need to escape the `@` character):
+
+  ```pwsh
+  vsstubs -i out.pyi -o "@" remove resize2
+  ```
 
 ### Python API
 
@@ -67,6 +87,7 @@ output_stubs(None, "output.pyi", template=True)
 │                            overwrite the input file. '-' for piping.          │
 │                            [default: (vapoursynth-stubs/__init__.pyi inside   │
 │                            the site-package folder)]                          │
+│ --wheel   -w               Enable wheel output.                               │
 │ --load    -L         PATH  Load plugins from a folder or a single library     │
 │                            file.                                              │
 ╰───────────────────────────────────────────────────────────────────────────────╯
@@ -75,35 +96,7 @@ output_stubs(None, "output.pyi", template=True)
 │ --version  -V        Show version info and exit.                              │
 ╰───────────────────────────────────────────────────────────────────────────────╯
 ╭─ Commands ────────────────────────────────────────────────────────────────────╮
-│ add      Add or update the specified plugins in the stubs                     │
-│ remove   Remove the specified plugins from the stubs                          │
+│ add     Add or update the specified plugins in the stubs                      │
+│ remove  Remove the specified plugins from the stubs                           │
 ╰───────────────────────────────────────────────────────────────────────────────╯
 ```
-
----
-
-## Examples
-
-- Simply update the VapourSynth stubs:
-
-  ```bash
-  vsstubs
-  ```
-
-- Generate a template stubs:
-
-  ```bash
-  vsstubs -o out.pyi --template
-  ```
-
-- Add plugin stubs:
-
-  ```bash
-  vsstubs -i out.pyi -o @ add resize2
-  ```
-
-- Remove plugin stubs (On Powershell you will need to escape the `@` character):
-
-  ```pwsh
-  vsstubs -i out.pyi -o "@" remove resize2
-  ```

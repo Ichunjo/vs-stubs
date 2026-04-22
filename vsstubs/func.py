@@ -1,4 +1,7 @@
+import sys
+import tempfile
 from collections.abc import Sequence
+from datetime import datetime
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
@@ -25,6 +28,7 @@ log, console = getLogger(__name__), Console(stderr=True)
 def output_stubs(
     input_file: str | PathLike[str] | IO[str] | None,
     output: str | PathLike[str] | IO[str] | None,
+    wheel: bool = False,
     template: bool = False,
     load: Sequence[str | PathLike[str]] | None = None,
     check: bool = False,
@@ -47,6 +51,8 @@ def output_stubs(
 
         template: If True, generate a blank template with no existing plugins
             unless explicitly provided via `load` or `add`.
+
+        wheel: If True, build a wheel and print to stdout the path to it.
 
         load: One or more paths to plugin definitions (either directories or individual library files)
             to be included in the stubs.
@@ -149,13 +155,29 @@ def output_stubs(
     log.debug("output: %r", output)
 
     if isinstance(output, (str, PathLike, NoneType)):
-        output = Path(output) if output else _get_default_stubs_path()
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(tmpl)
+        if wheel:
+            output_dir = Path(output or tempfile.mkdtemp(prefix="vsstubs_"))
+
+            if output_dir.exists() and not output_dir.is_dir():
+                console.print(f"[red]Error: Output path '{output_dir}' is not a directory.[/red]")
+                return
+
+            try:
+                wheel_path = build_wheel(output_dir, tmpl)
+                print(wheel_path, file=sys.stdout)
+                console.print(f"[green]Wheel built successfully at:[/green] {wheel_path}")
+            except Exception as e:
+                console.print(f"[red]Error building wheel: {e}[/red]")
+                return
+        else:
+            output_path = Path(output) if output else _get_default_stubs_path()
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(tmpl)
+            console.print("[green]Done![/green]")
+            console.print(f"Stub written to {output_path}")
     else:
         output.write(tmpl)
-
-    console.print("[green]Done![/green]")
+        console.print("[green]Done![/green]")
 
 
 def _compare_plugins(old: Implementation, new: Implementation, ns: str) -> None:
@@ -167,3 +189,45 @@ def _compare_plugins(old: Implementation, new: Implementation, ns: str) -> None:
     for field, old_val, new_val in checks:
         if old_val != new_val:
             console.print(f'For the plugin {ns}, the "{field}" differ.')
+
+
+_PYPROJECT_TOML = """
+[build-system]
+requires = ["uv_build>=0.11.7,<0.12.0"]
+build-backend = "uv_build"
+
+[project]
+name = "vapoursynth-stubs"
+version = "0.0.0"
+"""
+
+
+def build_wheel(path: Path, tmpl: str) -> str:
+    import importlib.metadata
+    import shutil
+
+    import build
+    import packaging.version
+    import toml_rs
+
+    src = path / "build_src"
+    if src.exists():
+        shutil.rmtree(src)
+    src.mkdir(parents=True)
+
+    try:
+        v = packaging.version.parse(importlib.metadata.version("vsstubs"))
+        d = datetime.now()
+        metadata = toml_rs.loads(_PYPROJECT_TOML)
+        # Use a PEP 440 compliant version string
+        metadata["project"]["version"] = f"{v.base_version}.{d.strftime('%Y%m%d%H%M%S')}"
+        toml_rs.dump(metadata, src / "pyproject.toml")
+
+        module = src / "src" / "vapoursynth-stubs"
+        module.mkdir(parents=True)
+
+        (module / "__init__.pyi").write_text(tmpl)
+
+        return build.ProjectBuilder(src).build("wheel", path)
+    finally:
+        shutil.rmtree(src, ignore_errors=True)

@@ -54,6 +54,12 @@ output_opt = Option(
     allow_dash=True,
     path_type=str,
 )
+wheel_opt = Option(
+    "--wheel",
+    "-w",
+    help="Enable wheel output.",
+    rich_help_panel="I/O options",
+)
 load_opt = Option(
     "--load",
     "-L",
@@ -101,6 +107,7 @@ def add(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
     output_stubs(
         ctx.obj.input_file,
         ctx.obj.output,
+        ctx.obj.wheel,
         ctx.obj.template,
         ctx.obj.load,
         False,
@@ -118,6 +125,7 @@ def remove(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
     output_stubs(
         ctx.obj.input_file,
         ctx.obj.output,
+        ctx.obj.wheel,
         ctx.obj.template,
         ctx.obj.load,
         False,
@@ -133,6 +141,7 @@ def cli_main(
     ctx: Context,
     input: Annotated[str | None, input_opt] = None,
     output: Annotated[str | None, output_opt] = None,
+    wheel: Annotated[bool, wheel_opt] = False,
     template: Annotated[bool, template_opt] = False,
     load: Annotated[list[Path] | None, load_opt] = None,
     check: Annotated[bool, check_opt] = False,
@@ -162,23 +171,32 @@ def cli_main(
     input_file = sys.stdin if input == "-" else input
 
     if output == "@":
+        if wheel:
+            console.print("[red]Error: Cannot use '@' as output when '--wheel' is enabled.[/red]")
+            raise Exit(1)
         if input_file is None:
             console.print("[red]Error: You must provide an input_file when output is '@'.[/red]")
             raise Exit(1)
         output_file = input_file
     elif output == "-":
+        if wheel:
+            console.print("[red]Error: Cannot use '-' as output when '--wheel' is enabled.[/red]")
+            raise Exit(1)
         output_file = sys.stdout
+    elif output:
+        output_file = Path(output) if wheel else Path(output).with_suffix(".pyi")
     else:
-        output_file = _get_default_stubs_path() if not output else Path(output).with_suffix(".pyi")
+        output_file = _get_default_stubs_path() if not wheel else None
 
     ctx.obj = SimpleNamespace()
     ctx.obj.input_file = input_file
     ctx.obj.output = output_file
+    ctx.obj.wheel = wheel
     ctx.obj.template = template
     ctx.obj.load = load
     ctx.obj.check = check
     ctx.obj.quiet = quiet
 
     if ctx.invoked_subcommand is None:
-        output_stubs(input_file, output_file, template, load, check, update)
+        output_stubs(input_file, output_file, wheel, template, load, check, update)
         raise Exit
