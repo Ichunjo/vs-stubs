@@ -37,22 +37,29 @@ def output_stubs(
     remove: set[str] | None = None,
 ) -> None:
     """
-    Generate or update VapourSynth stub files.
+    Generate or update VapourSynth stub output.
 
     This function creates a `.pyi` stub file based on an existing stub, a blank template,
     or additional plugin definitions.
     It can also validate stubs against newly detected plugins or signatures.
+    When `wheel` is enabled, the generated stubs are packaged as an installable
+    `vapoursynth-stubs` wheel instead of being written as a standalone `.pyi` file.
 
     Args:
         input_file: Optional path to an existing `.pyi` file to use as the base for generating stubs.
             If None, a new stub is created from scratch.
 
-        output: Path to the `.pyi` file where the generated stubs will be written.
+        output: Path where generated output should be written.
+            Without `wheel`, this is the target `.pyi` file,
+            or the default installed `vapoursynth-stubs/__init__.pyi` when omitted.
+            With `wheel`, this is the directory where the wheel should be built;
+            if omitted, a temporary directory is created.
 
         template: If True, generate a blank template with no existing plugins
             unless explicitly provided via `load` or `add`.
 
-        wheel: If True, build a wheel and print to stdout the path to it.
+        wheel: If True, build an installable `vapoursynth-stubs` wheel and print its path to stdout.
+            This is intended for callers that want to pass the generated wheel directly to `pip`.
 
         load: One or more paths to plugin definitions (either directories or individual library files)
             to be included in the stubs.

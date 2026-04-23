@@ -48,7 +48,10 @@ output_opt = Option(
     "--output",
     "-o",
     "-O",
-    help="Path to write the output .pyi file. '@' to overwrite the input file. '-' for piping.",
+    help=(
+        "Path to write the output .pyi file. '@' overwrites the input file and '-' writes to stdout. "
+        "With --wheel, this is the directory where the wheel is built."
+    ),
     show_default="vapoursynth-stubs/__init__.pyi inside the site-package folder",
     rich_help_panel="I/O options",
     allow_dash=True,
@@ -57,7 +60,10 @@ output_opt = Option(
 wheel_opt = Option(
     "--wheel",
     "-w",
-    help="Enable wheel output.",
+    help=(
+        "Build an installable vapoursynth-stubs wheel instead of writing a .pyi file. "
+        "The wheel path is printed to stdout so it can be passed to pip."
+    ),
     rich_help_panel="I/O options",
 )
 load_opt = Option(

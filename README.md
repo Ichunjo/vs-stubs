@@ -38,6 +38,20 @@ You can use `vsstubs` via the command line or as a Python module.
   pip install $(vsstubs --wheel)
   ```
 
+  `--wheel` builds an installable `vapoursynth-stubs` wheel instead of writing a `.pyi` file directly.
+
+  By default, the wheel is created in a temporary directory and the wheel path is printed to stdout,
+  which lets shells pass it straight to `pip install`.
+
+  Use `--output` with `--wheel` to choose the directory where the wheel should be built:
+
+  ```bash
+  vsstubs --wheel --output dist
+  ```
+
+  When `--wheel` is enabled, `--output` must be a directory path.
+  The special output values `@` and `-` are only for direct `.pyi` output and cannot be used with wheel output.
+
 - Generate a template stubs:
 
   ```bash
@@ -83,11 +97,15 @@ output_stubs(None, "output.pyi", template=True)
 ╰───────────────────────────────────────────────────────────────────────────────╯
 ╭─ I/O options ─────────────────────────────────────────────────────────────────╮
 │ --input   -i,-I      TEXT  Path to the input .pyi file. Use '-' for piping.   │
-│ --output  -o,-O      TEXT  Path to write the output .pyi file. '@' to         │
-│                            overwrite the input file. '-' for piping.          │
+│ --output  -o,-O      TEXT  Path to write the output .pyi file. '@' overwrites │
+│                            the input file and '-' writes to stdout. With      │
+│                            --wheel, this is the directory where the wheel is  │
+│                            built.                                             │
 │                            [default: (vapoursynth-stubs/__init__.pyi inside   │
 │                            the site-package folder)]                          │
-│ --wheel   -w               Enable wheel output.                               │
+│ --wheel   -w               Build an installable vapoursynth-stubs wheel       │
+│                            instead of writing a .pyi file. The wheel path is  │
+│                            printed to stdout so it can be passed to pip.      │
 │ --load    -L         PATH  Load plugins from a folder or a single library     │
 │                            file.                                              │
 ╰───────────────────────────────────────────────────────────────────────────────╯
