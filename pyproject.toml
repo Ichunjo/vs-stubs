@@ -33,7 +33,6 @@ dependencies = [
     "typing_extensions>=4.15.0",
     "build>=1.4.3",
     "uv-build>=0.11.7",
-    "toml-rs>=0.3.12",
     "packaging>=26.1",
 ]
 

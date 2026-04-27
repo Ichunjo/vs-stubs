@@ -205,7 +205,7 @@ build-backend = "uv_build"
 
 [project]
 name = "vapoursynth-stubs"
-version = "0.0.0"
+version = "{version}"
 """
 
 
@@ -215,7 +215,6 @@ def build_wheel(path: Path, tmpl: str) -> str:
 
     import build
     import packaging.version
-    import toml_rs
 
     src = path / "build_src"
     if src.exists():
@@ -225,10 +224,8 @@ def build_wheel(path: Path, tmpl: str) -> str:
     try:
         v = packaging.version.parse(importlib.metadata.version("vsstubs"))
         d = datetime.now()
-        metadata = toml_rs.loads(_PYPROJECT_TOML)
-        # Use a PEP 440 compliant version string
-        metadata["project"]["version"] = f"{v.base_version}.{d.strftime('%Y%m%d%H%M%S')}"
-        toml_rs.dump(metadata, src / "pyproject.toml")
+        pyproject = _PYPROJECT_TOML.format(version=f"{v.base_version}.{d.strftime('%Y%m%d%H%M%S')}")
+        (src / "pyproject.toml").write_text(pyproject)
 
         module = src / "src" / "vapoursynth-stubs"
         module.mkdir(parents=True)
