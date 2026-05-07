@@ -126,7 +126,7 @@ def construct_implementation(interface: PluginInterface) -> Implementation:
                 return_annotation = parse_type(function.signature.return_annotation, True)
 
             signature = function.signature.replace(
-                parameters=(Parameter("self", Parameter.POSITIONAL_OR_KEYWORD), *parameters.values()),
+                parameters=(Parameter("self", Parameter.POSITIONAL_ONLY), *parameters.values()),
                 return_annotation=return_annotation,
             )
 
