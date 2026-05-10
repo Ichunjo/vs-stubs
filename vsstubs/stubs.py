@@ -213,7 +213,7 @@ def _extract_description(text: str, ns: str, functions: Mapping[str, Sequence[Wr
         re.DOTALL,
     )
     if not attr_matched:
-        raise ValueError(f"No attribute block found for {core_name}.")
+        raise ValueError(f"No attribute block found for {core_name}.{ns}.")
 
     doc_matched = re.search(r"(?:\"\"\"(.*?)\"\"\"|)$", attr_matched.group(1), re.DOTALL)
 
