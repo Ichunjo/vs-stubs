@@ -159,7 +159,7 @@ def output_stubs(
         console.print("[green]Done![/green]")
 
 
-def check_stubs(input_file: str | PathLike[str] | IO[str]) -> None:
+def check_stubs(input_file: str | PathLike[str] | IO[str]) -> dict[str, list[str]]:
     """
     Check VapourSynth stubs.
 
@@ -193,6 +193,8 @@ def check_stubs(input_file: str | PathLike[str] | IO[str]) -> None:
 
     for ns in old_keys & new_keys:
         _compare_plugins(old_impl[ns], new_impl[ns], ns)
+
+    return {"old": list(only_old), "new": list(only_new)}
 
 
 def _compare_plugins(old: Implementation, new: Implementation, ns: str) -> None:
