@@ -1,3 +1,4 @@
+import json
 import sys
 from logging import DEBUG, basicConfig, getLogger
 from pathlib import Path
@@ -131,13 +132,27 @@ def remove(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
 
 
 @app.command(help="Check for new plugins or new plugin signatures")
-def check(ctx: Annotated[Context, Option(None)]) -> None:
+def check(
+    ctx: Annotated[Context, Option(None)],
+    output_json: Annotated[
+        bool,
+        Option(
+            "--json",
+            help="Print to stdout a json parseable string of the checked old and new plugins",
+            rich_help_panel="I/O options",
+        ),
+    ] = False,
+) -> None:
     console.print("Checking stubs...")
 
     if not ctx.obj.input_file:
         raise BadParameter("You must provide an input file when checking for stubs", ctx)
 
-    check_stubs(ctx.obj.input_file)
+    out = check_stubs(ctx.obj.input_file)
+
+    if output_json:
+        json.dump(out, sys.stdout)
+
     raise Exit
 
 
