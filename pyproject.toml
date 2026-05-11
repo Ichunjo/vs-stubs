@@ -57,11 +57,11 @@ dirty = "{next_version}+dirty"
 distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.dirty"
 
 [tool.hatch.build.targets.sdist]
-include = ["stubs", "vsstubs", "vsstubs/_template/*.pyi"]
+include = ["stubs", "src/vsstubs", "src/vsstubs/_template/*.pyi"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["vsstubs"]
-include = ["vsstubs/_template/*.pyi", "vsstubs/py.typed"]
+packages = ["src/vsstubs"]
+include = ["src/vsstubs/_template/*.pyi", "src/vsstubs/py.typed"]
 
 [tool.mypy]
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
