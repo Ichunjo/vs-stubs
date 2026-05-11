@@ -31,7 +31,6 @@ def output_stubs(
     wheel: bool = False,
     template: bool = False,
     load: Sequence[str | PathLike[str]] | None = None,
-    check: bool = False,
     update: bool = False,
     add: set[str] | None = None,
     remove: set[str] | None = None,
@@ -64,16 +63,12 @@ def output_stubs(
         load: One or more paths to plugin definitions (either directories or individual library files)
             to be included in the stubs.
 
-        check: If True, validate the generated stubs against newly discovered plugins or signatures,
-            reporting any discrepancies.
-
         update: If True, only update the current stubs from the input_file.
 
         add: A set of plugin names to add or update in the stubs.
 
         remove: A set of plugin names to remove from the stubs.
     """
-
     if not running_via_cli():
         console.quiet = True
 
@@ -87,41 +82,18 @@ def output_stubs(
 
     if input_file:
         tmpl = Path(input_file).read_text() if isinstance(input_file, (str, PathLike)) else input_file.read()
-
         implementations = get_implementations_from_input(tmpl)
 
-        if check:
-            console.print("Checking stubs...")
-
-            old_impl = _index_by_namespace(implementations)
-            new_impl = _index_by_namespace(construct_implementation(pinter) for pinter in pinters)
-
-            old_keys, new_keys = set(old_impl), set(new_impl)
-
-            only_old = old_keys - new_keys
-            only_new = new_keys - old_keys
-
-            if only_old or only_new:
-                console.print(
-                    f"[yellow]"
-                    f"Mismatched plugin(s): "
-                    f"only in input={', '.join(sorted(only_old)) or 'none'}, "
-                    f"only new={', '.join(sorted(only_new)) or 'none'}"
-                    "[/yellow]"
-                )
-
-            for ns in old_keys & new_keys:
-                _compare_plugins(old_impl[ns], new_impl[ns], ns)
-        elif update:
+        if update:
             impl_ns = [i.namespace for i in implementations]
-
-            console.print(f"Updating stubs... Found {len(impl_ns)} plugins to update: {impl_ns}")
-
+            console.print(f"Found {len(impl_ns)} plugins to update: {impl_ns}")
             implementations = [construct_implementation(pinter) for pinter in pinters if pinter.namespace in impl_ns]
 
     elif template:
         tmpl = get_template()
         implementations = []
+    elif update:
+        raise ValueError("You must provide a input file when checking or updating the stubs")
     else:
         tmpl = get_template()
         implementations = [construct_implementation(pinter) for pinter in pinters]
@@ -185,6 +157,42 @@ def output_stubs(
     else:
         output.write(tmpl)
         console.print("[green]Done![/green]")
+
+
+def check_stubs(input_file: str | PathLike[str] | IO[str]) -> None:
+    """
+    Check VapourSynth stubs.
+
+    Args:
+        input_file: Existing `.pyi` file to use as the base for checking stubs.
+    """
+    if not running_via_cli():
+        console.quiet = True
+
+    cores = _get_cores()
+    pinters = retrieve_plugins(cores)
+
+    tmpl = Path(input_file).read_text() if isinstance(input_file, (str, PathLike)) else input_file.read()
+    implementations = get_implementations_from_input(tmpl)
+
+    old_impl = _index_by_namespace(implementations)
+    new_impl = _index_by_namespace(construct_implementation(pinter) for pinter in pinters)
+
+    old_keys, new_keys = set(old_impl), set(new_impl)
+
+    only_old = old_keys - new_keys
+    only_new = new_keys - old_keys
+
+    if only_old or only_new:
+        if only_old:
+            console.print(f"[yellow]Plugin(s) only in input file: {', '.join(sorted(only_old))}[/yellow]")
+        if only_new:
+            console.print(f"[yellow]New plugin(s) to be added: {' '.join(sorted(only_new))}[/yellow]")
+    else:
+        console.print("[green]Stubs are up to date![/green]")
+
+    for ns in old_keys & new_keys:
+        _compare_plugins(old_impl[ns], new_impl[ns], ns)
 
 
 def _compare_plugins(old: Implementation, new: Implementation, ns: str) -> None:

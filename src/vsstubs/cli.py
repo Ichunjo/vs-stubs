@@ -6,9 +6,9 @@ from typing import Annotated
 
 from rich.console import Console
 from rich.logging import RichHandler
-from typer import Context, Exit, Option, Typer
+from typer import BadParameter, Context, Exit, Option, Typer
 
-from .func import console, output_stubs
+from .func import check_stubs, console, output_stubs
 from .utils import _get_default_stubs_path
 
 __all__ = ["app"]
@@ -77,16 +77,6 @@ template_opt = Option(
     "-T",
     help="Export blank template; excludes existing plugins unless --load or --add is used.",
 )
-check_opt = Option(
-    "--check",
-    "-C",
-    help="Check for new plugins or new plugin signatures.",
-)
-update_opt = Option(
-    "--update",
-    "-U",
-    help="Update the current stubs from the input.",
-)
 quiet_opt = Option(
     "--quiet",
     help="Suppress message output.",
@@ -111,15 +101,14 @@ def add(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
     console.print(f"Adding plugins: {', '.join(plugins)}")
 
     output_stubs(
-        ctx.obj.input_file,
-        ctx.obj.output,
-        ctx.obj.wheel,
-        ctx.obj.template,
-        ctx.obj.load,
-        False,
-        False,
-        set(plugins),
-        None,
+        input_file=ctx.obj.input_file,
+        output=ctx.obj.output,
+        wheel=ctx.obj.wheel,
+        template=ctx.obj.template,
+        load=ctx.obj.load,
+        update=False,
+        add=set(plugins),
+        remove=None,
     )
     raise Exit
 
@@ -129,15 +118,42 @@ def remove(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
     console.print(f"Removing plugins: {', '.join(plugins)}")
 
     output_stubs(
-        ctx.obj.input_file,
-        ctx.obj.output,
-        ctx.obj.wheel,
-        ctx.obj.template,
-        ctx.obj.load,
-        False,
-        False,
-        None,
-        set(plugins),
+        input_file=ctx.obj.input_file,
+        output=ctx.obj.output,
+        wheel=ctx.obj.wheel,
+        template=ctx.obj.template,
+        load=ctx.obj.load,
+        update=False,
+        add=None,
+        remove=set(plugins),
+    )
+    raise Exit
+
+
+@app.command(help="Check for new plugins or new plugin signatures")
+def check(ctx: Annotated[Context, Option(None)]) -> None:
+    console.print("Checking stubs...")
+
+    if not ctx.obj.input_file:
+        raise BadParameter("You must provide an input file when checking for stubs", ctx)
+
+    check_stubs(ctx.obj.input_file)
+    raise Exit
+
+
+@app.command(help="Update the current signatures from the input")
+def update(ctx: Annotated[Context, Option(None)]) -> None:
+    console.print("Updating stubs stubs...")
+
+    output_stubs(
+        input_file=ctx.obj.input_file,
+        output=ctx.obj.output,
+        wheel=ctx.obj.wheel,
+        template=ctx.obj.template,
+        load=ctx.obj.load,
+        update=True,
+        add=None,
+        remove=None,
     )
     raise Exit
 
@@ -150,8 +166,6 @@ def cli_main(
     wheel: Annotated[bool, wheel_opt] = False,
     template: Annotated[bool, template_opt] = False,
     load: Annotated[list[Path] | None, load_opt] = None,
-    check: Annotated[bool, check_opt] = False,
-    update: Annotated[bool, update_opt] = False,
     quiet: Annotated[bool, quiet_opt] = False,
     debug: Annotated[bool, debug_opt] = False,
     version: Annotated[bool, version_opt] = False,
@@ -169,30 +183,31 @@ def cli_main(
     if version:
         raise Exit
 
-    if (check or update) and input is None:
+    if (ctx.invoked_subcommand in ["check", "update"]) and input is None:
         input = str(_get_default_stubs_path())
     else:
         console.print("Running stub generation...")
 
     input_file = sys.stdin if input == "-" else input
 
-    if output == "@":
-        if wheel:
-            console.print("[red]Error: Cannot use '@' as output when '--wheel' is enabled.[/red]")
-            raise Exit(1)
-        if input_file is None:
-            console.print("[red]Error: You must provide an input_file when output is '@'.[/red]")
-            raise Exit(1)
-        output_file = input_file
-    elif output == "-":
-        if wheel:
-            console.print("[red]Error: Cannot use '-' as output when '--wheel' is enabled.[/red]")
-            raise Exit(1)
-        output_file = sys.stdout
-    elif output:
-        output_file = Path(output) if wheel else Path(output).with_suffix(".pyi")
-    else:
-        output_file = _get_default_stubs_path() if not wheel else None
+    match output:
+        case "@":
+            if wheel:
+                console.print("[red]Error: Cannot use '@' as output when '--wheel' is enabled.[/red]")
+                raise Exit(1)
+            if input_file is None:
+                console.print("[red]Error: You must provide an input_file when output is '@'.[/red]")
+                raise Exit(1)
+            output_file = input_file
+        case "-":
+            if wheel:
+                console.print("[red]Error: Cannot use '-' as output when '--wheel' is enabled.[/red]")
+                raise Exit(1)
+            output_file = sys.stdout
+        case str():
+            output_file = Path(output) if wheel else Path(output).with_suffix(".pyi")
+        case _:
+            output_file = _get_default_stubs_path() if not wheel else None
 
     ctx.obj = SimpleNamespace()
     ctx.obj.input_file = input_file
@@ -200,9 +215,8 @@ def cli_main(
     ctx.obj.wheel = wheel
     ctx.obj.template = template
     ctx.obj.load = load
-    ctx.obj.check = check
     ctx.obj.quiet = quiet
 
     if ctx.invoked_subcommand is None:
-        output_stubs(input_file, output_file, wheel, template, load, check, update)
+        output_stubs(input_file, output_file, wheel, template, load, False)
         raise Exit
