@@ -133,7 +133,7 @@ def construct_implementation(interface: PluginInterface) -> Implementation:
             wrapper = (
                 f"_Wrapper_{core_name}_bound_{function.name}.Function"
                 if function.name in _wrappers.get(core_name, set())
-                else None
+                else "_Wrapper.Function"
             )
 
             functions_list.append(WrappedFunction(f"{function.name}{signature}: ...", wrapper))

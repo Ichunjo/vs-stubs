@@ -57,7 +57,7 @@ class Attribute(NamedTuple):
 
 class WrappedFunction(NamedTuple):
     signature: str
-    wrapper: str | None = None
+    wrapper: str = "_Wrapper.Function"
 
 
 class Implementation(NamedTuple):
@@ -81,7 +81,7 @@ class Implementation(NamedTuple):
             stub.append(indent * 2 + "class Plugin(_VSPlugin):")
 
             for func in funcs:
-                stub.append(indent * 3 + "@" + (func.wrapper or "_Wrapper.Function"))
+                stub.append(indent * 3 + "@" + (func.wrapper))
                 stub.append(indent * 3 + "def " + func.signature)
             else:
                 stub[-1] = stub[-1] + "\n"
