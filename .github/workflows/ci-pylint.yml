@@ -1,7 +1,8 @@
-name: Lint Python code with Ruff & mypy
+name: Lint Python
 
 on:
   push:
+    branches: [master]
   pull_request:
   workflow_dispatch:
 

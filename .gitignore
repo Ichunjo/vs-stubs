@@ -210,9 +210,5 @@ __marimo__/
 # vsjet
 .vsjet
 
-# Test files (I know this is bad)
-test.*
-test_*.*
-
 # versioningit
 vsstubs/_version.py
