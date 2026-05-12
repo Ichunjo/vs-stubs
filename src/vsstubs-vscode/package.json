@@ -1,7 +1,7 @@
 {
   "name": "vsstubs",
   "displayName": "VapourSynth Stubs",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Generate typing stubs for VapourSynth plugins",
   "categories": [
     "Programming Languages",
@@ -19,7 +19,7 @@
     "url": "https://github.com/Ichunjo/vs-stubs"
   },
   "license": "MIT",
-  "publisher": "Ichunjo",
+  "publisher": "vd-varde",
   "type": "module",
   "main": "./dist/extension.cjs",
   "scripts": {
