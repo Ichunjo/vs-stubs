@@ -1,7 +1,53 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "cloneSubmodules": true,
   "extends": [
-    "config:recommended"
+    "config:best-practices",
+    ":automergeMinor",
+    ":automergePr",
+    ":automergeRequireAllStatusChecks",
+    ":disableDependencyDashboard",
+    ":disableRateLimiting",
+    ":semanticCommits",
+    ":semanticCommitScopeDisabled",
+    ":semanticCommitTypeAll(deps)"
   ],
-  "prHourlyLimit": 0
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "groupName": "Security fixes",
+    "addLabels": ["security"]
+  },
+  "packageRules": [
+    {
+      "extends": [":semanticCommitTypeAll(ci)"],
+      "matchManagers": ["github-actions"]
+    },
+    {
+      "automerge": true,
+      "matchUpdateTypes": ["pin", "digest", "pinDigest"]
+    },
+    {
+      "description": "Group all TypeScript definition packages",
+      "matchPackagePatterns": ["^@types/"],
+      "groupName": "TypeScript definitions"
+    },
+    {
+      "description": "Group development and linting tools",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["devDependencies"],
+      "matchPackageNames": [
+        "typescript",
+        "eslint",
+        "prettier",
+        "esbuild",
+        "npm-run-all",
+        "sort-package-json"
+      ],
+      "matchPackagePatterns": ["^eslint-plugin-", "^typescript-eslint"],
+      "groupName": "Development tools"
+    }
+  ],
+  "npm": {
+    "rangeStrategy": "pin"
+  }
 }
