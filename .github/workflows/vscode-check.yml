@@ -5,12 +5,12 @@ on:
     branches:
       - master
     paths:
-      - "src/vsstubs-vscode/**"
-      - ".github/workflows/vscode-check.yml"
+      - src/vsstubs-vscode/**
+      - .github/workflows/vscode-check.yml
   pull_request:
     paths:
-      - "src/vsstubs-vscode/**"
-      - ".github/workflows/vscode-check.yml"
+      - src/vsstubs-vscode/**
+      - .github/workflows/vscode-check.yml
   workflow_dispatch:
 
 jobs:
