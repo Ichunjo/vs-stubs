@@ -12,6 +12,7 @@ permissions:
 jobs:
   lint:
     strategy:
+      fail-fast: false
       matrix:
         python-version: [3.13, 3.14]
 
