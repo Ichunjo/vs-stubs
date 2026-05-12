@@ -91,8 +91,6 @@ output_stubs(None, "output.pyi", template=True)
 ╭─ Options ─────────────────────────────────────────────────────────────────────╮
 │ --template  -T        Export blank template; excludes existing plugins unless │
 │                       --load or --add is used.                                │
-│ --check     -C        Check for new plugins or new plugin signatures.         │
-│ --update    -U        Update the current stubs from the input.                │
 │ --help                Show this message and exit.                             │
 ╰───────────────────────────────────────────────────────────────────────────────╯
 ╭─ I/O options ─────────────────────────────────────────────────────────────────╮
@@ -116,5 +114,7 @@ output_stubs(None, "output.pyi", template=True)
 ╭─ Commands ────────────────────────────────────────────────────────────────────╮
 │ add     Add or update the specified plugins in the stubs                      │
 │ remove  Remove the specified plugins from the stubs                           │
+│ check   Check for new plugins or new plugin signatures                        │
+│ update  Update the current signatures from the input                          │
 ╰───────────────────────────────────────────────────────────────────────────────╯
 ```
