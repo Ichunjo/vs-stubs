@@ -210,7 +210,8 @@ def parse_type(utype: Any, is_return: bool = False) -> Any:
     if (origin := get_origin(utype)) is None:
         return utype
 
-    parsed = tuple(parse_type(arg, is_return) for arg in get_args(utype))
+    args = get_args(utype)
+    parsed = tuple(parse_type(tuple(arg) if isinstance(arg, list) else arg, is_return) for arg in args)
 
     if origin is Union:
         match parsed:
