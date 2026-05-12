@@ -1,0 +1,31 @@
+name: Publish Extension
+
+on:
+  push:
+    tags:
+      - "vscode-v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: vsce
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: "npm"
+          cache-dependency-path: src/vsstubs-vscode/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: src/vsstubs-vscode
+        run: npm install
+
+      - name: Publish to Marketplace
+        working-directory: src/vsstubs-vscode
+        run: npx @vscode/vsce publish
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}

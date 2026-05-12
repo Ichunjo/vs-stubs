@@ -1,0 +1,111 @@
+{
+  "name": "vsstubs",
+  "displayName": "VapourSynth Stubs",
+  "version": "0.0.1",
+  "description": "Generate typing stubs for VapourSynth plugins",
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "vapoursynth",
+    "stubs",
+    "typing",
+    "python",
+    "autocompletion"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ichunjo/vs-stubs"
+  },
+  "license": "MIT",
+  "publisher": "Ichunjo",
+  "type": "module",
+  "main": "./dist/extension.cjs",
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "eslint src",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "sort-pkg-json": "sort-package-json",
+    "vscode:prepublish": "npm run package",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "vsstubs.generate",
+        "title": "VapourSynth: Generate Stubs"
+      },
+      {
+        "command": "vsstubs.addPlugin",
+        "title": "VapourSynth: Add Plugin Stubs"
+      },
+      {
+        "command": "vsstubs.removePlugin",
+        "title": "VapourSynth: Remove Plugin Stubs"
+      }
+    ],
+    "configuration": {
+      "title": "VapourSynth Stubs",
+      "properties": {
+        "vsstubs.autoGenerate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically generate stubs when the workspace is opened."
+        },
+        "vsstubs.extraPluginDirs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Additional directories to load plugins from. Each path is passed as `--load` to the `vsstubs` CLI."
+        },
+        "vsstubs.watchPlugins": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Watch VapourSynth plugin directories for changes and automatically regenerate stubs when plugins are added, updated, or removed."
+        },
+        "vsstubs.watchDebounceTime": {
+          "type": "number",
+          "default": 3000,
+          "description": "Delay (in milliseconds) between the last plugin change detected and the stub regeneration."
+        }
+      }
+    }
+  },
+  "activationEvents": [
+    "workspaceContains:**/*.vpy",
+    "onLanguage:python"
+  ],
+  "overrides": {
+    "diff": "8.0.3",
+    "serialize-javascript": "7.0.5"
+  },
+  "dependencies": {
+    "@vscode/python-extension": "^1.0.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "@types/vscode": "^1.118.0",
+    "esbuild": "^0.28.0",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-simple-import-sort": "^13.0.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.8.3",
+    "sort-package-json": "^3.6.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.2"
+  },
+  "extensionDependencies": [
+    "ms-python.python"
+  ],
+  "engines": {
+    "vscode": "^1.118.0"
+  }
+}
