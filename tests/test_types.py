@@ -1,4 +1,5 @@
 import collections.abc
+import sys
 from collections.abc import Callable
 from types import GenericAlias
 from typing import Union
@@ -11,6 +12,7 @@ from vsstubs.types import (
     FloatLike,
     IntLike,
     SequenceLike,
+    UnionLike,
     VideoNodeType,
     VSCallbackTypeLike,
     parse_type,
@@ -32,9 +34,11 @@ def test_parse_type_union() -> None:
 
 
 def test_parse_type_anystr() -> None:
-    # Union[str, bytes, bytearray] -> AnyStr
     parsed = parse_type(Union[str, bytes, bytearray])  # noqa: UP007
-    assert isinstance(parsed, AnyStr)
+    if sys.version_info >= (3, 14):
+        assert isinstance(parsed, AnyStr)
+    else:
+        assert isinstance(parsed, UnionLike)
     assert repr(parsed) == "_AnyStr"
 
 

@@ -6,7 +6,7 @@ on:
       - master
     paths:
       - ".github/workflows/ci-pytest.yml"
-      - "src/vsstubs/*"
+      - "src/vsstubs/*.py"
       - "pyproject.toml"
   pull_request:
   workflow_dispatch:
