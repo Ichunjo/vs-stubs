@@ -1,7 +1,7 @@
 {
   "name": "vsstubs",
   "displayName": "VapourSynth Stubs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Generate typing stubs for VapourSynth plugins",
   "categories": [
     "Programming Languages",

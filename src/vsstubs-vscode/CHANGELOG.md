@@ -2,6 +2,12 @@
 
 All notable changes to the **VapourSynth Stubs** extension will be documented in this file.
 
+## [0.0.2] - 2026-05-13
+
+### Updated
+
+- Change logo size
+
 ## [0.0.1] - 2026-05-12
 
 ### Added
