@@ -2,6 +2,12 @@
 
 All notable changes to the **VapourSynth Stubs** extension will be documented in this file.
 
+## [0.0.4] - 2026-05-13
+
+### Added
+
+- Add icon
+
 ## [0.0.3] - 2026-05-12
 
 ### Updated
