@@ -3,6 +3,7 @@
   "cloneSubmodules": true,
   "extends": [
     "config:best-practices",
+    "helpers:pinGitHubActionDigests",
     ":automergeMinor",
     ":automergePr",
     ":automergeRequireAllStatusChecks",
