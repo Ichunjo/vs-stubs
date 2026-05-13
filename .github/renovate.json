@@ -21,7 +21,8 @@
   "packageRules": [
     {
       "extends": [":semanticCommitTypeAll(ci)"],
-      "matchManagers": ["github-actions"]
+      "matchManagers": ["github-actions"],
+      "pinDigests": true
     },
     {
       "automerge": true,
