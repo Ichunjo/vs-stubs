@@ -1,7 +1,7 @@
 {
   "name": "vsstubs",
   "displayName": "VapourSynth Stubs",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Generate typing stubs for VapourSynth plugins",
   "categories": [
     "Programming Languages",
@@ -64,6 +64,11 @@
           },
           "default": [],
           "markdownDescription": "Additional directories to load plugins from. Each path is passed as `--load` to the `vsstubs` CLI."
+        },
+        "vsstubs.enableCompatApi3": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable return type compatibility for APIv3 plugins."
         },
         "vsstubs.watchPlugins": {
           "type": "boolean",

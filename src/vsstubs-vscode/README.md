@@ -30,8 +30,9 @@ Access these via the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
 | Setting                     | Default | Description                                                                   |
 | :-------------------------- | :------ | :---------------------------------------------------------------------------- |
 | `vsstubs.autoGenerate`      | `true`  | Automatically generate stubs when a workspace with `.vpy` files is opened.    |
-| `vsstubs.watchPlugins`      | `true`  | Watch VapourSynth plugin directories and regenerate stubs on changes.         |
+| `vsstubs.enableCompatApi3`  | `false` | Enable return type compatibility for APIv3 plugins.                           |
 | `vsstubs.extraPluginDirs`   | `[]`    | Additional directories to search for plugins (e.g., portable plugin folders). |
+| `vsstubs.watchPlugins`      | `true`  | Watch VapourSynth plugin directories and regenerate stubs on changes.         |
 | `vsstubs.watchDebounceTime` | `3000`  | Delay (ms) before regenerating stubs after a plugin change is detected.       |
 
 ## Requirements

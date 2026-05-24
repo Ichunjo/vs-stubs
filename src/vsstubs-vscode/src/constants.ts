@@ -15,6 +15,7 @@ export const CONFIG = {
   SECTION: 'vsstubs',
   AUTO_GENERATE: 'autoGenerate',
   EXTRA_PLUGIN_DIRS: 'extraPluginDirs',
+  ENABLE_COMPAT_API3: 'enableCompatApi3',
   WATCH_PLUGINS: 'watchPlugins',
   WATCH_DEBOUNCE_TIME: 'watchDebounceTime',
 } as const;

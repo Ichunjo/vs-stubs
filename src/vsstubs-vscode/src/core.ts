@@ -279,5 +279,9 @@ export function buildArgs(stubFile: string): string[] {
     args.push('--load', dir);
   }
 
+  if (config.get<boolean>(CONFIG.ENABLE_COMPAT_API3)) {
+    args.push('--compat');
+  }
+
   return args;
 }
