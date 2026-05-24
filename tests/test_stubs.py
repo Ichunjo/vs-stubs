@@ -19,7 +19,7 @@ def test_construct_implementation() -> None:
     func_int = FunctionInterface("Blur", sig)
     interface = PluginInterface("std", {"VideoNode": [func_int]}, "Standard plugins")
 
-    impl = construct_implementation(interface)
+    impl = construct_implementation(interface, compat=False)
 
     assert impl.namespace == "std"
     assert "VideoNode" in impl.functions
