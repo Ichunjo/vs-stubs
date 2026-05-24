@@ -78,6 +78,7 @@ template_opt = Option(
     "-T",
     help="Export blank template; excludes existing plugins unless --load or --add is used.",
 )
+compat_opt = Option("--compat", help="Enable return type compatibility for APIv3 plugins.")
 quiet_opt = Option(
     "--quiet",
     help="Suppress message output.",
@@ -110,6 +111,7 @@ def add(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
         update=False,
         add=set(plugins),
         remove=None,
+        compat=ctx.obj.compat,
     )
     raise Exit
 
@@ -127,6 +129,7 @@ def remove(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
         update=False,
         add=None,
         remove=set(plugins),
+        compat=ctx.obj.compat,
     )
     raise Exit
 
@@ -169,6 +172,7 @@ def update(ctx: Annotated[Context, Option(None)]) -> None:
         update=True,
         add=None,
         remove=None,
+        compat=ctx.obj.compat,
     )
     raise Exit
 
@@ -181,6 +185,7 @@ def cli_main(
     wheel: Annotated[bool, wheel_opt] = False,
     template: Annotated[bool, template_opt] = False,
     load: Annotated[list[Path] | None, load_opt] = None,
+    compat: Annotated[bool, compat_opt] = False,
     quiet: Annotated[bool, quiet_opt] = False,
     debug: Annotated[bool, debug_opt] = False,
     version: Annotated[bool, version_opt] = False,
@@ -231,7 +236,8 @@ def cli_main(
     ctx.obj.template = template
     ctx.obj.load = load
     ctx.obj.quiet = quiet
+    ctx.obj.compat = compat
 
     if ctx.invoked_subcommand is None:
-        output_stubs(input_file, output_file, wheel, template, load, False)
+        output_stubs(input_file, output_file, wheel, template, load, False, compat=compat)
         raise Exit

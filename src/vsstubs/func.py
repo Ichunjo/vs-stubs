@@ -34,6 +34,8 @@ def output_stubs(
     update: bool = False,
     add: set[str] | None = None,
     remove: set[str] | None = None,
+    *,
+    compat: bool = False,
 ) -> None:
     """
     Generate or update VapourSynth stub output.
@@ -47,27 +49,21 @@ def output_stubs(
     Args:
         input_file: Optional path to an existing `.pyi` file to use as the base for generating stubs.
             If None, a new stub is created from scratch.
-
         output: Path where generated output should be written.
             Without `wheel`, this is the target `.pyi` file,
             or the default installed `vapoursynth-stubs/__init__.pyi` when omitted.
             With `wheel`, this is the directory where the wheel should be built;
             if omitted, a temporary directory is created.
-
         template: If True, generate a blank template with no existing plugins
             unless explicitly provided via `load` or `add`.
-
         wheel: If True, build an installable `vapoursynth-stubs` wheel and print its path to stdout.
             This is intended for callers that want to pass the generated wheel directly to `pip`.
-
         load: One or more paths to plugin definitions (either directories or individual library files)
             to be included in the stubs.
-
         update: If True, only update the current stubs from the input_file.
-
         add: A set of plugin names to add or update in the stubs.
-
         remove: A set of plugin names to remove from the stubs.
+        compat: Enable return type compatibility for APIv3 plugins.
     """
     if not running_via_cli():
         console.quiet = True
@@ -87,7 +83,9 @@ def output_stubs(
         if update:
             impl_ns = [i.namespace for i in implementations]
             console.print(f"Found {len(impl_ns)} plugins to update: {impl_ns}")
-            implementations = [construct_implementation(pinter) for pinter in pinters if pinter.namespace in impl_ns]
+            implementations = [
+                construct_implementation(pinter, compat=compat) for pinter in pinters if pinter.namespace in impl_ns
+            ]
 
     elif template:
         tmpl = get_template()
@@ -96,7 +94,7 @@ def output_stubs(
         raise ValueError("You must provide a input file when checking or updating the stubs")
     else:
         tmpl = get_template()
-        implementations = [construct_implementation(pinter) for pinter in pinters]
+        implementations = [construct_implementation(pinter, compat=compat) for pinter in pinters]
 
     if add or remove:
         impl_map = _index_by_namespace(implementations)
@@ -114,7 +112,7 @@ def output_stubs(
                     console.print(warn_msg.format(ns=ns))
                     continue
 
-                impl_map[ns] = construct_implementation(pinters_map[ns])
+                impl_map[ns] = construct_implementation(pinters_map[ns], compat=compat)
 
         if remove:
             for ns in remove:
@@ -176,7 +174,7 @@ def check_stubs(input_file: str | PathLike[str] | IO[str]) -> dict[str, list[str
     implementations = get_implementations_from_input(tmpl)
 
     old_impl = _index_by_namespace(implementations)
-    new_impl = _index_by_namespace(construct_implementation(pinter) for pinter in pinters)
+    new_impl = _index_by_namespace(construct_implementation(pinter, compat=False) for pinter in pinters)
 
     old_keys, new_keys = set(old_impl), set(new_impl)
 

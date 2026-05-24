@@ -97,7 +97,7 @@ def retrieve_plugins(core_like: Sequence[_CoreLike]) -> Sequence[PluginInterface
     return plugins
 
 
-def construct_implementation(interface: PluginInterface) -> Implementation:
+def construct_implementation(interface: PluginInterface, *, compat: bool) -> Implementation:
     """Contructs a full implementation block with all the functions for all the cores-like."""
 
     functions_map = dict[str, list[WrappedFunction]]()
@@ -117,9 +117,7 @@ def construct_implementation(interface: PluginInterface) -> Implementation:
                 for name in param_names:
                     parameters[name] = _replace_known_callback_signature(parameters[name], interface, function)
 
-            # If a function returns Any, it's probably a APIv3 plugin.
-            # We assume it always returns a VideoNode but we know it's not always the case...
-            if function.signature.return_annotation == Any:
+            if function.signature.return_annotation == Any and compat:
                 return_annotation = VideoNodeType()
                 log.debug("APIv3 plugin detected: '%s.%s.%s'", core_name, interface.namespace, function.name)
             else:
