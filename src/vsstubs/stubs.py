@@ -129,8 +129,8 @@ def construct_implementation(interface: PluginInterface, *, compat: bool) -> Imp
             )
 
             wrapper = (
-                f"_Wrapper_{core_name}_bound_{function.name}.Function"
-                if function.name in _wrappers.get(core_name, set())
+                f"_Wrapper_{core_name}_bound_{interface.namespace}_{function.name}.Function"
+                if function.name in _wrappers.get(core_name, {}).get(interface.namespace, set())
                 else "_Wrapper.Function"
             )
 

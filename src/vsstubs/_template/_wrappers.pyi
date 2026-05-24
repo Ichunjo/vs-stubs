@@ -23,7 +23,7 @@ class _Wrapper:
         def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, P], R]) -> None: ...
         def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
 
-class _Wrapper_Core_bound_FrameEval:
+class _Wrapper_Core_bound_std_FrameEval:
     class Function(_VSFunction):
         def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
         @overload
@@ -67,7 +67,7 @@ class _Wrapper_Core_bound_FrameEval:
             clip_src: VideoNode | _SequenceLike[VideoNode] | None = None,
         ) -> VideoNode: ...
 
-class _Wrapper_VideoNode_bound_FrameEval:
+class _Wrapper_VideoNode_bound_std_FrameEval:
     class Function(_VSFunction):
         def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
         @overload
@@ -106,7 +106,7 @@ class _Wrapper_VideoNode_bound_FrameEval:
             clip_src: VideoNode | _SequenceLike[VideoNode] | None = None,
         ) -> VideoNode: ...
 
-class _Wrapper_Core_bound_ModifyFrame:
+class _Wrapper_Core_bound_std_ModifyFrame:
     class Function(_VSFunction):
         def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
         @overload
@@ -125,7 +125,7 @@ class _Wrapper_Core_bound_ModifyFrame:
             selector: _VSCallback_std_ModifyFrame_selector,
         ) -> VideoNode: ...
 
-class _Wrapper_VideoNode_bound_ModifyFrame:
+class _Wrapper_VideoNode_bound_std_ModifyFrame:
     class Function(_VSFunction):
         def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
         @overload
