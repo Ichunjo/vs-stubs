@@ -91,6 +91,7 @@ output_stubs(None, "output.pyi", template=True)
 ╭─ Options ─────────────────────────────────────────────────────────────────────╮
 │ --template  -T        Export blank template; excludes existing plugins unless │
 │                       --load or --add is used.                                │
+| --compat              Enable return type compatibility for APIv3 plugins.     |
 │ --help                Show this message and exit.                             │
 ╰───────────────────────────────────────────────────────────────────────────────╯
 ╭─ I/O options ─────────────────────────────────────────────────────────────────╮
