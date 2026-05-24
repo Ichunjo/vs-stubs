@@ -77,6 +77,22 @@ class _VSCallback_descale_Decustom_custom_kernel(Protocol):
 class _VSCallback_descale_ScaleCustom_custom_kernel(Protocol):
     def __call__(self, *, x: float) -> _FloatLike: ...
 
+class _VSCallback_ov_Model_config(Protocol):
+    def __call__(
+        self,
+    ) -> Mapping[
+        str,
+        _IntLike
+        | _FloatLike
+        | _AnyStr
+        | _SupportsIter[_IntLike]
+        | _SupportsIter[_AnyStr]
+        | _SupportsIter[_FloatLike]
+        | _GetItemIterable[_IntLike]
+        | _GetItemIterable[_FloatLike]
+        | _GetItemIterable[_AnyStr],
+    ]: ...
+
 class _VSCallback_std_FrameEval_eval_0(Protocol):
     def __call__(self, *, n: int) -> VideoNode: ...
 

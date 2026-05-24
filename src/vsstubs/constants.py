@@ -14,6 +14,9 @@ _callback_signatures = {
     "akarin": {
         "PropExpr": {"dict"},
     },
+    "ov": {
+        "Model": {"config"},
+    },
     "descale": {
         "Decustom": {"custom_kernel"},
         "ScaleCustom": {"custom_kernel"},
@@ -30,6 +33,20 @@ _callback_signatures = {
 }
 
 _wrappers = {
-    "Core": {"FrameEval", "ModifyFrame"},
-    "VideoNode": {"FrameEval", "ModifyFrame"},
+    "Core": {
+        "ncnn": {"Model"},
+        "ort": {"Model"},
+        "ov": {"Model"},
+        "std": {"FrameEval", "ModifyFrame"},
+        "trt_rtx": {"Model"},
+        "trt": {"Model"},
+    },
+    "VideoNode": {
+        "ncnn": {"Model"},
+        "ort": {"Model"},
+        "ov": {"Model"},
+        "std": {"FrameEval", "ModifyFrame"},
+        "trt_rtx": {"Model"},
+        "trt": {"Model"},
+    },
 }

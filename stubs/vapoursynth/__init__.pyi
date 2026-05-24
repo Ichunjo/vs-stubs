@@ -159,6 +159,22 @@ class _VSCallback_descale_Decustom_custom_kernel(Protocol):
 class _VSCallback_descale_ScaleCustom_custom_kernel(Protocol):
     def __call__(self, *, x: float) -> _FloatLike: ...
 
+class _VSCallback_ov_Model_config(Protocol):
+    def __call__(
+        self,
+    ) -> Mapping[
+        str,
+        _IntLike
+        | _FloatLike
+        | _AnyStr
+        | _SupportsIter[_IntLike]
+        | _SupportsIter[_AnyStr]
+        | _SupportsIter[_FloatLike]
+        | _GetItemIterable[_IntLike]
+        | _GetItemIterable[_FloatLike]
+        | _GetItemIterable[_AnyStr],
+    ]: ...
+
 class _VSCallback_std_FrameEval_eval_0(Protocol):
     def __call__(self, *, n: int) -> VideoNode: ...
 
@@ -909,7 +925,7 @@ class _Wrapper:
         def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, P], R]) -> None: ...
         def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R: ...
 
-class _Wrapper_Core_bound_FrameEval:
+class _Wrapper_Core_bound_std_FrameEval:
     class Function(_VSFunction):
         def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
         @overload
@@ -953,7 +969,7 @@ class _Wrapper_Core_bound_FrameEval:
             clip_src: VideoNode | _SequenceLike[VideoNode] | None = None,
         ) -> VideoNode: ...
 
-class _Wrapper_VideoNode_bound_FrameEval:
+class _Wrapper_VideoNode_bound_std_FrameEval:
     class Function(_VSFunction):
         def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
         @overload
@@ -992,7 +1008,7 @@ class _Wrapper_VideoNode_bound_FrameEval:
             clip_src: VideoNode | _SequenceLike[VideoNode] | None = None,
         ) -> VideoNode: ...
 
-class _Wrapper_Core_bound_ModifyFrame:
+class _Wrapper_Core_bound_std_ModifyFrame:
     class Function(_VSFunction):
         def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
         @overload
@@ -1011,7 +1027,7 @@ class _Wrapper_Core_bound_ModifyFrame:
             selector: _VSCallback_std_ModifyFrame_selector,
         ) -> VideoNode: ...
 
-class _Wrapper_VideoNode_bound_ModifyFrame:
+class _Wrapper_VideoNode_bound_std_ModifyFrame:
     class Function(_VSFunction):
         def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
         @overload
@@ -1024,6 +1040,583 @@ class _Wrapper_VideoNode_bound_ModifyFrame:
         def __call__(
             self, clips: VideoNode | _SequenceLike[VideoNode], selector: _VSCallback_std_ModifyFrame_selector
         ) -> VideoNode: ...
+
+class _ReturnDict_ncnn_Model(TypedDict):
+    clip: VideoNode
+    num_planes: int
+
+class _Wrapper_Core_bound_ncnn_Model:
+    class Function(_VSFunction):
+        def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            path_is_serialization: _IntLike | None = None,
+            flexible_output_prop: None = None,
+            output_format: _IntLike | None = None,
+        ) -> VideoNode: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            path_is_serialization: _IntLike | None = None,
+            *,
+            flexible_output_prop: _AnyStr,
+            output_format: _IntLike | None = None,
+        ) -> _ReturnDict_ncnn_Model: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            path_is_serialization: _IntLike | None = None,
+            flexible_output_prop: _AnyStr | None = None,
+            output_format: _IntLike | None = None,
+        ) -> VideoNode | _ReturnDict_ncnn_Model: ...
+
+class _Wrapper_VideoNode_bound_ncnn_Model:
+    class Function(_VSFunction):
+        def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            path_is_serialization: _IntLike | None = None,
+            flexible_output_prop: None = None,
+            output_format: _IntLike | None = None,
+        ) -> VideoNode: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            path_is_serialization: _IntLike | None = None,
+            *,
+            flexible_output_prop: _AnyStr,
+            output_format: _IntLike | None = None,
+        ) -> _ReturnDict_ncnn_Model: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            path_is_serialization: _IntLike | None = None,
+            flexible_output_prop: _AnyStr | None = None,
+            output_format: _IntLike | None = None,
+        ) -> VideoNode | _ReturnDict_ncnn_Model: ...
+
+class _ReturnDict_ort_Model(TypedDict):
+    clip: VideoNode
+    num_planes: int
+
+class _Wrapper_Core_bound_ort_Model:
+    class Function(_VSFunction):
+        def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            provider: _AnyStr | None = None,
+            device_id: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            cudnn_benchmark: _IntLike | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            path_is_serialization: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            fp16_blacklist_ops: _AnyStr | _SequenceLike[_AnyStr] | None = None,
+            prefer_nhwc: _IntLike | None = None,
+            output_format: _IntLike | None = None,
+            tf32: _IntLike | None = None,
+            flexible_output_prop: None = None,
+        ) -> VideoNode: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            provider: _AnyStr | None = None,
+            device_id: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            cudnn_benchmark: _IntLike | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            path_is_serialization: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            fp16_blacklist_ops: _AnyStr | _SequenceLike[_AnyStr] | None = None,
+            prefer_nhwc: _IntLike | None = None,
+            output_format: _IntLike | None = None,
+            tf32: _IntLike | None = None,
+            *,
+            flexible_output_prop: _AnyStr,
+        ) -> _ReturnDict_ort_Model: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            provider: _AnyStr | None = None,
+            device_id: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            cudnn_benchmark: _IntLike | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            path_is_serialization: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            fp16_blacklist_ops: _AnyStr | _SequenceLike[_AnyStr] | None = None,
+            prefer_nhwc: _IntLike | None = None,
+            output_format: _IntLike | None = None,
+            tf32: _IntLike | None = None,
+            flexible_output_prop: _AnyStr | None = None,
+        ) -> VideoNode | _ReturnDict_ort_Model: ...
+
+class _Wrapper_VideoNode_bound_ort_Model:
+    class Function(_VSFunction):
+        def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            provider: _AnyStr | None = None,
+            device_id: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            cudnn_benchmark: _IntLike | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            path_is_serialization: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            fp16_blacklist_ops: _AnyStr | _SequenceLike[_AnyStr] | None = None,
+            prefer_nhwc: _IntLike | None = None,
+            output_format: _IntLike | None = None,
+            tf32: _IntLike | None = None,
+            flexible_output_prop: None = None,
+        ) -> VideoNode: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            provider: _AnyStr | None = None,
+            device_id: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            cudnn_benchmark: _IntLike | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            path_is_serialization: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            fp16_blacklist_ops: _AnyStr | _SequenceLike[_AnyStr] | None = None,
+            prefer_nhwc: _IntLike | None = None,
+            output_format: _IntLike | None = None,
+            tf32: _IntLike | None = None,
+            *,
+            flexible_output_prop: _AnyStr,
+        ) -> _ReturnDict_ort_Model: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            provider: _AnyStr | None = None,
+            device_id: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            cudnn_benchmark: _IntLike | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            path_is_serialization: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            fp16_blacklist_ops: _AnyStr | _SequenceLike[_AnyStr] | None = None,
+            prefer_nhwc: _IntLike | None = None,
+            output_format: _IntLike | None = None,
+            tf32: _IntLike | None = None,
+            flexible_output_prop: _AnyStr | None = None,
+        ) -> VideoNode | _ReturnDict_ort_Model: ...
+
+class _ReturnDict_ov_Model(TypedDict):
+    clip: VideoNode
+    num_planes: int
+
+class _Wrapper_Core_bound_ov_Model:
+    class Function(_VSFunction):
+        def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device: _AnyStr | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            config: _VSCallback | None = None,
+            path_is_serialization: _IntLike | None = None,
+            fp16_blacklist_ops: _AnyStr | _SequenceLike[_AnyStr] | None = None,
+            dot_path: _AnyStr | None = None,
+            flexible_output_prop: None = None,
+        ) -> VideoNode: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device: _AnyStr | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            config: _VSCallback | None = None,
+            path_is_serialization: _IntLike | None = None,
+            fp16_blacklist_ops: _AnyStr | _SequenceLike[_AnyStr] | None = None,
+            dot_path: _AnyStr | None = None,
+            *,
+            flexible_output_prop: _AnyStr,
+        ) -> _ReturnDict_ov_Model: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device: _AnyStr | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            config: _VSCallback | None = None,
+            path_is_serialization: _IntLike | None = None,
+            fp16_blacklist_ops: _AnyStr | _SequenceLike[_AnyStr] | None = None,
+            dot_path: _AnyStr | None = None,
+            flexible_output_prop: _AnyStr | None = None,
+        ) -> VideoNode | _ReturnDict_ov_Model: ...
+
+class _Wrapper_VideoNode_bound_ov_Model:
+    class Function(_VSFunction):
+        def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device: _AnyStr | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            config: _VSCallback | None = None,
+            path_is_serialization: _IntLike | None = None,
+            fp16_blacklist_ops: _AnyStr | _SequenceLike[_AnyStr] | None = None,
+            dot_path: _AnyStr | None = None,
+            flexible_output_prop: None = None,
+        ) -> VideoNode: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device: _AnyStr | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            config: _VSCallback | None = None,
+            path_is_serialization: _IntLike | None = None,
+            fp16_blacklist_ops: _AnyStr | _SequenceLike[_AnyStr] | None = None,
+            dot_path: _AnyStr | None = None,
+            *,
+            flexible_output_prop: _AnyStr,
+        ) -> _ReturnDict_ov_Model: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            network_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device: _AnyStr | None = None,
+            builtin: _IntLike | None = None,
+            builtindir: _AnyStr | None = None,
+            fp16: _IntLike | None = None,
+            config: _VSCallback | None = None,
+            path_is_serialization: _IntLike | None = None,
+            fp16_blacklist_ops: _AnyStr | _SequenceLike[_AnyStr] | None = None,
+            dot_path: _AnyStr | None = None,
+            flexible_output_prop: _AnyStr | None = None,
+        ) -> VideoNode | _ReturnDict_ov_Model: ...
+
+class _ReturnDict_trt_Model(TypedDict):
+    clip: VideoNode
+    num_planes: int
+
+class _Wrapper_Core_bound_trt_Model:
+    class Function(_VSFunction):
+        def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            engine_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            flexible_output_prop: None = None,
+        ) -> VideoNode: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            engine_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            *,
+            flexible_output_prop: _AnyStr,
+        ) -> _ReturnDict_trt_Model: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            engine_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            flexible_output_prop: _AnyStr | None = None,
+        ) -> VideoNode | _ReturnDict_trt_Model: ...
+
+class _Wrapper_VideoNode_bound_trt_Model:
+    class Function(_VSFunction):
+        def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            engine_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            flexible_output_prop: None = None,
+        ) -> VideoNode: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            engine_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            *,
+            flexible_output_prop: _AnyStr,
+        ) -> _ReturnDict_trt_Model: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            engine_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            flexible_output_prop: _AnyStr | None = None,
+        ) -> VideoNode | _ReturnDict_trt_Model: ...
+
+class _ReturnDict_trt_rtx_Model(TypedDict):
+    clip: VideoNode
+    num_planes: int
+
+class _Wrapper_Core_bound_trt_rtx_Model:
+    class Function(_VSFunction):
+        def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            engine_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            flexible_output_prop: None = None,
+        ) -> VideoNode: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            engine_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            *,
+            flexible_output_prop: _AnyStr,
+        ) -> _ReturnDict_trt_rtx_Model: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            clips: VideoNode | _SequenceLike[VideoNode],
+            engine_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            flexible_output_prop: _AnyStr | None = None,
+        ) -> VideoNode | _ReturnDict_trt_rtx_Model: ...
+
+class _Wrapper_VideoNode_bound_trt_rtx_Model:
+    class Function(_VSFunction):
+        def __init__[PluginT: Plugin](self, function: Callable[Concatenate[PluginT, ...], VideoNode]) -> None: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            engine_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            flexible_output_prop: None = None,
+        ) -> VideoNode: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            engine_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            *,
+            flexible_output_prop: _AnyStr,
+        ) -> _ReturnDict_trt_rtx_Model: ...
+        @overload
+        def __call__(
+            self,
+            /,
+            engine_path: _AnyStr,
+            overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
+            tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
+            device_id: _IntLike | None = None,
+            use_cuda_graph: _IntLike | None = None,
+            num_streams: _IntLike | None = None,
+            verbosity: _IntLike | None = None,
+            flexible_output_prop: _AnyStr | None = None,
+        ) -> VideoNode | _ReturnDict_trt_rtx_Model: ...
 
 class FramePtr: ...
 
@@ -1274,6 +1867,10 @@ class Core:
     avs: Final[_avs._Core_bound.Plugin]
     """VapourSynth Avisynth Compatibility"""
 # </attribute/Core_bound/avs>
+# <attribute/Core_bound/bs>
+    bs: Final[_bs._Core_bound.Plugin]
+    """Best Source 2"""
+# </attribute/Core_bound/bs>
 # <attribute/Core_bound/resize>
     resize: Final[_resize._Core_bound.Plugin]
     """VapourSynth Resize"""
@@ -1305,6 +1902,27 @@ class _avs:
             def LoadPlugin(self, /, path: _AnyStr) -> None: ...
 
 # </implementation/avs>
+
+# <implementation/bs>
+_ReturnDict_bs_TrackInfo = TypedDict("_ReturnDict_bs_TrackInfo", {"mediatype": int, "mediatypestr": _AnyStr, "codec": int, "codecstr": _AnyStr, "disposition": int, "dispositionstr": _AnyStr})
+
+class _bs:
+    class _Core_bound:
+        class Plugin(_VSPlugin):
+            @_Wrapper.Function
+            def AudioSource(self, /, source: _AnyStr, track: _IntLike | None = None, adjustdelay: _IntLike | None = None, threads: _IntLike | None = None, enable_drefs: _IntLike | None = None, use_absolute_path: _IntLike | None = None, drc_scale: _FloatLike | None = None, cachemode: _IntLike | None = None, cachepath: _AnyStr | None = None, cachesize: _IntLike | None = None, showprogress: _IntLike | None = None, maxdecoders: _IntLike | None = None) -> AudioNode: ...
+            @_Wrapper.Function
+            def Metadata(self, /, source: _AnyStr, track: _IntLike | None = None, enable_drefs: _IntLike | None = None, use_absolute_path: _IntLike | None = None) -> Any: ...
+            @_Wrapper.Function
+            def SetDebugOutput(self, /, enable: _IntLike) -> None: ...
+            @_Wrapper.Function
+            def SetFFmpegLogLevel(self, /, level: _IntLike) -> _IntLike: ...
+            @_Wrapper.Function
+            def TrackInfo(self, /, source: _AnyStr, enable_drefs: _IntLike | None = None, use_absolute_path: _IntLike | None = None) -> _ReturnDict_bs_TrackInfo: ...
+            @_Wrapper.Function
+            def VideoSource(self, /, source: _AnyStr, track: _IntLike | None = None, variableformat: _IntLike | None = None, fpsnum: _IntLike | None = None, fpsden: _IntLike | None = None, rff: _IntLike | None = None, threads: _IntLike | None = None, seekpreroll: _IntLike | None = None, enable_drefs: _IntLike | None = None, use_absolute_path: _IntLike | None = None, cachemode: _IntLike | None = None, cachepath: _AnyStr | None = None, cachesize: _IntLike | None = None, hwdevice: _AnyStr | None = None, extrahwframes: _IntLike | None = None, timecodes: _AnyStr | None = None, start_number: _IntLike | None = None, viewid: _IntLike | None = None, showprogress: _IntLike | None = None, maxdecoders: _IntLike | None = None, hwfallback: _IntLike | None = None, exporttimestamps: _IntLike | None = None) -> VideoNode: ...
+
+# </implementation/bs>
 
 # <implementation/resize>
 class _resize:
@@ -1410,7 +2028,7 @@ class _std:
             def FlipHorizontal(self, /, clip: VideoNode) -> VideoNode: ...
             @_Wrapper.Function
             def FlipVertical(self, /, clip: VideoNode) -> VideoNode: ...
-            @_Wrapper_Core_bound_FrameEval.Function
+            @_Wrapper_Core_bound_std_FrameEval.Function
             def FrameEval(self, /, clip: VideoNode, eval: _VSCallback_std_FrameEval_eval, prop_src: VideoNode | _SequenceLike[VideoNode] | None = None, clip_src: VideoNode | _SequenceLike[VideoNode] | None = None) -> VideoNode: ...
             @_Wrapper.Function
             def FreezeFrames(self, /, clip: VideoNode, first: _IntLike | _SequenceLike[_IntLike] | None = None, last: _IntLike | _SequenceLike[_IntLike] | None = None, replacement: _IntLike | _SequenceLike[_IntLike] | None = None) -> VideoNode: ...
@@ -1454,7 +2072,7 @@ class _std:
             def MergeFullDiff(self, /, clipa: VideoNode, clipb: VideoNode) -> VideoNode: ...
             @_Wrapper.Function
             def Minimum(self, /, clip: VideoNode, planes: _IntLike | _SequenceLike[_IntLike] | None = None, threshold: _FloatLike | None = None, coordinates: _IntLike | _SequenceLike[_IntLike] | None = None) -> VideoNode: ...
-            @_Wrapper_Core_bound_ModifyFrame.Function
+            @_Wrapper_Core_bound_std_ModifyFrame.Function
             def ModifyFrame(self, /, clip: VideoNode, clips: VideoNode | _SequenceLike[VideoNode], selector: _VSCallback_std_ModifyFrame_selector) -> VideoNode: ...
             @_Wrapper.Function
             def PEMVerifier(self, /, clip: VideoNode, upper: _FloatLike | _SequenceLike[_FloatLike] | None = None, lower: _FloatLike | _SequenceLike[_FloatLike] | None = None) -> VideoNode: ...
@@ -1555,7 +2173,7 @@ class _std:
             def FlipHorizontal(self, /) -> VideoNode: ...
             @_Wrapper.Function
             def FlipVertical(self, /) -> VideoNode: ...
-            @_Wrapper_VideoNode_bound_FrameEval.Function
+            @_Wrapper_VideoNode_bound_std_FrameEval.Function
             def FrameEval(self, /, eval: _VSCallback_std_FrameEval_eval, prop_src: VideoNode | _SequenceLike[VideoNode] | None = None, clip_src: VideoNode | _SequenceLike[VideoNode] | None = None) -> VideoNode: ...
             @_Wrapper.Function
             def FreezeFrames(self, /, first: _IntLike | _SequenceLike[_IntLike] | None = None, last: _IntLike | _SequenceLike[_IntLike] | None = None, replacement: _IntLike | _SequenceLike[_IntLike] | None = None) -> VideoNode: ...
@@ -1595,7 +2213,7 @@ class _std:
             def MergeFullDiff(self, /, clipb: VideoNode) -> VideoNode: ...
             @_Wrapper.Function
             def Minimum(self, /, planes: _IntLike | _SequenceLike[_IntLike] | None = None, threshold: _FloatLike | None = None, coordinates: _IntLike | _SequenceLike[_IntLike] | None = None) -> VideoNode: ...
-            @_Wrapper_VideoNode_bound_ModifyFrame.Function
+            @_Wrapper_VideoNode_bound_std_ModifyFrame.Function
             def ModifyFrame(self, /, clips: VideoNode | _SequenceLike[VideoNode], selector: _VSCallback_std_ModifyFrame_selector) -> VideoNode: ...
             @_Wrapper.Function
             def PEMVerifier(self, /, upper: _FloatLike | _SequenceLike[_FloatLike] | None = None, lower: _FloatLike | _SequenceLike[_FloatLike] | None = None) -> VideoNode: ...
