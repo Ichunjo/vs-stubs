@@ -152,7 +152,6 @@ class _Wrapper_Core_bound_ncnn_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -169,7 +168,6 @@ class _Wrapper_Core_bound_ncnn_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -187,7 +185,6 @@ class _Wrapper_Core_bound_ncnn_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -208,7 +205,6 @@ class _Wrapper_VideoNode_bound_ncnn_Model:
         @overload
         def __call__(
             self,
-            /,
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -224,7 +220,6 @@ class _Wrapper_VideoNode_bound_ncnn_Model:
         @overload
         def __call__(
             self,
-            /,
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -241,7 +236,6 @@ class _Wrapper_VideoNode_bound_ncnn_Model:
         @overload
         def __call__(
             self,
-            /,
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -265,7 +259,6 @@ class _Wrapper_Core_bound_ort_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -289,7 +282,6 @@ class _Wrapper_Core_bound_ort_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -314,7 +306,6 @@ class _Wrapper_Core_bound_ort_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -342,7 +333,6 @@ class _Wrapper_VideoNode_bound_ort_Model:
         @overload
         def __call__(
             self,
-            /,
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -365,7 +355,6 @@ class _Wrapper_VideoNode_bound_ort_Model:
         @overload
         def __call__(
             self,
-            /,
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -389,7 +378,6 @@ class _Wrapper_VideoNode_bound_ort_Model:
         @overload
         def __call__(
             self,
-            /,
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -420,7 +408,6 @@ class _Wrapper_Core_bound_ov_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -438,7 +425,6 @@ class _Wrapper_Core_bound_ov_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -457,7 +443,6 @@ class _Wrapper_Core_bound_ov_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -479,7 +464,6 @@ class _Wrapper_VideoNode_bound_ov_Model:
         @overload
         def __call__(
             self,
-            /,
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -496,7 +480,6 @@ class _Wrapper_VideoNode_bound_ov_Model:
         @overload
         def __call__(
             self,
-            /,
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -514,7 +497,6 @@ class _Wrapper_VideoNode_bound_ov_Model:
         @overload
         def __call__(
             self,
-            /,
             network_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -539,7 +521,6 @@ class _Wrapper_Core_bound_trt_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             engine_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -553,7 +534,6 @@ class _Wrapper_Core_bound_trt_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             engine_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -568,7 +548,6 @@ class _Wrapper_Core_bound_trt_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             engine_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -586,7 +565,6 @@ class _Wrapper_VideoNode_bound_trt_Model:
         @overload
         def __call__(
             self,
-            /,
             engine_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -599,7 +577,6 @@ class _Wrapper_VideoNode_bound_trt_Model:
         @overload
         def __call__(
             self,
-            /,
             engine_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -613,7 +590,6 @@ class _Wrapper_VideoNode_bound_trt_Model:
         @overload
         def __call__(
             self,
-            /,
             engine_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -634,7 +610,6 @@ class _Wrapper_Core_bound_trt_rtx_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             engine_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -648,7 +623,6 @@ class _Wrapper_Core_bound_trt_rtx_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             engine_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -663,7 +637,6 @@ class _Wrapper_Core_bound_trt_rtx_Model:
         @overload
         def __call__(
             self,
-            /,
             clips: VideoNode | _SequenceLike[VideoNode],
             engine_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -681,7 +654,6 @@ class _Wrapper_VideoNode_bound_trt_rtx_Model:
         @overload
         def __call__(
             self,
-            /,
             engine_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -694,7 +666,6 @@ class _Wrapper_VideoNode_bound_trt_rtx_Model:
         @overload
         def __call__(
             self,
-            /,
             engine_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
@@ -708,7 +679,6 @@ class _Wrapper_VideoNode_bound_trt_rtx_Model:
         @overload
         def __call__(
             self,
-            /,
             engine_path: _AnyStr,
             overlap: _IntLike | _SequenceLike[_IntLike] | None = None,
             tilesize: _IntLike | _SequenceLike[_IntLike] | None = None,
