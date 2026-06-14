@@ -30,8 +30,10 @@
     },
     {
       "description": "Group all TypeScript definition packages",
-      "matchPackagePatterns": ["^@types/"],
-      "groupName": "TypeScript definitions"
+      "groupName": "TypeScript definitions",
+      "matchPackageNames": [
+        "/^@types//"
+      ]
     },
     {
       "description": "Group development and linting tools",
@@ -43,9 +45,10 @@
         "prettier",
         "esbuild",
         "npm-run-all",
-        "sort-package-json"
+        "sort-package-json",
+        "/^eslint-plugin-/",
+        "/^typescript-eslint/"
       ],
-      "matchPackagePatterns": ["^eslint-plugin-", "^typescript-eslint"],
       "groupName": "Development tools"
     }
   ],
