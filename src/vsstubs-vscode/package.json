@@ -92,16 +92,16 @@
     "serialize-javascript": "7.0.5"
   },
   "dependencies": {
-    "@vscode/python-extension": "^1.0.6"
+    "@vscode/python-extension": "1.0.6"
   },
   "devDependencies": {
     "@types/node": "^25.6.2",
     "@types/vscode": "^1.118.0",
     "esbuild": "^0.28.0",
     "eslint": "^10.3.0",
-    "eslint-config-prettier": "^10.1.8",
+    "eslint-config-prettier": "10.1.8",
     "eslint-plugin-simple-import-sort": "^13.0.0",
-    "npm-run-all2": "^5.0.0",
+    "npm-run-all2": "5.0.2",
     "prettier": "^3.8.3",
     "sort-package-json": "^3.6.1",
     "typescript": "^6.0.3",
@@ -111,7 +111,7 @@
     "ms-python.python"
   ],
   "engines": {
-    "vscode": "^1.118.0"
+    "vscode": "1.124.2"
   },
   "icon": "resources/icon.png"
 }
