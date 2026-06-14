@@ -95,8 +95,8 @@
     "@vscode/python-extension": "^1.0.6"
   },
   "devDependencies": {
-    "@types/node": "^25.6.2",
-    "@types/vscode": "^1.118.0",
+    "@types/node": "25.9.1",
+    "@types/vscode": "1.120.0",
     "esbuild": "^0.28.0",
     "eslint": "^10.3.0",
     "eslint-config-prettier": "^10.1.8",
