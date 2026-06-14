@@ -97,15 +97,15 @@
   "devDependencies": {
     "@types/node": "^25.6.2",
     "@types/vscode": "^1.118.0",
-    "esbuild": "^0.28.0",
-    "eslint": "^10.3.0",
+    "esbuild": "0.28.0",
+    "eslint": "10.4.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-simple-import-sort": "^13.0.0",
+    "eslint-plugin-simple-import-sort": "13.0.0",
     "npm-run-all2": "^5.0.0",
-    "prettier": "^3.8.3",
-    "sort-package-json": "^3.6.1",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.59.2"
+    "prettier": "3.8.3",
+    "sort-package-json": "3.6.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.59.4"
   },
   "extensionDependencies": [
     "ms-python.python"
