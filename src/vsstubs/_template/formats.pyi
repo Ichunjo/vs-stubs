@@ -3,6 +3,7 @@ from typing import Final, Literal, Self, TypedDict
 
 from ._typing import _IntLike
 from .constants import AudioChannels, ColorFamily, SampleType
+from .nodes import Core, _CoreProxy
 
 class _VideoFormatDict(TypedDict):
     id: int
@@ -37,6 +38,7 @@ class VideoFormat:
     def replace(
         self,
         *,
+        core: Core | _CoreProxy = ...,
         color_family: ColorFamily = ...,
         sample_type: SampleType = ...,
         bits_per_sample: _IntLike = ...,
