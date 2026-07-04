@@ -89,7 +89,7 @@
   ],
   "overrides": {
     "diff": "9.0.0",
-    "serialize-javascript": "7.0.5"
+    "serialize-javascript": "7.0.7"
   },
   "dependencies": {
     "@vscode/python-extension": "^1.0.6"
