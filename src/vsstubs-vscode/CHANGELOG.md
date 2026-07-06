@@ -2,6 +2,10 @@
 
 All notable changes to the **VapourSynth Stubs** extension will be documented in this file.
 
+## [0.1.1] - 2026-07-07
+
+- Update dependencies
+
 ## [0.1.0] -
 
 - Add `vsstubs.enableCompatApi3` setting to match `vsstubs`
