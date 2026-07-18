@@ -88,16 +88,16 @@
     "onLanguage:python"
   ],
   "dependencies": {
-    "@vscode/python-extension": "^1.0.6"
+    "@vscode/python-extension": "1.0.6"
   },
   "devDependencies": {
     "@types/node": "^26.1.0",
     "@types/vscode": "^1.125.0",
     "esbuild": "^0.28.1",
     "eslint": "^10.6.0",
-    "eslint-config-prettier": "^10.1.8",
+    "eslint-config-prettier": "10.1.8",
     "eslint-plugin-simple-import-sort": "^13.0.0",
-    "npm-run-all2": "^9.0.2",
+    "npm-run-all2": "9.0.2",
     "prettier": "^3.9.4",
     "sort-package-json": "^4.0.0",
     "typescript": "^6.0.3",
@@ -107,7 +107,7 @@
     "ms-python.python"
   ],
   "engines": {
-    "vscode": "^1.125.0"
+    "vscode": "1.129.1"
   },
   "icon": "resources/icon.png",
   "allowScripts": {
