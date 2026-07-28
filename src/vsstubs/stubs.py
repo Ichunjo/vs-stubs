@@ -59,8 +59,8 @@ def load_plugins(paths: Iterable[str | PathLike[str]]) -> set[str]:
             # std.LoadAllPlugins silently skips the plugins that fail to load.
             try:
                 core.std.LoadPlugin(str(path))
-            except Error as e:
-                log.exception(e)
+            except Error:
+                log.exception("")
 
     return {p.namespace for p in _get_plugins()} - old_plugins
 
