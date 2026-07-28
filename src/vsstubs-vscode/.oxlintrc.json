@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript"],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "builtin": true,
+    "browser": true
+  },
+  "rules": {
+    "prefer-const": "error",
+    "no-var": "error",
+    "prefer-rest-params": "error",
+    "prefer-spread": "error",
+    "sort-imports": [
+      "error",
+      {
+        "ignoreDeclarationSort": true,
+        "ignoreMemberSort": false
+      }
+    ]
+  }
+}

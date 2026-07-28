@@ -4,35 +4,46 @@
   "version": "0.1.1",
   "description": "Generate typing stubs for VapourSynth plugins",
   "categories": [
-    "Programming Languages",
-    "Other"
+    "Other",
+    "Programming Languages"
   ],
   "keywords": [
-    "vapoursynth",
+    "autocompletion",
+    "python",
     "stubs",
     "typing",
-    "python",
-    "autocompletion"
+    "vapoursynth"
   ],
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/Ichunjo/vs-stubs"
   },
-  "license": "MIT",
   "publisher": "vd-varde",
   "type": "module",
   "main": "./dist/extension.cjs",
   "scripts": {
     "check-types": "tsc --noEmit",
     "compile": "npm run check-types && npm run lint && node esbuild.js",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "lint": "eslint src",
+    "format": "oxfmt --write \"**/*.{ts,mts,json,yml,html,css}\"",
+    "lint": "oxlint src",
     "package": "npm run check-types && npm run lint && node esbuild.js --production",
-    "sort-pkg-json": "sort-package-json",
     "vscode:prepublish": "npm run package",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json"
+  },
+  "dependencies": {
+    "@vscode/python-extension": "1.0.6"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.2",
+    "@types/vscode": "1.125.0",
+    "esbuild": "0.28.1",
+    "npm-run-all2": "9.0.2",
+    "oxfmt": "0.61.0",
+    "oxlint": "1.76.0",
+    "typescript": "7.0.2"
   },
   "contributes": {
     "commands": [
@@ -84,32 +95,16 @@
     }
   },
   "activationEvents": [
-    "workspaceContains:**/*.vpy",
-    "onLanguage:python"
+    "onLanguage:python",
+    "workspaceContains:**/*.vpy"
   ],
-  "dependencies": {
-    "@vscode/python-extension": "1.0.6"
-  },
-  "devDependencies": {
-    "@types/node": "26.1.1",
-    "@types/vscode": "1.125.0",
-    "esbuild": "0.28.1",
-    "eslint": "10.8.0",
-    "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-simple-import-sort": "13.0.0",
-    "npm-run-all2": "9.0.2",
-    "prettier": "3.9.6",
-    "sort-package-json": "4.0.0",
-    "typescript": "6.0.3",
-    "typescript-eslint": "8.65.0"
-  },
   "extensionDependencies": [
     "ms-python.python"
   ],
+  "icon": "resources/icon.png",
   "engines": {
     "vscode": "1.130.0"
   },
-  "icon": "resources/icon.png",
   "allowScripts": {
     "esbuild@0.28.1": true
   }
