@@ -30,6 +30,7 @@ export const PYTHON_CONFIG = {
 } as const;
 
 export const FILENAMES = {
+  PYPROJECT: 'pyproject.toml',
   UV_LOCK: 'uv.lock',
   PIPFILE: 'Pipfile',
   PIPFILE_LOCK: 'Pipfile.lock',

@@ -253,14 +253,16 @@ export function detectInstallCommand(): string {
   }
 
   if (existsSync(join(workspaceRoot, FILENAMES.UV_LOCK)) || isOnPath('uv')) {
-    return 'uv add --dev vsstubs';
+    if (existsSync(join(workspaceRoot, FILENAMES.PYPROJECT))) {
+      return 'uv add --dev vsstubs';
+    }
+    return 'uv pip install vsstubs';
   }
 
-  const hasPipFiles =
+  if (
     existsSync(join(workspaceRoot, FILENAMES.PIPFILE)) ||
-    existsSync(join(workspaceRoot, FILENAMES.PIPFILE_LOCK));
-
-  if (hasPipFiles) {
+    existsSync(join(workspaceRoot, FILENAMES.PIPFILE_LOCK))
+  ) {
     return 'pipenv install --dev vsstubs';
   }
 
