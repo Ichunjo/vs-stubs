@@ -2,7 +2,7 @@
  * Core logic for generating VapourSynth stubs.
  */
 
-import { execFile as execFileCb, ExecFileException } from 'node:child_process';
+import { ExecException, execFile as execFileCb } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -82,7 +82,7 @@ export class VSStubs {
           }
           logger.info('Stubs generated successfully.');
         } catch (error) {
-          const execError = error as ExecFileException;
+          const execError = error as ExecException;
           vscode.window.showErrorMessage('Stub generation failed. See output channel for details.');
           logger.error(`${execError.message}`);
         }
@@ -166,7 +166,7 @@ export class VSStubs {
           `Plugin stubs ${subcommand === 'add' ? 'added' : 'removed'}: ${namespaces.join(', ')}`,
         );
       } catch (error) {
-        const execError = error as ExecFileException;
+        const execError = error as ExecException;
         vscode.window.showErrorMessage(
           `Plugin ${subcommand} failed. See output channel for details.`,
         );
