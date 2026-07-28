@@ -10,6 +10,9 @@ When adding plugins, you will need to regenerate stubs to keep the type informat
 
 Note that `vs-stubs` does not include or install any actual VapourSynth plugins. Only their type definitions.
 
+> [!TIP]
+> A VSCode extension is also available [here](https://marketplace.visualstudio.com/items?itemName=vd-varde.vsstubs).
+
 ---
 
 ## Installation
