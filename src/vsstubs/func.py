@@ -144,7 +144,7 @@ def output_stubs(
                 wheel_path = build_wheel(output_dir, tmpl)
                 print(wheel_path, file=sys.stdout)
                 console.print(f"[green]Wheel built successfully at:[/green] {wheel_path}")
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 console.print(f"[red]Error building wheel: {e}[/red]")
                 return
         else:
@@ -232,7 +232,7 @@ def build_wheel(path: Path, tmpl: str) -> str:
 
     try:
         v = packaging.version.parse(importlib.metadata.version("vsstubs"))
-        d = datetime.now()
+        d = datetime.now().astimezone()
         pyproject = _PYPROJECT_TOML.format(version=f"{v.base_version}.{d.strftime('%Y%m%d%H%M%S')}")
         (src / "pyproject.toml").write_text(pyproject)
 

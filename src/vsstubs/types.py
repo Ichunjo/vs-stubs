@@ -10,7 +10,7 @@ from typing import (
     Any,
     NamedTuple,
     Protocol,
-    Union,
+    Union,  # pyright: ignore[reportDeprecated]
     get_args,
     get_origin,
     runtime_checkable,
@@ -83,8 +83,7 @@ class Implementation(NamedTuple):
             for func in funcs:
                 stub.append(indent * 3 + "@" + (func.wrapper))
                 stub.append(indent * 3 + "def " + func.signature)
-            else:
-                stub[-1] = stub[-1] + "\n"
+            stub[-1] = stub[-1] + "\n"
 
         stub.append(_IMPL_END.format(name=self.namespace))
 
@@ -125,7 +124,7 @@ class FloatLike(TypeLike):
 
 
 if sys.version_info >= (3, 14):
-    UnionLike = Union
+    UnionLike = Union  # pyright: ignore[reportDeprecated]
 else:
 
     class UnionTypeLike(type):
@@ -163,7 +162,7 @@ else:
 class VSCallbackTypeLike(TypeLike):
     """Type-like to represent a VSCallback."""
 
-    __slots__ = "repr"
+    __slots__ = ("repr",)
 
     def __init__(self, repr: str = "_VSCallback") -> None:
         self.repr = repr
@@ -213,7 +212,7 @@ def parse_type(utype: Any, is_return: bool = False) -> Any:
     args = get_args(utype)
     parsed = tuple(parse_type(tuple(arg) if isinstance(arg, list) else arg, is_return) for arg in args)
 
-    if origin is Union:
+    if origin is Union:  # pyright: ignore[reportDeprecated]
         match parsed:
             case (func_t, VSCallbackTypeLike(), *_) if issubclass(func_t, Func):
                 return UnionLike[VSCallbackTypeLike(), *parsed[2:]]
