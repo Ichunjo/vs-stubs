@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import site
 import sys
-from collections.abc import Iterable, Sequence
-from functools import cache
+import threading
+from collections.abc import Callable, Iterable, Sequence
+from functools import cache, wraps
 from inspect import Parameter
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from vapoursynth import GRAY8, Plugin, core, register_on_destroy
 
@@ -94,6 +95,25 @@ def _get_cores() -> Sequence[_CoreLike]:
     ]
 
 
-register_on_destroy(_get_plugins.cache_clear)
-register_on_destroy(_get_dir.cache_clear)
-register_on_destroy(_get_cores.cache_clear)
+_REGISTERED = False
+_LOCK_REGISTER = threading.Lock()
+
+
+def register_destroy_cbs[F: Callable[..., Any]]() -> Callable[[F], F]:
+    def decorator(func: F) -> F:
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            global _REGISTERED
+
+            with _LOCK_REGISTER:
+                if not _REGISTERED:
+                    register_on_destroy(_get_plugins.cache_clear)
+                    register_on_destroy(_get_dir.cache_clear)
+                    register_on_destroy(_get_cores.cache_clear)
+                    _REGISTERED = True
+
+            return func(*args, **kwargs)
+
+        return cast(F, wrapper)
+
+    return decorator

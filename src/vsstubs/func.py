@@ -20,11 +20,12 @@ from .stubs import (
 )
 from .template import get_template
 from .types import Implementation, parse_type
-from .utils import _get_cores, _get_default_stubs_path, _index_by_namespace, running_via_cli
+from .utils import _get_cores, _get_default_stubs_path, _index_by_namespace, register_destroy_cbs, running_via_cli
 
 log, console = getLogger(__name__), Console(stderr=True)
 
 
+@register_destroy_cbs()
 def output_stubs(
     input_file: str | PathLike[str] | IO[str] | None,
     output: str | PathLike[str] | IO[str] | None,
