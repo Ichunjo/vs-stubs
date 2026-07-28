@@ -96,11 +96,11 @@
     "esbuild": "0.28.1",
     "eslint": "10.8.0",
     "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-simple-import-sort": "13.0.0",
+    "eslint-plugin-simple-import-sort": "14.0.0",
     "npm-run-all2": "9.0.2",
     "prettier": "3.9.6",
     "sort-package-json": "4.0.0",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "typescript-eslint": "8.65.0"
   },
   "extensionDependencies": [
