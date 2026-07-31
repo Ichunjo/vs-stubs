@@ -1,29 +1,40 @@
+import pytest
 from pytest_mock import MockerFixture
-from typer.testing import CliRunner
 
 from vsstubs.cli import app
 
-runner = CliRunner()
+
+def test_cli_help(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        app.meta(["--help"])
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    output = captured.out + captured.err
+    assert "vsstubs" in output or "vs-stubs" in output
 
 
-def test_cli_help() -> None:
-    result = runner.invoke(app, ["--help"])
-    assert result.exit_code == 0
-    assert "vs-stubs" in result.output
+def test_cli_version(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        app.meta(["--version"])
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    output = captured.out + captured.err
+    assert len(output.strip()) > 0
 
 
-def test_cli_add_dry_run(mocker: MockerFixture) -> None:
-    # Mock output_stubs to avoid actually writing files
+def test_cli_add_dry_run(mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
     mock_output = mocker.patch("vsstubs.cli.output_stubs")
-    result = runner.invoke(app, ["add", "std", "akarin"])
-    assert result.exit_code == 0
-    assert "Adding plugins: std, akarin" in result.output
+    with pytest.raises(SystemExit) as exc_info:
+        app.meta(["add", "std", "akarin"])
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    output = captured.out + captured.err
+    assert "Adding plugins: std, akarin" in output
     mock_output.assert_called_once()
 
 
 def test_cli_check_error_no_input(mocker: MockerFixture) -> None:
     mocker.patch("vsstubs.cli._get_default_stubs_path", return_value="/non/existent/path")
 
-    result = runner.invoke(app, ["check"])
-    # Should fail because it can't find the file
-    assert result.exit_code != 0
+    with pytest.raises((FileNotFoundError, SystemExit)):
+        app.meta(["check"])

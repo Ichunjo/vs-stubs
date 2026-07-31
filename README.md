@@ -86,39 +86,20 @@ output_stubs(None, "output.pyi", template=True)
 
 ## CLI Reference
 
-```
- Usage: vsstubs [OPTIONS] COMMAND [ARGS]...
+![`vsstubs`](https://raw.githubusercontent.com/Ichunjo/vsstubs/master/assets/svg/vsstubs_help.svg)
 
- vs-stubs command line interface
+### Add command
 
-╭─ Options ─────────────────────────────────────────────────────────────────────╮
-│ --template  -T        Export blank template; excludes existing plugins unless │
-│                       --load or --add is used.                                │
-| --compat              Enable return type compatibility for APIv3 plugins.     |
-│ --help                Show this message and exit.                             │
-╰───────────────────────────────────────────────────────────────────────────────╯
-╭─ I/O options ─────────────────────────────────────────────────────────────────╮
-│ --input   -i,-I      TEXT  Path to the input .pyi file. Use '-' for piping.   │
-│ --output  -o,-O      TEXT  Path to write the output .pyi file. '@' overwrites │
-│                            the input file and '-' writes to stdout. With      │
-│                            --wheel, this is the directory where the wheel is  │
-│                            built.                                             │
-│                            [default: (vapoursynth-stubs/__init__.pyi inside   │
-│                            the site-package folder)]                          │
-│ --wheel   -w               Build an installable vapoursynth-stubs wheel       │
-│                            instead of writing a .pyi file. The wheel path is  │
-│                            printed to stdout so it can be passed to pip.      │
-│ --load    -L         PATH  Load plugins from a folder or a single library     │
-│                            file.                                              │
-╰───────────────────────────────────────────────────────────────────────────────╯
-╭─ Informations ────────────────────────────────────────────────────────────────╮
-│ --quiet              Suppress message output.                                 │
-│ --version  -V        Show version info and exit.                              │
-╰───────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ────────────────────────────────────────────────────────────────────╮
-│ add     Add or update the specified plugins in the stubs                      │
-│ remove  Remove the specified plugins from the stubs                           │
-│ check   Check for new plugins or new plugin signatures                        │
-│ update  Update the current signatures from the input                          │
-╰───────────────────────────────────────────────────────────────────────────────╯
-```
+![`vsstubs add --help`](https://raw.githubusercontent.com/Ichunjo/vsstubs/master/assets/svg/vsstubs_add_help.svg)
+
+### Check command
+
+![`vsstubs check --help`](https://raw.githubusercontent.com/Ichunjo/vsstubs/master/assets/svg/vsstubs_check_help.svg)
+
+### Remove command
+
+![`vsstubs remove --help`](https://raw.githubusercontent.com/Ichunjo/vsstubs/master/assets/svg/vsstubs_remove_help.svg)
+
+### Update command
+
+![`vsstubs update --help`](https://raw.githubusercontent.com/Ichunjo/vsstubs/master/assets/svg/vsstubs_update_help.svg)

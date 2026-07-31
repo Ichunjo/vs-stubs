@@ -28,11 +28,11 @@ classifiers = [
 
 dependencies = [
     "vapoursynth>=74",
-    "typer>=0.24.0",
+    "cyclopts>=4.22.3",
     "rich>=15.0.0",
     "typing_extensions>=4.15.0",
     "build>=1.4.3",
-    "uv-build>=0.11.7",
+    "uv-build>=0.12.0",
     "packaging>=26.1",
 ]
 
@@ -42,7 +42,7 @@ Repository = "https://github.com/Ichunjo/vs-stubs"
 Issues = "https://github.com/Ichunjo/vs-stubs/issues"
 
 [project.scripts]
-vsstubs = "vsstubs.cli:app"
+vsstubs = "vsstubs.cli:main"
 
 [dependency-groups]
 dev = [

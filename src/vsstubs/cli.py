@@ -1,243 +1,250 @@
 import json
 import sys
+from dataclasses import dataclass
 from logging import DEBUG, basicConfig, getLogger
 from pathlib import Path
-from types import SimpleNamespace
-from typing import Annotated
+from typing import IO, Annotated
 
-from rich.console import Console
+from cyclopts import App, Group, Parameter
+from cyclopts.help import HelpPanel
+from cyclopts.help.formatters import DefaultFormatter
+from rich.console import Console, ConsoleOptions
 from rich.logging import RichHandler
-from typer import BadParameter, Context, Exit, Option, Typer
 
 from .func import check_stubs, console, output_stubs
 from .utils import _get_default_stubs_path
 
-__all__ = ["app"]
-
+__all__ = ["AppConfig", "app", "main"]
 
 log = getLogger(__name__)
-
-app = Typer(
-    invoke_without_command=True,
-    help="[bold]vs-stubs command line interface[/bold]",
-    rich_markup_mode="rich",
-    pretty_exceptions_enable=False,
-    add_completion=False,
-)
+io_group = Group("I/O", sort_key=0)
+others_group = Group("Others", sort_key=1)
+commands_group = Group("Commands", sort_key=2)
+app = App(name="vsstubs", console=console, group_commands=commands_group)
 
 
-def _show_version(value: bool) -> None:
-    """Show version info and exit"""
-
-    if value:
-        import importlib.metadata
-
-        console.print(f"{importlib.metadata.version('vsstubs')}")
-        raise Exit
-
-
-input_opt = Option(
-    "--input",
-    "-i",
-    "-I",
-    help="Path to the input .pyi file. Use '-' for piping.",
-    rich_help_panel="I/O options",
-    allow_dash=True,
-    path_type=str,
-)
-output_opt = Option(
-    "--output",
-    "-o",
-    "-O",
-    help=(
-        "Path to write the output .pyi file. '@' overwrites the input file and '-' writes to stdout. "
-        "With --wheel, this is the directory where the wheel is built."
-    ),
-    show_default="vapoursynth-stubs/__init__.pyi inside the site-package folder",
-    rich_help_panel="I/O options",
-    allow_dash=True,
-    path_type=str,
-)
-wheel_opt = Option(
-    "--wheel",
-    "-w",
-    help=(
-        "Build an installable vapoursynth-stubs wheel instead of writing a .pyi file. "
-        "The wheel path is printed to stdout so it can be passed to pip."
-    ),
-    rich_help_panel="I/O options",
-)
-load_opt = Option(
-    "--load",
-    "-L",
-    help="Load plugins from a folder or a single library file.",
-    rich_help_panel="I/O options",
-)
-template_opt = Option(
-    "--template",
-    "-T",
-    help="Export blank template; excludes existing plugins unless --load or --add is used.",
-)
-compat_opt = Option("--compat", help="Enable return type compatibility for APIv3 plugins.")
-quiet_opt = Option(
-    "--quiet",
-    help="Suppress message output.",
-    rich_help_panel="Informations",
-)
-debug_opt = Option(
-    "--debug",
-    hidden=True,
-)
-version_opt = Option(
-    "--version",
-    "-V",
-    callback=_show_version,
-    is_eager=True,
-    help="Show version info and exit.",
-    rich_help_panel="Informations",
-)
+class CleanHelpFormatter(DefaultFormatter):
+    def __call__(self, console: Console, options: ConsoleOptions, panel: HelpPanel) -> None:
+        panel.entries = [
+            entry.copy(positive_names=entry.positive_names[1:])  # type: ignore[no-untyped-call]
+            if len(entry.positive_names) > 1 and not entry.positive_names[0].startswith("-")
+            else entry
+            for entry in panel.entries
+        ]
+        super().__call__(console, options, panel)
 
 
-@app.command(help="Add or update the specified plugins in the stubs")
-def add(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
+@Parameter(name="*")
+@dataclass
+class AppConfig:
+    """App configuration options."""
+
+    input: Annotated[str | None, Parameter(alias=["-i", "-I"], group=io_group)] = None
+    """Path to the input .pyi file. Use '-' for piping."""
+    output: Annotated[
+        str | None,
+        Parameter(
+            alias=["-o", "-O"],
+            show_default="vapoursynth-stubs/__init__.pyi inside the site-package folder",
+            group=io_group,
+        ),
+    ] = None
+    """Path to write the output .pyi file. '@' overwrites the input file and '-' writes to stdout.
+    With --wheel, this is the directory where the wheel is built.
+    """
+    wheel: Annotated[bool, Parameter(alias="-w", negative=False, group=io_group)] = False
+    """Build an installable vapoursynth-stubs wheel instead of writing a .pyi file.
+    The wheel path is printed to stdout so it can be passed to pip."""
+    load: Annotated[list[Path] | None, Parameter(alias="-L", negative_iterable="", group=io_group)] = None
+    """Load plugins from a folder or a single library file."""
+    template: Annotated[bool, Parameter(alias="-T", negative=False, group=others_group)] = False
+    """Export blank template; excludes existing plugins unless --load or --add is used."""
+    compat: Annotated[bool, Parameter(negative=False, group=others_group)] = False
+    """Enable return type compatibility for APIv3 plugins."""
+    quiet: Annotated[bool, Parameter(group=others_group, negative=False)] = False
+    """Suppress message output."""
+    debug: Annotated[bool, Parameter(show=False)] = False
+
+    def process(self, command_name: str | None = None) -> tuple[IO[str] | str | None, Path | IO[str] | str | None]:
+        """Process log settings and compute input/output files.
+
+        Args:
+            command_name: Optional subcommand name being executed.
+
+        Returns:
+            Tuple of (input_file, output_file).
+        """
+        if self.quiet:
+            console.quiet = True
+
+        if self.debug:
+            basicConfig(level=DEBUG, handlers=[RichHandler(level=DEBUG, console=Console(stderr=True))])
+
+        input_val = self.input
+        if command_name in ["check", "update"] and input_val is None:
+            default_path = _get_default_stubs_path()
+            input_val = str(default_path) if default_path is not None else None
+        elif not command_name:
+            console.print("Running stub generation...")
+
+        input_file: IO[str] | str | None = sys.stdin if input_val == "-" else input_val
+
+        output_file: Path | IO[str] | str | None
+        match self.output:
+            case "@":
+                if self.wheel:
+                    console.print("[red]Error: Cannot use '@' as output when '--wheel' is enabled.[/red]")
+                    raise SystemExit(1)
+                if input_file is None:
+                    console.print("[red]Error: You must provide an input_file when output is '@'.[/red]")
+                    raise SystemExit(1)
+                output_file = input_file
+            case "-":
+                if self.wheel:
+                    console.print("[red]Error: Cannot use '-' as output when '--wheel' is enabled.[/red]")
+                    raise SystemExit(1)
+                output_file = sys.stdout
+            case str():
+                output_file = Path(self.output) if self.wheel else Path(self.output).with_suffix(".pyi")
+            case _:
+                output_file = _get_default_stubs_path() if not self.wheel else None
+
+        return input_file, output_file
+
+
+DEFAULT_CONFIG = AppConfig()
+_active_config = DEFAULT_CONFIG
+
+
+def _get_effective_config(cmd_config: AppConfig) -> AppConfig:
+    return cmd_config if cmd_config != DEFAULT_CONFIG else _active_config
+
+
+@app.command
+def add(plugins: list[str], /, config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG) -> None:
+    """Add or update the specified plugins in the stubs.
+
+    Args:
+        plugins: Plugins to add or update.
+    """
+    cfg = _get_effective_config(config)
     console.print(f"Adding plugins: {', '.join(plugins)}")
 
+    input_file, output_file = cfg.process("add")
+
     output_stubs(
-        input_file=ctx.obj.input_file,
-        output=ctx.obj.output,
-        wheel=ctx.obj.wheel,
-        template=ctx.obj.template,
-        load=ctx.obj.load,
+        input_file=input_file,
+        output=output_file,
+        wheel=cfg.wheel,
+        template=cfg.template,
+        load=cfg.load,
         update=False,
         add=set(plugins),
         remove=None,
-        compat=ctx.obj.compat,
+        compat=cfg.compat,
     )
-    raise Exit
+    raise SystemExit(0)
 
 
-@app.command(help="Remove the specified plugins from the stubs")
-def remove(plugins: list[str], ctx: Annotated[Context, Option(None)]) -> None:
+@app.command
+def remove(plugins: list[str], /, config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG) -> None:
+    """Remove the specified plugins from the stubs.
+
+    Args:
+        plugins: Plugins to remove.
+    """
+    cfg = _get_effective_config(config)
     console.print(f"Removing plugins: {', '.join(plugins)}")
 
+    input_file, output_file = cfg.process("remove")
+
     output_stubs(
-        input_file=ctx.obj.input_file,
-        output=ctx.obj.output,
-        wheel=ctx.obj.wheel,
-        template=ctx.obj.template,
-        load=ctx.obj.load,
+        input_file=input_file,
+        output=output_file,
+        wheel=cfg.wheel,
+        template=cfg.template,
+        load=cfg.load,
         update=False,
         add=None,
         remove=set(plugins),
-        compat=ctx.obj.compat,
+        compat=cfg.compat,
     )
-    raise Exit
+    raise SystemExit(0)
 
 
-@app.command(help="Check for new plugins or new plugin signatures")
+@app.command(help_formatter=CleanHelpFormatter())
 def check(
-    ctx: Annotated[Context, Option(None)],
-    output_json: Annotated[
-        bool,
-        Option(
-            "--json",
-            help="Print to stdout a json parseable string of the checked old and new plugins",
-            rich_help_panel="I/O options",
-        ),
-    ] = False,
+    config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG,
+    output_json: Annotated[bool, Parameter(name="json", group=io_group, negative=False)] = False,
 ) -> None:
+    """Check for new plugins or new plugin signatures.
+
+    Args:
+        output_json: Print to stdout a json parseable string of the checked old and new plugins.
+    """
+    cfg = _get_effective_config(config)
     console.print("Checking stubs...")
 
-    if not ctx.obj.input_file:
-        raise BadParameter("You must provide an input file when checking for stubs", ctx)
+    input_file, _ = cfg.process("check")
 
-    out = check_stubs(ctx.obj.input_file)
+    if not input_file:
+        console.print("[red]Error: You must provide an input file when checking for stubs[/red]")
+        raise SystemExit(1)
+
+    out = check_stubs(input_file)
 
     if output_json:
         json.dump(out, sys.stdout)
 
-    raise Exit
+    raise SystemExit(0)
 
 
-@app.command(help="Update the current signatures from the input")
-def update(ctx: Annotated[Context, Option(None)]) -> None:
+@app.command
+def update(config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG) -> None:
+    """Update the current signatures from the input."""
+    cfg = _get_effective_config(config)
     console.print("Updating stubs stubs...")
 
+    input_file, output_file = cfg.process("update")
+
     output_stubs(
-        input_file=ctx.obj.input_file,
-        output=ctx.obj.output,
-        wheel=ctx.obj.wheel,
-        template=ctx.obj.template,
-        load=ctx.obj.load,
+        input_file=input_file,
+        output=output_file,
+        wheel=cfg.wheel,
+        template=cfg.template,
+        load=cfg.load,
         update=True,
         add=None,
         remove=None,
-        compat=ctx.obj.compat,
+        compat=cfg.compat,
     )
-    raise Exit
+    raise SystemExit(0)
 
 
-@app.callback()
+@app.meta.default
 def cli_main(
-    ctx: Context,
-    input: Annotated[str | None, input_opt] = None,
-    output: Annotated[str | None, output_opt] = None,
-    wheel: Annotated[bool, wheel_opt] = False,
-    template: Annotated[bool, template_opt] = False,
-    load: Annotated[list[Path] | None, load_opt] = None,
-    compat: Annotated[bool, compat_opt] = False,
-    quiet: Annotated[bool, quiet_opt] = False,
-    debug: Annotated[bool, debug_opt] = False,
-    version: Annotated[bool, version_opt] = False,
+    *tokens: Annotated[str, Parameter(show=False, allow_leading_hyphen=True)],
+    config: Annotated[AppConfig, Parameter(show=True)] = DEFAULT_CONFIG,
 ) -> None:
-    """
-    Generate or modify VapourSynth stubs
-    """
+    """Generate or modify VapourSynth stubs."""
+    global _active_config
+    _active_config = config
 
-    if quiet:
-        console.quiet = True
-
-    if debug:
-        basicConfig(level=DEBUG, handlers=[RichHandler(level=DEBUG, console=Console(stderr=True))])
-
-    if version:
-        raise Exit
-
-    if (ctx.invoked_subcommand in ["check", "update"]) and input is None:
-        input = str(_get_default_stubs_path())
+    if tokens:
+        app(tokens)
     else:
-        console.print("Running stub generation...")
+        input_file, output_file = config.process()
+        output_stubs(
+            input_file,
+            output_file,
+            config.wheel,
+            config.template,
+            config.load,
+            False,
+            compat=config.compat,
+        )
+        raise SystemExit(0)
 
-    input_file = sys.stdin if input == "-" else input
 
-    match output:
-        case "@":
-            if wheel:
-                console.print("[red]Error: Cannot use '@' as output when '--wheel' is enabled.[/red]")
-                raise Exit(1)
-            if input_file is None:
-                console.print("[red]Error: You must provide an input_file when output is '@'.[/red]")
-                raise Exit(1)
-            output_file = input_file
-        case "-":
-            if wheel:
-                console.print("[red]Error: Cannot use '-' as output when '--wheel' is enabled.[/red]")
-                raise Exit(1)
-            output_file = sys.stdout
-        case str():
-            output_file = Path(output) if wheel else Path(output).with_suffix(".pyi")
-        case _:
-            output_file = _get_default_stubs_path() if not wheel else None
-
-    ctx.obj = SimpleNamespace()
-    ctx.obj.input_file = input_file
-    ctx.obj.output = output_file
-    ctx.obj.wheel = wheel
-    ctx.obj.template = template
-    ctx.obj.load = load
-    ctx.obj.quiet = quiet
-    ctx.obj.compat = compat
-
-    if ctx.invoked_subcommand is None:
-        output_stubs(input_file, output_file, wheel, template, load, False, compat=compat)
-        raise Exit
+def main() -> None:
+    app.meta()
