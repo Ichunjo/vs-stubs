@@ -86,20 +86,20 @@ output_stubs(None, "output.pyi", template=True)
 
 ## CLI Reference
 
-![`vsstubs`](https://raw.githubusercontent.com/Ichunjo/vsstubs/master/assets/svg/vsstubs_help.svg)
+![`vsstubs`](https://raw.githubusercontent.com/Ichunjo/vs-stubs/refs/heads/master/assets/svg/vsstubs_help.svg)
 
 ### Add command
 
-![`vsstubs add --help`](https://raw.githubusercontent.com/Ichunjo/vsstubs/master/assets/svg/vsstubs_add_help.svg)
+![`vsstubs add --help`](https://raw.githubusercontent.com/Ichunjo/vs-stubs/refs/heads/master/assets/svg/vsstubs_add_help.svg)
 
 ### Check command
 
-![`vsstubs check --help`](https://raw.githubusercontent.com/Ichunjo/vsstubs/master/assets/svg/vsstubs_check_help.svg)
+![`vsstubs check --help`](https://raw.githubusercontent.com/Ichunjo/vs-stubs/refs/heads/master/assets/svg/vsstubs_check_help.svg)
 
 ### Remove command
 
-![`vsstubs remove --help`](https://raw.githubusercontent.com/Ichunjo/vsstubs/master/assets/svg/vsstubs_remove_help.svg)
+![`vsstubs remove --help`](https://raw.githubusercontent.com/Ichunjo/vs-stubs/refs/heads/master/assets/svg/vsstubs_remove_help.svg)
 
 ### Update command
 
-![`vsstubs update --help`](https://raw.githubusercontent.com/Ichunjo/vsstubs/master/assets/svg/vsstubs_update_help.svg)
+![`vsstubs update --help`](https://raw.githubusercontent.com/Ichunjo/vs-stubs/refs/heads/master/assets/svg/vsstubs_update_help.svg)
