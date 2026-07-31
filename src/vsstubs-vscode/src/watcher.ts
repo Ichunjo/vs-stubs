@@ -22,11 +22,15 @@ export class PluginWatcher implements vscode.Disposable {
   }
 
   // This method should be implemented (vscode.Disposable)
-  dispose(): void {
+  public dispose(): void {
     this.stop();
   }
 
-  async start(): Promise<void> {
+  public [Symbol.dispose](): void {
+    this.dispose();
+  }
+
+  public async start(): Promise<void> {
     this.stop();
     this.pluginDir = await resolvePluginDir();
 
@@ -37,21 +41,20 @@ export class PluginWatcher implements vscode.Disposable {
     logger.info('Plugin watcher started.');
   }
 
-  stop(): void {
+  public stop(): void {
     this.clearDebounce();
-
     this.vsWatcher?.dispose();
     this.vsWatcher = undefined;
 
     for (const w of this.fsWatchers) {
       w.close();
     }
-    this.fsWatchers = [];
 
+    this.fsWatchers = [];
     this.pluginDir = undefined;
   }
 
-  async restart(): Promise<void> {
+  public async restart(): Promise<void> {
     logger.info('Restarting plugin watcher...');
     await this.start();
   }

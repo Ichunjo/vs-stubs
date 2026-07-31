@@ -2,18 +2,22 @@
  * Core logic for generating VapourSynth stubs.
  */
 
-import { ExecException, execFile as execFileCb } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
-import { promisify } from 'node:util';
+import { ExecException } from 'child_process';
+import { existsSync } from 'fs';
+import { join } from 'path';
 
 import * as vscode from 'vscode';
 
 import { CONFIG, FILENAMES } from './constants.js';
-import { getPythonInterpreter, getStubFile, getWorkspaceRoot, isOnPath } from './helpers.js';
+import {
+  execFile,
+  existsAsync,
+  getPythonInterpreter,
+  getStubFile,
+  getWorkspaceRoot,
+  isOnPath,
+} from './helpers.js';
 import { logger } from './logging.js';
-
-const execFile = promisify(execFileCb);
 
 export class VSStubs {
   isGenerationInProgress = false;
@@ -26,32 +30,26 @@ export class VSStubs {
    *   - `'activation'`: workspace open auto-generation. Skips if stubs already exist.
    *   - `'watcher'`: plugin directory changed. Always regenerates, silent (no popup).
    */
-  async generateStubs(trigger: 'manual' | 'activation' | 'watcher' = 'manual'): Promise<void> {
+  public async generateStubs(
+    trigger: 'manual' | 'activation' | 'watcher' = 'manual',
+  ): Promise<void> {
     const isSilent = trigger !== 'manual';
 
     if (this.isGenerationInProgress) {
-      if (!isSilent) {
-        vscode.window.showWarningMessage('Stub generation is already in progress.');
-      }
+      if (!isSilent) vscode.window.showWarningMessage('Stub generation is already in progress.');
       return;
     }
 
     const workspaceRoot = getWorkspaceRoot();
-    if (!workspaceRoot) {
-      return;
-    }
+    if (!workspaceRoot) return;
 
     const stubFile = getStubFile(workspaceRoot);
 
     // On activation, skip if stubs already exist (first-time generation only).
     // The watcher and manual triggers always proceed.
-    if (trigger === 'activation' && existsSync(stubFile)) {
-      return;
-    }
+    if (trigger === 'activation' && existsSync(stubFile)) return;
 
-    if (!(await ensureVsstubsAvailable())) {
-      return;
-    }
+    if (!(await ensureVsstubsAvailable())) return;
 
     const args = buildArgs(stubFile);
     const pythonPath = await getPythonInterpreter();
@@ -70,21 +68,14 @@ export class VSStubs {
         try {
           const result = await execFile(pythonPath, ['-m', ...args], { cwd: workspaceRoot });
 
-          if (result.stdout) {
-            logger.info(result.stdout);
-          }
-          if (result.stderr) {
-            logger.info(result.stderr);
-          }
+          if (result.stdout) logger.info(result.stdout);
+          if (result.stderr) logger.info(result.stderr);
+          if (!isSilent) vscode.window.showInformationMessage('VapourSynth stubs generated.');
 
-          if (!isSilent) {
-            vscode.window.showInformationMessage('VapourSynth stubs generated.');
-          }
           logger.info('Stubs generated successfully.');
         } catch (error) {
-          const execError = error as ExecException;
           vscode.window.showErrorMessage('Stub generation failed. See output channel for details.');
-          logger.error(`${execError.message}`);
+          logger.error(`${(error as ExecException).message}`);
         }
       });
     } finally {
@@ -95,28 +86,24 @@ export class VSStubs {
   /**
    * Add VapourSynth plugin stubs.
    */
-  async addPlugins(): Promise<void> {
+  public async addPlugins(): Promise<void> {
     const input = await vscode.window.showInputBox({
       prompt: 'Plugin namespace(s) to add (space-separated)',
       placeHolder: 'e.g. descale resize2',
     });
-    if (!input) {
-      return;
-    }
+    if (!input) return;
     await this.runPluginSubcommand('add', input.trim().split(/\s+/));
   }
 
   /**
    * Remove VapourSynth plugin stubs.
    */
-  async removePlugins(): Promise<void> {
+  public async removePlugins(): Promise<void> {
     const input = await vscode.window.showInputBox({
       prompt: 'Plugin namespace(s) to remove (space-separated)',
       placeHolder: 'e.g. descale resize2',
     });
-    if (!input) {
-      return;
-    }
+    if (!input) return;
     await this.runPluginSubcommand('remove', input.trim().split(/\s+/));
   }
 
@@ -124,14 +111,10 @@ export class VSStubs {
     subcommand: 'add' | 'remove',
     namespaces: string[],
   ): Promise<void> {
-    if (!(await this.ensureStubsFileExist(subcommand, namespaces))) {
-      return;
-    }
+    if (!(await this.ensureStubsFileExist(subcommand, namespaces))) return;
 
     const workspaceRoot = getWorkspaceRoot();
-    if (!(workspaceRoot && (await ensureVsstubsAvailable()))) {
-      return;
-    }
+    if (!(workspaceRoot && (await ensureVsstubsAvailable()))) return;
 
     const stubFile = getStubFile(workspaceRoot);
 
@@ -155,22 +138,17 @@ export class VSStubs {
       try {
         const result = await execFile(pythonPath, ['-m', ...args], { cwd: workspaceRoot });
 
-        if (result.stdout) {
-          logger.info(result.stdout);
-        }
-        if (result.stderr) {
-          logger.info(result.stderr);
-        }
+        if (result.stdout) logger.info(result.stdout);
+        if (result.stderr) logger.info(result.stderr);
 
         vscode.window.showInformationMessage(
           `Plugin stubs ${subcommand === 'add' ? 'added' : 'removed'}: ${namespaces.join(', ')}`,
         );
       } catch (error) {
-        const execError = error as ExecException;
         vscode.window.showErrorMessage(
           `Plugin ${subcommand} failed. See output channel for details.`,
         );
-        logger.error(`${execError.message}`);
+        logger.error(`${(error as ExecException).message}`);
       }
     });
   }
@@ -180,13 +158,11 @@ export class VSStubs {
     namespaces: string[],
   ): Promise<boolean> {
     const workspaceRoot = getWorkspaceRoot();
-    if (!(workspaceRoot && (await ensureVsstubsAvailable()))) {
-      return false;
-    }
+    if (!(workspaceRoot && (await ensureVsstubsAvailable()))) return false;
 
     const stubFile = getStubFile(workspaceRoot);
 
-    if (!existsSync(stubFile)) {
+    if (!(await existsAsync(stubFile))) {
       const errorMessage = `Can't ${subcommand} "${namespaces.join(', ')} because there is no stubs file."`;
       logger.error(`${errorMessage}`);
       vscode.window.showErrorMessage(errorMessage);

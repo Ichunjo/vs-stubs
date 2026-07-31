@@ -3,16 +3,29 @@
  */
 
 import { execFile as execFileCb, execFileSync } from 'node:child_process';
-import { join } from 'node:path';
 import { promisify } from 'node:util';
 
 import { PythonExtension } from '@vscode/python-extension';
 import * as vscode from 'vscode';
 
+import { access } from 'node:fs/promises';
+import { constants } from 'node:fs';
+
 import { FILENAMES, NAMESPACES, PYTHON_CONFIG } from './constants.js';
 import { logger } from './logging.js';
+import path from 'node:path';
 
-const execFile = promisify(execFileCb);
+export const execFile = promisify(execFileCb);
+
+export async function existsAsync(path: string): Promise<boolean> {
+  try {
+    await access(path, constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Get the workspace root path.
  */
@@ -29,7 +42,7 @@ export function getWorkspaceRoot(): string | undefined {
  * Get absolute path to the vapoursynth stub file inside the workspace.
  */
 export function getStubFile(workspaceRoot: string): string {
-  return join(workspaceRoot, getStubDir(), NAMESPACES.VAPOURSYNTH, FILENAMES.STUB_INIT);
+  return path.join(workspaceRoot, getStubDir(), NAMESPACES.VAPOURSYNTH, FILENAMES.STUB_INIT);
 }
 
 export function isOnPath(command: string): boolean {

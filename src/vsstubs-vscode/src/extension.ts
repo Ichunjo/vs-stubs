@@ -31,17 +31,13 @@ export function activate(context: vscode.ExtensionContext): void {
   const config = vscode.workspace.getConfiguration(CONFIG.SECTION);
   const shouldAutoGenerate = config.get<boolean>(CONFIG.AUTO_GENERATE, true);
 
-  if (shouldAutoGenerate) {
-    vsstubs.generateStubs('activation');
-  }
+  if (shouldAutoGenerate) vsstubs.generateStubs('activation');
 
   // Plugin directory watcher
   const shouldWatch = config.get<boolean>(CONFIG.WATCH_PLUGINS, true);
 
   if (shouldWatch) {
-    const watcher = new PluginWatcher(() => {
-      vsstubs.generateStubs('watcher');
-    });
+    const watcher = new PluginWatcher(() => vsstubs.generateStubs('watcher'));
 
     context.subscriptions.push(watcher);
     watcher.start();
