@@ -3,11 +3,11 @@
  */
 
 import * as fs from 'node:fs';
-
+import path from 'node:path';
 import * as vscode from 'vscode';
 
 import { CONFIG, PLUGIN_GLOB } from './constants.js';
-import { isPluginFile, resolvePluginDir } from './helpers.js';
+import { getWorkspaceRoot, isPluginFile, resolvePluginDir } from './helpers.js';
 import { logger } from './logging.js';
 
 export class PluginWatcher implements vscode.Disposable {
@@ -16,6 +16,7 @@ export class PluginWatcher implements vscode.Disposable {
   private fsWatchers: fs.FSWatcher[] = [];
   private debounceTimer: ReturnType<typeof setTimeout> | undefined;
   private pluginDir: string | undefined;
+  private activeSession = 0;
 
   constructor(onPluginsChanged: () => void) {
     this.onPluginsChanged = onPluginsChanged;
@@ -32,7 +33,11 @@ export class PluginWatcher implements vscode.Disposable {
 
   public async start(): Promise<void> {
     this.stop();
-    this.pluginDir = await resolvePluginDir();
+    const currentSession = ++this.activeSession;
+    const dir = await resolvePluginDir();
+
+    if (currentSession !== this.activeSession) return;
+    this.pluginDir = dir;
 
     if (this.pluginDir) {
       this.watchDefaultPluginDir();
@@ -42,6 +47,7 @@ export class PluginWatcher implements vscode.Disposable {
   }
 
   public stop(): void {
+    this.activeSession++;
     this.clearDebounce();
     this.vsWatcher?.dispose();
     this.vsWatcher = undefined;
@@ -75,24 +81,27 @@ export class PluginWatcher implements vscode.Disposable {
   private watchExtraPluginDirs(): void {
     const config = vscode.workspace.getConfiguration(CONFIG.SECTION);
     const extraDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
+    const workspaceRoot = getWorkspaceRoot();
 
     for (const dir of extraDirs) {
+      const targetDir =
+        workspaceRoot && !path.isAbsolute(dir) ? path.resolve(workspaceRoot, dir) : dir;
       try {
-        const fsw = fs.watch(dir, { recursive: true }, (_eventType, filename) => {
+        const fsw = fs.watch(targetDir, { recursive: true }, (_eventType, filename) => {
           if (filename && isPluginFile(filename)) {
             this.scheduleRegeneration('changed (extra dir)');
           }
         });
 
         fsw.on('error', (err) => {
-          logger.warn(`fs.watch error for "${dir}": ${err.message}`);
+          logger.warn(`fs.watch error for "${targetDir}": ${err.message}`);
         });
 
         this.fsWatchers.push(fsw);
-        logger.info(`Watching extra plugin dir: ${dir}`);
+        logger.info(`Watching extra plugin dir: ${targetDir}`);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        logger.warn(`Failed to watch extra dir "${dir}": ${message}`);
+        logger.warn(`Failed to watch extra dir "${targetDir}": ${message}`);
       }
     }
   }
