@@ -190,21 +190,23 @@ def check_stubs(input_file: str | PathLike[str] | IO[str]) -> dict[str, list[str
     else:
         console.print("[green]Stubs are up to date![/green]")
 
-    for ns in old_keys & new_keys:
-        _compare_plugins(old_impl[ns], new_impl[ns], ns)
+    modified = [ns for ns in sorted(old_keys & new_keys) if _compare_plugins(old_impl[ns], new_impl[ns], ns)]
 
-    return {"old": list(only_old), "new": list(only_new)}
+    return {"old": list(only_old), "new": list(only_new), "modified": modified}
 
 
-def _compare_plugins(old: Implementation, new: Implementation, ns: str) -> None:
+def _compare_plugins(old: Implementation, new: Implementation, ns: str) -> bool:
     checks: list[tuple[str, Any, Any]] = [
         ("functions", dict(old.functions), dict(new.functions)),
         ("description", old.description, new.description),
         ("extra types", old.extra_types, new.extra_types),
     ]
+    has_diff = False
     for field, old_val, new_val in checks:
         if old_val != new_val:
             console.print(f'For the plugin {ns}, the "{field}" differ.')
+            has_diff = True
+    return has_diff
 
 
 _PYPROJECT_TOML = """
