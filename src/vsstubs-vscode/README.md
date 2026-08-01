@@ -24,6 +24,8 @@ Access these via the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
 - `VapourSynth: Generate Stubs` — Full regeneration of all stubs.
 - `VapourSynth: Add Plugin Stubs` — Generate stubs for specific plugins.
 - `VapourSynth: Remove Plugin Stubs` — Remove stubs for specific plugins.
+- `VapourSynth: Check Stubs` — Check VapourSynth stubs for outdated or new plugins / signature updates.
+- `VapourSynth: Update Stubs` — Update VapourSynth stubs signatures against existing stub files.
 
 ## Configuration
 
