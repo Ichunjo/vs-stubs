@@ -97,6 +97,10 @@ output_stubs(None, "output.pyi", template=True)
 
 ![`vsstubs check --help`](https://raw.githubusercontent.com/Ichunjo/vs-stubs/refs/heads/master/assets/svg/vsstubs_check_help.svg)
 
+### Plugins command
+
+![`vsstubs plugins --help`](https://raw.githubusercontent.com/Ichunjo/vs-stubs/refs/heads/master/assets/svg/vsstubs_plugins_help.svg)
+
 ### Remove command
 
 ![`vsstubs remove --help`](https://raw.githubusercontent.com/Ichunjo/vs-stubs/refs/heads/master/assets/svg/vsstubs_remove_help.svg)
