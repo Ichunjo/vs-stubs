@@ -50,6 +50,12 @@
         "/^typescript-eslint/"
       ],
       "groupName": "Development tools"
+    },
+    {
+      "description": "Preserve semver range for package.json engines",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["engines"],
+      "rangeStrategy": "replace"
     }
   ],
   "npm": {

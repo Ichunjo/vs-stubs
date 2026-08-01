@@ -113,7 +113,7 @@
   ],
   "icon": "resources/icon.png",
   "engines": {
-    "vscode": "1.131.0"
+    "vscode": "^1.130.0"
   },
   "allowScripts": {
     "esbuild@0.28.1": true
