@@ -139,10 +139,7 @@ export function isPluginFile(filename: string): boolean {
 export async function resolvePluginDir(): Promise<string | undefined> {
   try {
     const pythonPath = await getPythonInterpreter();
-    const { stdout } = await execFile(pythonPath, [
-      '-c',
-      'from vapoursynth import get_plugin_dir; print(get_plugin_dir())',
-    ]);
+    const { stdout } = await execFile(pythonPath, ['-m', 'vapoursynth', 'get-plugin-dir']);
     const dir = stdout.trim();
     if (dir) {
       logger.info(`Resolved plugin dir: ${dir}`);
@@ -153,4 +150,16 @@ export async function resolvePluginDir(): Promise<string | undefined> {
     logger.warn(`Could not resolve plugin dir: ${message}`);
   }
   return undefined;
+}
+
+/**
+ * Check if the `vapoursynth` module is installed in the active Python environment.
+ */
+export async function isVapoursynthAvailable(pythonPath: string): Promise<boolean> {
+  try {
+    await execFile(pythonPath, ['-c', 'import vapoursynth']);
+    return true;
+  } catch {
+    return false;
+  }
 }

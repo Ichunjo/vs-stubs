@@ -13,6 +13,7 @@ import {
   getStubFile,
   getWorkspaceRoot,
   isOnPath,
+  isVapoursynthAvailable,
 } from './helpers.js';
 import { logger } from './logging.js';
 import {
@@ -279,7 +280,7 @@ export class VSStubs {
     if (!ctx) return undefined;
 
     if (!options.skipCheck) {
-      const available = await this.ensureAvailable();
+      const available = await this.ensureAvailable(options.silent);
       if (!available) return undefined;
     }
 
@@ -315,12 +316,27 @@ export class VSStubs {
   /**
    * Ensure `vsstubs` package is available in the current Python environment.
    */
-  private async ensureAvailable(): Promise<boolean> {
+  private async ensureAvailable(silent = false): Promise<boolean> {
     const ctx = await this.getWorkspaceContext();
     if (!ctx) return false;
 
     if (this.isAvailable && this.checkedPythonPath === ctx.pythonPath) {
       return true;
+    }
+
+    const vsAvailable = await isVapoursynthAvailable(ctx.pythonPath);
+    if (!vsAvailable) {
+      this.isAvailable = false;
+      this.checkedPythonPath = ctx.pythonPath;
+      logger.info(
+        `VapourSynth module not found for interpreter "${ctx.pythonPath}". Silencing extension.`,
+      );
+      if (!silent) {
+        vscode.window.showErrorMessage(
+          `VapourSynth module is not installed for interpreter "${ctx.pythonPath}".`,
+        );
+      }
+      return false;
     }
 
     const res = await this.runVsstubsCommand({
@@ -339,6 +355,8 @@ export class VSStubs {
     }
 
     this.isAvailable = false;
+    this.checkedPythonPath = ctx.pythonPath;
+
     const installCommand = await detectInstallCommand(ctx.workspaceRoot);
     const choice = await vscode.window.showErrorMessage(
       `"vsstubs" module (v${MINIMUM_VSSTUBS_VERSION}+) not found for interpreter "${ctx.pythonPath}". ` +
