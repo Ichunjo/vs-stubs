@@ -28,6 +28,7 @@ export async function existsAsync(path: string): Promise<boolean> {
 
 /**
  * Get the workspace root path.
+ * Priority is given to active document workspace folder in multi-root setups.
  */
 export function getWorkspaceRoot(): string | undefined {
   const folders = vscode.workspace.workspaceFolders;
@@ -35,6 +36,15 @@ export function getWorkspaceRoot(): string | undefined {
     vscode.window.showWarningMessage('VapourSynth Stubs: No workspace folder is open.');
     return undefined;
   }
+
+  const activeUri = vscode.window.activeTextEditor?.document.uri;
+  if (activeUri) {
+    const activeFolder = vscode.workspace.getWorkspaceFolder(activeUri);
+    if (activeFolder) {
+      return activeFolder.uri.fsPath;
+    }
+  }
+
   return folders[0].uri.fsPath;
 }
 
