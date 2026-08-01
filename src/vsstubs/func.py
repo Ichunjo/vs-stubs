@@ -195,6 +195,38 @@ def check_stubs(input_file: str | PathLike[str] | IO[str]) -> dict[str, list[str
     return {"old": list(only_old), "new": list(only_new), "modified": modified}
 
 
+def list_plugins(
+    input_file: str | PathLike[str] | IO[str] | None = None, load: Sequence[str | PathLike[str]] | None = None
+) -> list[dict[str, str]]:
+    """
+    List available VapourSynth plugins or plugin stubs present in an input file.
+
+    Args:
+        input_file: Optional path to an existing `.pyi` file. If provided, lists installed stub namespaces.
+        load: Optional plugin directory or library paths to load before listing available plugins.
+    """
+    if not running_via_cli():
+        console.quiet = True
+
+    if input_file:
+        tmpl = Path(input_file).read_text() if isinstance(input_file, (str, PathLike)) else input_file.read()
+        implementations = get_implementations_from_input(tmpl)
+        return [
+            {"namespace": impl.namespace, "description": impl.description}
+            for impl in sorted(implementations, key=lambda i: i.namespace)
+        ]
+
+    if load:
+        load_plugins(load)
+
+    cores = _get_cores()
+    pinters = retrieve_plugins(cores)
+    return [
+        {"namespace": pinter.namespace, "description": pinter.description}
+        for pinter in sorted(pinters, key=lambda p: p.namespace)
+    ]
+
+
 def _compare_plugins(old: Implementation, new: Implementation, ns: str) -> bool:
     checks: list[tuple[str, Any, Any]] = [
         ("functions", dict(old.functions), dict(new.functions)),

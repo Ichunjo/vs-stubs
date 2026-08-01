@@ -12,8 +12,9 @@ from cyclopts.help import HelpPanel
 from cyclopts.help.formatters import DefaultFormatter
 from rich.console import Console, ConsoleOptions
 from rich.logging import RichHandler
+from rich.pretty import pretty_repr
 
-from .func import check_stubs, console, output_stubs
+from .func import check_stubs, console, list_plugins, output_stubs
 from .utils import _get_default_stubs_path
 
 __all__ = ["AppConfig", "app", "main"]
@@ -221,6 +222,29 @@ def update(config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG)
         remove=None,
         compat=cfg.compat,
     )
+    raise SystemExit(0)
+
+
+@app.command(help_formatter=CleanHelpFormatter())
+def plugins(
+    config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG,
+    output_json: Annotated[bool, Parameter(name="json", group=io_group, negative=False)] = False,
+) -> None:
+    """List available plugins or installed plugin stubs.
+
+    Args:
+        output_json: Print to stdout a JSON-parseable response.
+    """
+    cfg = _get_effective_config(config)
+    input_file, _ = cfg.process("plugins")
+
+    out = list_plugins(input_file=input_file, load=cfg.load)
+
+    if output_json:
+        json.dump(out, sys.stdout)
+    else:
+        console.print(pretty_repr(out))
+
     raise SystemExit(0)
 
 

@@ -38,3 +38,11 @@ def test_cli_check_error_no_input(mocker: MockerFixture) -> None:
 
     with pytest.raises((FileNotFoundError, SystemExit)):
         app.meta(["check"])
+
+
+def test_cli_plugins_json(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        app.meta(["plugins", "--json"])
+    assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "namespace" in captured.out
