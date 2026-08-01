@@ -64,7 +64,7 @@ export class VSStubs {
     this.isGenerationInProgress = true;
     try {
       await this.runVsstubsCommand({
-        args: buildArgs(ctx.stubFile),
+        args: await this.buildArgs(),
         title: 'Generating VapourSynth stubs...',
         successMessage: 'VapourSynth stubs generated.',
         errorMessage: 'Stub generation failed.',
@@ -240,7 +240,7 @@ export class VSStubs {
     const errNs = nsList ? ` ${nsList}` : '';
 
     return this.runVsstubsCommand({
-      args: [...buildArgs(ctx.stubFile, ctx.stubFile), subcommand, ...namespaces],
+      args: [...(await this.buildArgs(ctx.stubFile)), subcommand, ...namespaces],
       title: `${pending} stubs...`,
       successMessage: `VapourSynth stubs ${completion}${nsMsg}`,
       errorMessage: `Stub ${subcommand}${errNs} failed`,
@@ -314,6 +314,25 @@ export class VSStubs {
   }
 
   /**
+   * Build CLI arguments for `python -m vsstubs`.
+   */
+  private async buildArgs(inputStubFile?: string): Promise<string[]> {
+    const args = ['-o', (await this.workspaceContext).stubFile];
+    if (inputStubFile) args.push('-i', inputStubFile);
+
+    const config = vscode.workspace.getConfiguration(CONFIG.SECTION);
+    const extraDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
+
+    for (const dir of extraDirs) {
+      args.push('--load', dir);
+    }
+
+    if (config.get<boolean>(CONFIG.ENABLE_COMPAT_API3)) args.push('--compat');
+
+    return args;
+  }
+
+  /**
    * Ensure `vsstubs` package is available in the current Python environment.
    */
   private async ensureAvailable(silent = false): Promise<boolean> {
@@ -357,7 +376,7 @@ export class VSStubs {
     this.isAvailable = false;
     this.checkedPythonPath = ctx.pythonPath;
 
-    const installCommand = await detectInstallCommand(ctx.workspaceRoot);
+    const installCommand = await this.detectInstallCommand();
     const choice = await vscode.window.showErrorMessage(
       `"vsstubs" module (v${MINIMUM_VSSTUBS_VERSION}+) not found for interpreter "${ctx.pythonPath}". ` +
         'Install it in your current environment.',
@@ -421,51 +440,28 @@ export class VSStubs {
   private get workspaceContext(): Promise<WorkspaceContext> {
     return (async () => (await this.getWorkspaceContext())!)();
   }
-}
 
-/**
- * Package manager detection for installation prompts.
- */
-async function detectInstallCommand(workspaceRoot?: string): Promise<string> {
-  const root = workspaceRoot ?? getWorkspaceRoot();
-  if (!root) {
+  /**
+   * Package manager detection for installation prompts.
+   */
+  private async detectInstallCommand(): Promise<string> {
+    const root = (await this.workspaceContext).workspaceRoot;
+    const isUvEnv = Promise.all([existsAsync(join(root, FILENAMES.UV_LOCK)), isOnPath('uv')]);
+    if ((await isUvEnv).some((value) => value)) {
+      if (await existsAsync(join(root, FILENAMES.PYPROJECT))) return 'uv add --dev vsstubs';
+      return 'uv pip install vsstubs';
+    }
+
+    const isPipEnv = Promise.all([
+      existsAsync(join(root, FILENAMES.PIPFILE)),
+      existsAsync(join(root, FILENAMES.PIPFILE_LOCK)),
+    ]);
+    if ((await isPipEnv).some((value) => value)) {
+      return 'pipenv install --dev vsstubs';
+    }
+
     return 'pip install vsstubs';
   }
-
-  if ((await existsAsync(join(root, FILENAMES.UV_LOCK))) || (await isOnPath('uv'))) {
-    if (await existsAsync(join(root, FILENAMES.PYPROJECT))) {
-      return 'uv add --dev vsstubs';
-    }
-    return 'uv pip install vsstubs';
-  }
-
-  if (
-    (await existsAsync(join(root, FILENAMES.PIPFILE))) ||
-    (await existsAsync(join(root, FILENAMES.PIPFILE_LOCK)))
-  ) {
-    return 'pipenv install --dev vsstubs';
-  }
-
-  return 'pip install vsstubs';
-}
-
-/**
- * Build CLI arguments for `python -m vsstubs`.
- */
-function buildArgs(stubFile: string, inputStubFile?: string): string[] {
-  const args = ['-o', stubFile];
-  if (inputStubFile) args.push('-i', inputStubFile);
-
-  const config = vscode.workspace.getConfiguration(CONFIG.SECTION);
-  const extraDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
-
-  for (const dir of extraDirs) {
-    args.push('--load', dir);
-  }
-
-  if (config.get<boolean>(CONFIG.ENABLE_COMPAT_API3)) args.push('--compat');
-
-  return args;
 }
 
 /**
