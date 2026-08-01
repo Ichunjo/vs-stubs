@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(COMMANDS.REMOVE_PLUGIN, vsstubs.removePlugins),
   );
 
-  // Auto-generate on activation if enabled
+  // Auto-generate on activation if enabled or run background check if stubs exist
   const config = vscode.workspace.getConfiguration(CONFIG.SECTION);
   const shouldAutoGenerate = config.get<boolean>(CONFIG.AUTO_GENERATE, true);
 
@@ -35,9 +35,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Plugin directory watcher
   const shouldWatch = config.get<boolean>(CONFIG.WATCH_PLUGINS, true);
+  let watcher: PluginWatcher | undefined;
 
   if (shouldWatch) {
-    const watcher = new PluginWatcher(() => vsstubs.generateStubs('watcher'));
+    watcher = new PluginWatcher(() => vsstubs.generateStubs('watcher'));
 
     context.subscriptions.push(watcher);
     watcher.start();
@@ -46,39 +47,43 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(
       vscode.workspace.onDidChangeConfiguration((e) => {
         if (e.affectsConfiguration(`${CONFIG.SECTION}.${CONFIG.EXTRA_PLUGIN_DIRS}`)) {
-          watcher.restart();
+          watcher?.restart();
           logger.info('Extra plugin dirs changed. Restarting watcher...');
         }
 
         if (e.affectsConfiguration(`${CONFIG.SECTION}.${CONFIG.WATCH_PLUGINS}`)) {
           const updated = vscode.workspace.getConfiguration(CONFIG.SECTION);
           if (updated.get<boolean>(CONFIG.WATCH_PLUGINS, true)) {
-            watcher.restart();
+            watcher?.restart();
             logger.info('Plugin watcher re-enabled by settings.');
           } else {
-            watcher.stop();
+            watcher?.stop();
             logger.info('Plugin watcher disabled by settings.');
           }
         }
       }),
     );
-
-    // Restart watcher when the Python interpreter changes
-    PythonExtension.api()
-      .then((api) => {
-        context.subscriptions.push(
-          api.environments.onDidChangeActiveEnvironmentPath(() => {
-            logger.info('Python interpreter changed, restarting watcher...');
-            watcher.restart();
-          }),
-        );
-      })
-      .catch((err) => {
-        logger.warn(
-          `Could not subscribe to interpreter changes: ${err instanceof Error ? err.message : String(err)}`,
-        );
-      });
   }
+
+  // Subscribe to interpreter changes for background check and watcher restart
+  PythonExtension.api()
+    .then((api) => {
+      context.subscriptions.push(
+        api.environments.onDidChangeActiveEnvironmentPath(() => {
+          logger.info('Python interpreter changed. Running background check...');
+          vsstubs.checkPlugins(true);
+          if (watcher) {
+            logger.info('Restarting watcher...');
+            watcher.restart();
+          }
+        }),
+      );
+    })
+    .catch((err) => {
+      logger.warn(
+        `Could not subscribe to interpreter changes: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    });
 }
 
 export function deactivate(): void {
