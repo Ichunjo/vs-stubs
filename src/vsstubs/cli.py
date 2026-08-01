@@ -1,3 +1,5 @@
+import contextlib
+import io
 import json
 import sys
 from dataclasses import dataclass
@@ -128,9 +130,9 @@ def add(plugins: list[str], /, config: Annotated[AppConfig, Parameter(show=False
         plugins: Plugins to add or update.
     """
     cfg = _get_effective_config(config)
-    console.print(f"Adding plugins: {', '.join(plugins)}")
-
     input_file, output_file = cfg.process("add")
+
+    console.print(f"Adding plugins: {', '.join(plugins)}")
 
     output_stubs(
         input_file=input_file,
@@ -154,9 +156,9 @@ def remove(plugins: list[str], /, config: Annotated[AppConfig, Parameter(show=Fa
         plugins: Plugins to remove.
     """
     cfg = _get_effective_config(config)
-    console.print(f"Removing plugins: {', '.join(plugins)}")
-
     input_file, output_file = cfg.process("remove")
+
+    console.print(f"Removing plugins: {', '.join(plugins)}")
 
     output_stubs(
         input_file=input_file,
@@ -183,15 +185,16 @@ def check(
         output_json: Print to stdout a json parseable string of the checked old and new plugins.
     """
     cfg = _get_effective_config(config)
-    console.print("Checking stubs...")
-
     input_file, _ = cfg.process("check")
+
+    console.print("Checking stubs...")
 
     if not input_file:
         console.print("[red]Error: You must provide an input file when checking for stubs[/red]")
         raise SystemExit(1)
 
-    out = check_stubs(input_file)
+    with contextlib.redirect_stdout(io.StringIO()):
+        out = check_stubs(input_file)
 
     if output_json:
         json.dump(out, sys.stdout)
@@ -203,9 +206,9 @@ def check(
 def update(config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG) -> None:
     """Update the current signatures from the input."""
     cfg = _get_effective_config(config)
-    console.print("Updating stubs stubs...")
-
     input_file, output_file = cfg.process("update")
+
+    console.print("Updating stubs stubs...")
 
     output_stubs(
         input_file=input_file,
