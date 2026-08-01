@@ -4,8 +4,9 @@ import { OUTPUT_CHANNEL_NAME } from './constants.js';
 
 let channel: vscode.LogOutputChannel;
 
-export function initLogger() {
+export function initLogger(context: vscode.ExtensionContext) {
   channel = vscode.window.createOutputChannel(OUTPUT_CHANNEL_NAME, { log: true });
+  context.subscriptions.push(channel);
 }
 
 export const logger = {

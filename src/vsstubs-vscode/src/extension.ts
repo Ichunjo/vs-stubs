@@ -11,7 +11,7 @@ import { initLogger, logger } from './logging.js';
 import { PluginWatcher } from './watcher.js';
 
 export function activate(context: vscode.ExtensionContext): void {
-  initLogger();
+  initLogger(context);
 
   const vsstubs = new VSStubs();
 
