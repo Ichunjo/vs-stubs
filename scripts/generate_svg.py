@@ -1,5 +1,4 @@
 import contextlib
-import io
 import os
 import sys
 from collections.abc import Sequence
@@ -31,11 +30,11 @@ def generate_svg(command_args: Sequence[str], output_dir: Path, columns: int) ->
 
     console = Console(record=True, width=columns, force_terminal=True)
 
-    null = io.StringIO()
     with (
         contextlib.suppress(SystemExit),
-        contextlib.redirect_stderr(null),
-        contextlib.redirect_stdout(null),
+        open(os.devnull, "w") as devnull,
+        contextlib.redirect_stderr(devnull),
+        contextlib.redirect_stdout(devnull),
     ):
         vsstubs_app.meta(command_args, console=console)
 

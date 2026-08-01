@@ -1,6 +1,6 @@
 import contextlib
-import io
 import json
+import os
 import sys
 from dataclasses import dataclass
 from logging import DEBUG, basicConfig, getLogger
@@ -194,7 +194,7 @@ def check(
         console.print("[red]Error: You must provide an input file when checking for stubs[/red]")
         raise SystemExit(1)
 
-    with contextlib.redirect_stdout(io.StringIO()):
+    with open(os.devnull, "w") as devnull, contextlib.redirect_stdout(devnull):
         out = check_stubs(input_file)
 
     if output_json:
