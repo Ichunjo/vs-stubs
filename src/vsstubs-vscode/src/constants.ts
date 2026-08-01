@@ -4,11 +4,14 @@
 
 export const EXTENSION_ID = 'vsstubs';
 export const OUTPUT_CHANNEL_NAME = 'VapourSynth Stubs';
+export const MINIMUM_VSSTUBS_VERSION = '2.3.0';
 
 export const COMMANDS = {
   GENERATE: 'vsstubs.generate',
   ADD_PLUGIN: 'vsstubs.addPlugin',
   REMOVE_PLUGIN: 'vsstubs.removePlugin',
+  CHECK_PLUGIN: 'vsstubs.check',
+  UPDATE_PLUGIN: 'vsstubs.update',
 } as const;
 
 export const CONFIG = {

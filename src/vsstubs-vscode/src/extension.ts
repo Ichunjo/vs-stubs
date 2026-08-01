@@ -17,14 +17,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(COMMANDS.GENERATE, () => vsstubs.generateStubs('manual')),
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.ADD_PLUGIN, vsstubs.addPlugins),
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.REMOVE_PLUGIN, vsstubs.removePlugins),
+    vscode.commands.registerCommand(COMMANDS.ADD_PLUGIN, () => vsstubs.addPlugins()),
+    vscode.commands.registerCommand(COMMANDS.REMOVE_PLUGIN, () => vsstubs.removePlugins()),
+    vscode.commands.registerCommand(COMMANDS.CHECK_PLUGIN, () => vsstubs.checkPlugins(false)),
+    vscode.commands.registerCommand(COMMANDS.UPDATE_PLUGIN, () => vsstubs.updatePlugins()),
   );
 
   // Auto-generate on activation if enabled or run background check if stubs exist
@@ -32,6 +28,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const shouldAutoGenerate = config.get<boolean>(CONFIG.AUTO_GENERATE, true);
 
   if (shouldAutoGenerate) vsstubs.generateStubs('activation');
+  vsstubs.checkPlugins(true);
 
   // Plugin directory watcher
   const shouldWatch = config.get<boolean>(CONFIG.WATCH_PLUGINS, true);

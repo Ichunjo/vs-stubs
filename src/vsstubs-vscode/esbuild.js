@@ -36,7 +36,7 @@ async function main() {
     sourcemap: !production,
     sourcesContent: false,
     platform: 'node',
-    target: 'esnext',
+    target: 'node24',
     outfile: 'dist/extension.cjs',
     external: ['vscode'],
     logLevel: 'silent',

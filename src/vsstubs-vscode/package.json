@@ -34,10 +34,12 @@
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json"
   },
   "dependencies": {
-    "@vscode/python-extension": "1.0.6"
+    "@vscode/python-extension": "1.0.6",
+    "semver": "7.8.5"
   },
   "devDependencies": {
     "@types/node": "26.1.2",
+    "@types/semver": "7.7.1",
     "@types/vscode": "1.125.0",
     "esbuild": "0.28.1",
     "npm-run-all2": "9.0.3",
@@ -58,6 +60,14 @@
       {
         "command": "vsstubs.removePlugin",
         "title": "VapourSynth: Remove Plugin Stubs"
+      },
+      {
+        "command": "vsstubs.update",
+        "title": "VapourSynth: Update Stubs"
+      },
+      {
+        "command": "vsstubs.check",
+        "title": "VapourSynth: Check Stubs"
       }
     ],
     "configuration": {

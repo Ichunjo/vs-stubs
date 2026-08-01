@@ -2,13 +2,10 @@
  * Core logic for generating VapourSynth stubs.
  */
 
-import { ExecException } from 'child_process';
-import { existsSync } from 'fs';
 import { join } from 'path';
-
+import semver from 'semver';
 import * as vscode from 'vscode';
-
-import { CONFIG, FILENAMES } from './constants.js';
+import { CONFIG, FILENAMES, MINIMUM_VSSTUBS_VERSION } from './constants.js';
 import {
   execFile,
   existsAsync,
@@ -18,9 +15,25 @@ import {
   isOnPath,
 } from './helpers.js';
 import { logger } from './logging.js';
+import {
+  CheckJSONResponse,
+  PluginInfo,
+  SubCommand,
+  VSStubsCommandOptions,
+  WorkspaceContext,
+} from './types.js';
+
+const COMMAND_TEXT_MAP: Record<SubCommand, { completion: string; pending: string }> = {
+  add: { completion: 'added', pending: 'Adding' },
+  remove: { completion: 'removed', pending: 'Removing' },
+  check: { completion: 'checked', pending: 'Checking' },
+  update: { completion: 'updated', pending: 'Updating' },
+};
 
 export class VSStubs {
-  isGenerationInProgress = false;
+  private isGenerationInProgress = false;
+  private isAvailable = false;
+  private checkedPythonPath?: string;
 
   /**
    * Generate VapourSynth stubs.
@@ -30,6 +43,7 @@ export class VSStubs {
    *   - `'activation'`: workspace open auto-generation. Skips if stubs already exist.
    *   - `'watcher'`: plugin directory changed. Always regenerates, silent (no popup).
    */
+  @requiresWorkspaceContext
   public async generateStubs(
     trigger: 'manual' | 'activation' | 'watcher' = 'manual',
   ): Promise<void> {
@@ -40,43 +54,20 @@ export class VSStubs {
       return;
     }
 
-    const workspaceRoot = getWorkspaceRoot();
-    if (!workspaceRoot) return;
-
-    const stubFile = getStubFile(workspaceRoot);
+    const ctx = await this.workspaceContext;
 
     // On activation, skip if stubs already exist (first-time generation only).
     // The watcher and manual triggers always proceed.
-    if (trigger === 'activation' && existsSync(stubFile)) return;
-
-    if (!(await ensureVsstubsAvailable())) return;
-
-    const args = buildArgs(stubFile);
-    const pythonPath = await getPythonInterpreter();
-
-    logger.info(`Generating stubs (${trigger}): ${pythonPath} -m ${args.join(' ')}`);
+    if (trigger === 'activation' && (await existsAsync(ctx.stubFile))) return;
 
     this.isGenerationInProgress = true;
     try {
-      const progressOptions: vscode.ProgressOptions = {
-        location: isSilent ? vscode.ProgressLocation.Window : vscode.ProgressLocation.Notification,
+      await this.runVsstubsCommand({
+        args: buildArgs(ctx.stubFile),
         title: 'Generating VapourSynth stubs...',
-        cancellable: false,
-      };
-
-      await vscode.window.withProgress(progressOptions, async () => {
-        try {
-          const result = await execFile(pythonPath, ['-m', ...args], { cwd: workspaceRoot });
-
-          if (result.stdout) logger.info(result.stdout);
-          if (result.stderr) logger.info(result.stderr);
-          if (!isSilent) vscode.window.showInformationMessage('VapourSynth stubs generated.');
-
-          logger.info('Stubs generated successfully.');
-        } catch (error) {
-          vscode.window.showErrorMessage('Stub generation failed. See output channel for details.');
-          logger.error(`${(error as ExecException).message}`);
-        }
+        successMessage: 'VapourSynth stubs generated.',
+        errorMessage: 'Stub generation failed.',
+        silent: isSilent,
       });
     } finally {
       this.isGenerationInProgress = false;
@@ -86,158 +77,353 @@ export class VSStubs {
   /**
    * Add VapourSynth plugin stubs.
    */
+  @requiresWorkspaceContext
   public async addPlugins(): Promise<void> {
-    const input = await vscode.window.showInputBox({
-      prompt: 'Plugin namespace(s) to add (space-separated)',
-      placeHolder: 'e.g. descale resize2',
+    const config = vscode.workspace.getConfiguration(CONFIG.SECTION);
+    const extraDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
+
+    const [availablePlugins, existingNamespaces] = await Promise.all([
+      this.queryPluginsJson(extraDirs),
+      this.queryPluginsJson(),
+    ]);
+
+    if (!availablePlugins) return;
+
+    const existingSet = new Set((existingNamespaces || []).map((ns) => ns.namespace));
+    const items = availablePlugins
+      .filter((plugin) => !existingSet.has(plugin.namespace))
+      .map((plugin) => ({
+        label: plugin.namespace,
+        description: plugin.description,
+        picked: true,
+        namespace: plugin.namespace,
+      }));
+
+    if (items.length === 0) {
+      vscode.window.showInformationMessage(
+        'No additional VapourSynth plugin stubs available to add.',
+      );
+      return;
+    }
+
+    const selected = await this.promptPluginSelection({
+      title: 'Select VapourSynth Plugin Stubs to Include',
+      subcommand: 'add',
+      placeholder: 'Select plugin namespaces to include in stubs',
+      items,
     });
-    if (!input) return;
-    await this.runPluginSubcommand('add', input.trim().split(/\s+/));
+
+    if (selected && selected.length > 0) {
+      await this.runPluginSubcommand('add', selected);
+    }
   }
 
   /**
    * Remove VapourSynth plugin stubs.
    */
+  @requiresWorkspaceContext
   public async removePlugins(): Promise<void> {
-    const input = await vscode.window.showInputBox({
-      prompt: 'Plugin namespace(s) to remove (space-separated)',
-      placeHolder: 'e.g. descale resize2',
+    const ctx = await this.workspaceContext;
+    if (!(await existsAsync(ctx.stubFile))) {
+      vscode.window.showErrorMessage("Can't remove plugins because there is no stubs file.");
+      return;
+    }
+
+    const plugins = await this.queryPluginsJson();
+    if (!plugins) return;
+
+    const items = plugins.map((plugin) => ({
+      label: plugin.namespace,
+      description: plugin.description,
+      namespace: plugin.namespace,
+    }));
+
+    if (items.length === 0) {
+      vscode.window.showInformationMessage('No VapourSynth plugin stubs found to remove.');
+      return;
+    }
+
+    const selected = await this.promptPluginSelection({
+      subcommand: 'remove',
+      title: 'Select VapourSynth Plugin Stubs to Remove',
+      placeholder: 'Select plugin namespaces to remove from stubs',
+      items,
     });
-    if (!input) return;
-    await this.runPluginSubcommand('remove', input.trim().split(/\s+/));
+
+    if (selected && selected.length > 0) {
+      await this.runPluginSubcommand('remove', selected);
+    }
+  }
+
+  /**
+   * Check VapourSynth stubs for outdated or new plugins / signature updates.
+   *
+   * @param silent If true (background check), only notify if updates are detected.
+   */
+  @requiresWorkspaceContext
+  public async checkPlugins(silent = false): Promise<void> {
+    const ctx = await this.workspaceContext;
+
+    if (!(await existsAsync(ctx.stubFile))) {
+      if (!silent) vscode.window.showWarningMessage('No stubs file found. Generate stubs first.');
+      return;
+    }
+
+    const result = await this.runPluginSubcommand('check', ['--json'], { silent: true });
+
+    if (!result) {
+      if (!silent)
+        vscode.window.showErrorMessage('Stub check failed. See output channel for details.');
+      return;
+    }
+
+    let report: CheckJSONResponse;
+    try {
+      report = JSON.parse(result.stdout);
+    } catch (error) {
+      logger.error(
+        `Stub check parse error: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      if (!silent)
+        vscode.window.showErrorMessage('Stub check failed. See output channel for details.');
+      return;
+    }
+
+    if (
+      (report.new && report.new.length > 0) ||
+      (report.old && report.old.length > 0) ||
+      (report.modified && report.modified.length > 0)
+    ) {
+      const choice = await vscode.window.showInformationMessage(
+        'New VapourSynth plugins detected.',
+        'Regenerate Stubs',
+      );
+      if (choice === 'Regenerate Stubs') {
+        await this.generateStubs('manual');
+      }
+    } else if (!silent) {
+      vscode.window.showInformationMessage('VapourSynth stubs are up to date.');
+    }
+  }
+
+  /**
+   * Update VapourSynth stubs signatures against existing stub files.
+   */
+  @requiresWorkspaceContext
+  public async updatePlugins(): Promise<void> {
+    await this.runPluginSubcommand('update');
   }
 
   private async runPluginSubcommand(
-    subcommand: 'add' | 'remove',
-    namespaces: string[],
-  ): Promise<void> {
-    if (!(await this.ensureStubsFileExist(subcommand, namespaces))) return;
+    subcommand: SubCommand,
+    namespaces: string[] = [],
+    options: Partial<VSStubsCommandOptions> = {},
+  ): Promise<{ stdout: string; stderr: string } | undefined> {
+    const ctx = await this.getWorkspaceContext();
+    if (!ctx) return undefined;
 
-    const workspaceRoot = getWorkspaceRoot();
-    if (!(workspaceRoot && (await ensureVsstubsAvailable()))) return;
+    const nsList = namespaces.join(', ');
+    const nsSpace = nsList ? ` ${nsList} ` : ' ';
 
-    const stubFile = getStubFile(workspaceRoot);
-
-    if (!existsSync(stubFile)) {
-      vscode.window.showErrorMessage(
-        `Can't ${subcommand} "${namespaces.join(', ')} because there is no stubs file."`,
-      );
+    if (!(await existsAsync(ctx.stubFile))) {
+      if (!options.silent) {
+        vscode.window.showErrorMessage(
+          `Can't ${subcommand}${nsSpace}because there is no stubs file.`,
+        );
+      }
+      return undefined;
     }
 
-    const pythonPath = await getPythonInterpreter();
-    const args = [...buildArgs(stubFile), subcommand, ...namespaces];
+    const { completion, pending } = COMMAND_TEXT_MAP[subcommand];
+    const nsMsg = nsList ? `: ${nsList}` : '';
+    const errNs = nsList ? ` ${nsList}` : '';
 
-    const progressOptions: vscode.ProgressOptions = {
-      location: vscode.ProgressLocation.Notification,
-      title: `${subcommand === 'add' ? 'Adding' : 'Removing'} plugin stubs...`,
-    };
-
-    logger.info(`Running: ${pythonPath} -m ${args.join(' ')}`);
-
-    await vscode.window.withProgress(progressOptions, async () => {
-      try {
-        const result = await execFile(pythonPath, ['-m', ...args], { cwd: workspaceRoot });
-
-        if (result.stdout) logger.info(result.stdout);
-        if (result.stderr) logger.info(result.stderr);
-
-        vscode.window.showInformationMessage(
-          `Plugin stubs ${subcommand === 'add' ? 'added' : 'removed'}: ${namespaces.join(', ')}`,
-        );
-      } catch (error) {
-        vscode.window.showErrorMessage(
-          `Plugin ${subcommand} failed. See output channel for details.`,
-        );
-        logger.error(`${(error as ExecException).message}`);
-      }
+    return this.runVsstubsCommand({
+      args: [...buildArgs(ctx.stubFile, ctx.stubFile), subcommand, ...namespaces],
+      title: `${pending} stubs...`,
+      successMessage: `VapourSynth stubs ${completion}${nsMsg}`,
+      errorMessage: `Stub ${subcommand}${errNs} failed`,
+      ...options,
     });
   }
 
-  private async ensureStubsFileExist(
-    subcommand: 'add' | 'remove',
-    namespaces: string[],
-  ): Promise<boolean> {
+  @requiresWorkspaceContext
+  private async queryPluginsJson(extraDirs?: string[]): Promise<PluginInfo[] | void> {
+    const ctx = await this.workspaceContext;
+
+    if (!extraDirs && !(await existsAsync(ctx.stubFile))) return [];
+
+    const args = [
+      ...(extraDirs ? extraDirs.flatMap((dir) => ['--load', dir]) : ['-i', ctx.stubFile]),
+      'plugins',
+      '--json',
+    ];
+
+    const res = await this.runVsstubsCommand({ args, silent: true });
+    if (!res) return;
+    try {
+      return JSON.parse(res.stdout);
+    } catch (error) {
+      logger.error(
+        `Plugins query parse error: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      vscode.window.showErrorMessage('Plugins query parse error. See output channel for details.');
+      return;
+    }
+  }
+
+  private async runVsstubsCommand(
+    options: VSStubsCommandOptions,
+  ): Promise<{ stdout: string; stderr: string } | undefined> {
+    const ctx = await this.getWorkspaceContext();
+    if (!ctx) return undefined;
+
+    if (!options.skipCheck) {
+      const available = await this.ensureAvailable();
+      if (!available) return undefined;
+    }
+
+    const args = ['-m', 'vsstubs', '--quiet', ...options.args];
+    logger.info(`Running: ${ctx.pythonPath} ${args.join(' ')}`);
+
+    const progressOptions: vscode.ProgressOptions = {
+      location: options.silent
+        ? vscode.ProgressLocation.Window
+        : vscode.ProgressLocation.Notification,
+      ...(options.title && { title: options.title }),
+    };
+
+    try {
+      return await vscode.window.withProgress(progressOptions, async () => {
+        const result = await execFile(ctx.pythonPath, args, { cwd: ctx.workspaceRoot });
+        if (result.stdout) logger.info('Stdout\n' + result.stdout);
+        if (result.stderr) logger.info('Stderr\n' + result.stderr);
+
+        if (options.successMessage && !options.silent) {
+          vscode.window.showInformationMessage(options.successMessage);
+        }
+        return result;
+      });
+    } catch (error) {
+      const msg = options.errorMessage ?? 'Command failed. See output channel for details.';
+      if (!options.silent) vscode.window.showErrorMessage(msg);
+      logger.error(`${msg}: ${error instanceof Error ? error.message : String(error)}`);
+      return undefined;
+    }
+  }
+
+  /**
+   * Ensure `vsstubs` package is available in the current Python environment.
+   */
+  private async ensureAvailable(): Promise<boolean> {
+    const ctx = await this.getWorkspaceContext();
+    if (!ctx) return false;
+
+    if (this.isAvailable && this.checkedPythonPath === ctx.pythonPath) {
+      return true;
+    }
+
+    const res = await this.runVsstubsCommand({
+      args: ['--version'],
+      silent: true,
+      skipCheck: true,
+    });
+
+    const output = (res?.stdout || res?.stderr || '').trim();
+    const version = semver.coerce(output);
+
+    if (res && version && semver.gte(version, MINIMUM_VSSTUBS_VERSION)) {
+      this.isAvailable = true;
+      this.checkedPythonPath = ctx.pythonPath;
+      return true;
+    }
+
+    this.isAvailable = false;
+    const installCommand = await detectInstallCommand(ctx.workspaceRoot);
+    const choice = await vscode.window.showErrorMessage(
+      `"vsstubs" module (v${MINIMUM_VSSTUBS_VERSION}+) not found for interpreter "${ctx.pythonPath}". ` +
+        'Install it in your current environment.',
+      'Install now',
+      'Copy install command',
+      'Open terminal',
+    );
+
+    switch (choice) {
+      case 'Install now': {
+        const terminal = vscode.window.createTerminal('VSStubs install');
+        terminal.show();
+        terminal.sendText(installCommand);
+        return false;
+      }
+      case 'Copy install command': {
+        await vscode.env.clipboard.writeText(installCommand);
+        vscode.window.showInformationMessage(`Copied: ${installCommand}`);
+        return false;
+      }
+      case 'Open terminal': {
+        const terminal = vscode.window.createTerminal('VSStubs install');
+        terminal.show();
+        terminal.sendText(installCommand, false);
+        return false;
+      }
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Helper to prompt plugin selection via QuickPick, falling back to InputBox if items are empty.
+   */
+  private async promptPluginSelection(options: {
+    title: string;
+    subcommand: 'add' | 'remove';
+    placeholder: string;
+    items: (vscode.QuickPickItem & { namespace: string })[];
+  }): Promise<string[] | undefined> {
+    if (options.items.length === 0) return undefined;
+
+    const selected = await vscode.window.showQuickPick(options.items, {
+      canPickMany: true,
+      title: options.title,
+      placeHolder: options.placeholder,
+    });
+
+    return selected ? selected.map((item) => item.namespace) : undefined;
+  }
+
+  private async getWorkspaceContext(): Promise<WorkspaceContext | undefined> {
     const workspaceRoot = getWorkspaceRoot();
-    if (!(workspaceRoot && (await ensureVsstubsAvailable()))) return false;
+    if (!workspaceRoot) return undefined;
 
     const stubFile = getStubFile(workspaceRoot);
-
-    if (!(await existsAsync(stubFile))) {
-      const errorMessage = `Can't ${subcommand} "${namespaces.join(', ')} because there is no stubs file."`;
-      logger.error(`${errorMessage}`);
-      vscode.window.showErrorMessage(errorMessage);
-      return false;
-    }
-    return true;
-  }
-}
-
-async function checkVsstubs(pythonPath: string): Promise<boolean> {
-  try {
-    await execFile(pythonPath, ['-m', 'vsstubs', '-V']);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function ensureVsstubsAvailable(): Promise<boolean> {
-  const pythonPath = await getPythonInterpreter();
-
-  if (await checkVsstubs(pythonPath)) {
-    return true;
+    const pythonPath = await getPythonInterpreter();
+    return { workspaceRoot, stubFile, pythonPath };
   }
 
-  const installCommand = detectInstallCommand();
-  const choice = await vscode.window.showErrorMessage(
-    `"vsstubs" module not found for interpreter "${pythonPath}". Install it in your current environment.`,
-    'Install now',
-    'Copy install command',
-    'Open terminal',
-  );
-
-  switch (choice) {
-    case 'Install now': {
-      const terminal = vscode.window.createTerminal('VSStubs install');
-      terminal.show();
-      terminal.sendText(installCommand);
-      return false;
-    }
-    case 'Copy install command': {
-      await vscode.env.clipboard.writeText(installCommand);
-      vscode.window.showInformationMessage(`Copied: ${installCommand}`);
-      return false;
-    }
-    case 'Open terminal': {
-      const terminal = vscode.window.createTerminal('VSStubs install');
-      terminal.show();
-      terminal.sendText(installCommand, false);
-      return false;
-    }
-    default:
-      return false;
+  private get workspaceContext(): Promise<WorkspaceContext> {
+    return (async () => (await this.getWorkspaceContext())!)();
   }
 }
 
 /**
- * Package manager detection
+ * Package manager detection for installation prompts.
  */
-export function detectInstallCommand(): string {
-  const workspaceRoot = getWorkspaceRoot();
-  if (!workspaceRoot) {
+async function detectInstallCommand(workspaceRoot?: string): Promise<string> {
+  const root = workspaceRoot ?? getWorkspaceRoot();
+  if (!root) {
     return 'pip install vsstubs';
   }
 
-  if (existsSync(join(workspaceRoot, FILENAMES.UV_LOCK)) || isOnPath('uv')) {
-    if (existsSync(join(workspaceRoot, FILENAMES.PYPROJECT))) {
+  if ((await existsAsync(join(root, FILENAMES.UV_LOCK))) || (await isOnPath('uv'))) {
+    if (await existsAsync(join(root, FILENAMES.PYPROJECT))) {
       return 'uv add --dev vsstubs';
     }
     return 'uv pip install vsstubs';
   }
 
   if (
-    existsSync(join(workspaceRoot, FILENAMES.PIPFILE)) ||
-    existsSync(join(workspaceRoot, FILENAMES.PIPFILE_LOCK))
+    (await existsAsync(join(root, FILENAMES.PIPFILE))) ||
+    (await existsAsync(join(root, FILENAMES.PIPFILE_LOCK)))
   ) {
     return 'pipenv install --dev vsstubs';
   }
@@ -248,8 +434,10 @@ export function detectInstallCommand(): string {
 /**
  * Build CLI arguments for `python -m vsstubs`.
  */
-export function buildArgs(stubFile: string): string[] {
-  const args = ['vsstubs', '-o', stubFile];
+function buildArgs(stubFile: string, inputStubFile?: string): string[] {
+  const args = ['-o', stubFile];
+  if (inputStubFile) args.push('-i', inputStubFile);
+
   const config = vscode.workspace.getConfiguration(CONFIG.SECTION);
   const extraDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
 
@@ -257,9 +445,23 @@ export function buildArgs(stubFile: string): string[] {
     args.push('--load', dir);
   }
 
-  if (config.get<boolean>(CONFIG.ENABLE_COMPAT_API3)) {
-    args.push('--compat');
-  }
+  if (config.get<boolean>(CONFIG.ENABLE_COMPAT_API3)) args.push('--compat');
 
   return args;
+}
+
+/**
+ * Decorator that resolves getWorkspaceContext() and cancels execution if undefined.
+ */
+function requiresWorkspaceContext<
+  TThis extends { getWorkspaceContext(): Promise<WorkspaceContext | undefined> },
+  TArgs extends any[],
+  TReturn,
+>(func: (this: TThis, ...args: TArgs) => Promise<TReturn>) {
+  return async function (this: TThis, ...args: TArgs): Promise<TReturn | void> {
+    const ctx = await this.getWorkspaceContext();
+
+    if (!ctx) return;
+    return func.apply(this, args);
+  };
 }

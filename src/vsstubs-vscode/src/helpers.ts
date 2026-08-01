@@ -15,11 +15,17 @@ import { FILENAMES, NAMESPACES, PYTHON_CONFIG } from './constants.js';
 import { logger } from './logging.js';
 import path from 'node:path';
 
-export const execFile = promisify(execFileCb);
+import os from 'node:os';
 
-export async function existsAsync(path: string): Promise<boolean> {
+export const execFile = promisify(execFileCb);
+export const execFileAsync = promisify(
+  (...args: Parameters<typeof execFileSync>): ReturnType<typeof execFileSync> =>
+    execFileSync(...args),
+);
+
+export async function existsAsync(pathStr: string): Promise<boolean> {
   try {
-    await access(path, constants.F_OK);
+    await access(pathStr, constants.F_OK);
     return true;
   } catch {
     return false;
@@ -74,10 +80,10 @@ export function getStubFile(workspaceRoot: string): string {
   return path.join(workspaceRoot, getStubDir(), NAMESPACES.VAPOURSYNTH, FILENAMES.STUB_INIT);
 }
 
-export function isOnPath(command: string): boolean {
+export async function isOnPath(command: string): Promise<boolean> {
   try {
     const executable = process.platform === 'win32' ? 'where.exe' : 'which';
-    execFileSync(executable, [command], { stdio: 'ignore' });
+    await execFileAsync(executable, [command], { stdio: 'ignore' });
     return true;
   } catch {
     return false;
