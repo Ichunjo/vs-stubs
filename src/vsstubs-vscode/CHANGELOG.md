@@ -2,6 +2,11 @@
 
 All notable changes to the **VapourSynth Stubs** extension will be documented in this file.
 
+## [0.3.1] - 2026-08-01
+
+- Fix oudated README
+- Add badges in README
+
 ## [0.3.0] - 2026-08-01
 
 - Add multi-select QuickPick for `VapourSynth: Add Plugin Stubs` and `VapourSynth: Remove Plugin Stubs`

@@ -1,7 +1,7 @@
 # VapourSynth Stubs
 
-<!-- [![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/Ichunjo.vsstubs.svg?color=blue&label=VS%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=Ichunjo.vsstubs)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) -->
+[![Visual Studio Marketplace](https://vsmarketplacebadges.dev/version/vd-varde.vsstubs.svg)](https://marketplace.visualstudio.com/items?itemName=Ichunjo.vsstubs)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **VapourSynth Stubs** provides automated Python stub generation to enable better IntelliSense and autocompletion for VapourSynth scripts in VS Code.
 
