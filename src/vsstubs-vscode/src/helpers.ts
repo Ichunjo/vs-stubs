@@ -49,6 +49,25 @@ export function getWorkspaceRoot(): string | undefined {
 }
 
 /**
+ * Resolve variables like ${workspaceFolder}, ${userHome}, and ~ in path strings.
+ */
+export function resolvePathVariables(filePath: string): string {
+  let resolved = filePath;
+  const root = getWorkspaceRoot();
+  if (root) {
+    resolved = resolved.replace(/\$\{workspaceFolder\}/g, root);
+  }
+  if (resolved.startsWith('~')) {
+    resolved = path.join(os.homedir(), resolved.slice(1));
+  }
+  resolved = resolved.replace(/\$\{userHome\}/g, os.homedir());
+  if (root && !path.isAbsolute(resolved)) {
+    resolved = path.resolve(root, resolved);
+  }
+  return resolved;
+}
+
+/**
  * Get absolute path to the vapoursynth stub file inside the workspace.
  */
 export function getStubFile(workspaceRoot: string): string {
@@ -86,7 +105,7 @@ export async function getPythonInterpreter(): Promise<string> {
   const pythonConfig = vscode.workspace.getConfiguration(PYTHON_CONFIG.SECTION);
   const defaultPath = pythonConfig.get<string>(PYTHON_CONFIG.DEFAULT_INTERPRETER);
   if (defaultPath) {
-    return defaultPath;
+    return resolvePathVariables(defaultPath);
   }
   return 'python';
 }
