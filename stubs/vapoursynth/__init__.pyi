@@ -1838,10 +1838,6 @@ class Core:
     avs: Final[_avs._Core_bound.Plugin]
     """VapourSynth Avisynth Compatibility"""
 # </attribute/Core_bound/avs>
-# <attribute/Core_bound/bs>
-    bs: Final[_bs._Core_bound.Plugin]
-    """Best Source 2"""
-# </attribute/Core_bound/bs>
 # <attribute/Core_bound/resize>
     resize: Final[_resize._Core_bound.Plugin]
     """VapourSynth Resize"""
@@ -1873,27 +1869,6 @@ class _avs:
             def LoadPlugin(self, /, path: _AnyStr) -> None: ...
 
 # </implementation/avs>
-
-# <implementation/bs>
-_ReturnDict_bs_TrackInfo = TypedDict("_ReturnDict_bs_TrackInfo", {"mediatype": int, "mediatypestr": _AnyStr, "codec": int, "codecstr": _AnyStr, "disposition": int, "dispositionstr": _AnyStr})
-
-class _bs:
-    class _Core_bound:
-        class Plugin(_VSPlugin):
-            @_Wrapper.Function
-            def AudioSource(self, /, source: _AnyStr, track: _IntLike | None = None, adjustdelay: _IntLike | None = None, threads: _IntLike | None = None, enable_drefs: _IntLike | None = None, use_absolute_path: _IntLike | None = None, drc_scale: _FloatLike | None = None, cachemode: _IntLike | None = None, cachepath: _AnyStr | None = None, cachesize: _IntLike | None = None, showprogress: _IntLike | None = None, maxdecoders: _IntLike | None = None) -> AudioNode: ...
-            @_Wrapper.Function
-            def Metadata(self, /, source: _AnyStr, track: _IntLike | None = None, enable_drefs: _IntLike | None = None, use_absolute_path: _IntLike | None = None) -> Any: ...
-            @_Wrapper.Function
-            def SetDebugOutput(self, /, enable: _IntLike) -> None: ...
-            @_Wrapper.Function
-            def SetFFmpegLogLevel(self, /, level: _IntLike) -> _IntLike: ...
-            @_Wrapper.Function
-            def TrackInfo(self, /, source: _AnyStr, enable_drefs: _IntLike | None = None, use_absolute_path: _IntLike | None = None) -> _ReturnDict_bs_TrackInfo: ...
-            @_Wrapper.Function
-            def VideoSource(self, /, source: _AnyStr, track: _IntLike | None = None, variableformat: _IntLike | None = None, fpsnum: _IntLike | None = None, fpsden: _IntLike | None = None, rff: _IntLike | None = None, threads: _IntLike | None = None, seekpreroll: _IntLike | None = None, enable_drefs: _IntLike | None = None, use_absolute_path: _IntLike | None = None, cachemode: _IntLike | None = None, cachepath: _AnyStr | None = None, cachesize: _IntLike | None = None, hwdevice: _AnyStr | None = None, extrahwframes: _IntLike | None = None, timecodes: _AnyStr | None = None, start_number: _IntLike | None = None, viewid: _IntLike | None = None, showprogress: _IntLike | None = None, maxdecoders: _IntLike | None = None, hwfallback: _IntLike | None = None, exporttimestamps: _IntLike | None = None, apply_rotation: _IntLike | None = None) -> VideoNode: ...
-
-# </implementation/bs>
 
 # <implementation/resize>
 class _resize:
