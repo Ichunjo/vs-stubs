@@ -23,7 +23,6 @@ log = getLogger(__name__)
 io_group = Group("I/O", sort_key=0)
 others_group = Group("Others", sort_key=1)
 commands_group = Group("Commands", sort_key=2)
-app = App(name="vsstubs", console=console, group_commands=commands_group)
 
 
 class CleanHelpFormatter(DefaultFormatter):
@@ -35,6 +34,14 @@ class CleanHelpFormatter(DefaultFormatter):
             for entry in panel.entries
         ]
         super().__call__(console, options, panel)
+
+
+app = App(
+    name="vsstubs",
+    console=console,
+    group_commands=commands_group,
+    help_formatter=CleanHelpFormatter.with_newline_metadata(),  # type: ignore[no-untyped-call]
+)
 
 
 @Parameter(name="*")
@@ -175,7 +182,7 @@ def remove(plugins: list[str], /, config: Annotated[AppConfig, Parameter(show=Fa
     raise SystemExit(0)
 
 
-@app.command(help_formatter=CleanHelpFormatter())
+@app.command
 def check(
     config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG,
     output_json: Annotated[bool, Parameter(name="json", group=io_group, negative=False)] = False,
@@ -225,7 +232,7 @@ def update(config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG)
     raise SystemExit(0)
 
 
-@app.command(help_formatter=CleanHelpFormatter())
+@app.command
 def plugins(
     config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG,
     output_json: Annotated[bool, Parameter(name="json", group=io_group, negative=False)] = False,
@@ -257,9 +264,7 @@ def cli_main(
     global _active_config
     _active_config = config
 
-    if tokens:
-        app(tokens)
-    else:
+    if not tokens:
         input_file, output_file = config.process()
         output_stubs(
             input_file,

@@ -28,11 +28,11 @@ def generate_svg(command_args: Sequence[str], output_dir: Path, columns: int) ->
     os.environ["COLUMNS"] = str(columns)
     os.environ["TERM"] = "xterm-256color"
 
-    console = Console(record=True, width=columns, force_terminal=True)
+    console = Console(record=True, width=columns, force_terminal=True, legacy_windows=False, safe_box=False)
 
     with (
         contextlib.suppress(SystemExit),
-        open(os.devnull, "w") as devnull,
+        open(os.devnull, "w", encoding="utf-8") as devnull,
         contextlib.redirect_stderr(devnull),
         contextlib.redirect_stdout(devnull),
     ):
