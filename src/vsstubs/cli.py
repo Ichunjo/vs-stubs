@@ -264,7 +264,9 @@ def cli_main(
     global _active_config
     _active_config = config
 
-    if not tokens:
+    if tokens:
+        app(tokens)
+    else:
         input_file, output_file = config.process()
         output_stubs(
             input_file,
