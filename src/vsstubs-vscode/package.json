@@ -43,7 +43,7 @@
     "@types/vscode": "1.125.0",
     "esbuild": "0.28.2",
     "npm-run-all2": "9.0.3",
-    "oxfmt": "0.63.0",
+    "oxfmt": "0.64.0",
     "oxlint": "1.78.0",
     "typescript": "7.0.2"
   },
