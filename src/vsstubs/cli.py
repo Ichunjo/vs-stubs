@@ -28,7 +28,7 @@ commands_group = Group("Commands", sort_key=2)
 class CleanHelpFormatter(DefaultFormatter):
     def __call__(self, console: Console, options: ConsoleOptions, panel: HelpPanel) -> None:
         panel.entries = [
-            entry.copy(positive_names=entry.positive_names[1:])  # type: ignore[no-untyped-call]
+            entry.copy(positive_names=entry.positive_names[1:])
             if len(entry.positive_names) > 1 and not entry.positive_names[0].startswith("-")
             else entry
             for entry in panel.entries
