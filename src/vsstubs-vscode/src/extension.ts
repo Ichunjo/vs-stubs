@@ -26,9 +26,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // Auto-generate on activation if enabled or run background check if stubs exist
   const config = vscode.workspace.getConfiguration(CONFIG.SECTION);
   const shouldAutoGenerate = config.get<boolean>(CONFIG.AUTO_GENERATE, true);
-
-  if (shouldAutoGenerate) vsstubs.generateStubs('activation');
-  vsstubs.checkPlugins(true);
+  void startupInit(vsstubs, shouldAutoGenerate);
 
   // Plugin directory watcher
   const shouldWatch = config.get<boolean>(CONFIG.WATCH_PLUGINS, true);
@@ -38,20 +36,20 @@ export function activate(context: vscode.ExtensionContext): void {
     watcher = new PluginWatcher(() => vsstubs.generateStubs('watcher'));
 
     context.subscriptions.push(watcher);
-    watcher.start();
+    void watcher.start();
 
     // Restart watcher when extraPluginDirs or watchPlugins settings change
     context.subscriptions.push(
       vscode.workspace.onDidChangeConfiguration((e) => {
         if (e.affectsConfiguration(`${CONFIG.SECTION}.${CONFIG.EXTRA_PLUGIN_DIRS}`)) {
-          watcher?.restart();
+          void watcher?.restart();
           logger.info('Extra plugin dirs changed. Restarting watcher...');
         }
 
         if (e.affectsConfiguration(`${CONFIG.SECTION}.${CONFIG.WATCH_PLUGINS}`)) {
           const updated = vscode.workspace.getConfiguration(CONFIG.SECTION);
           if (updated.get<boolean>(CONFIG.WATCH_PLUGINS, true)) {
-            watcher?.restart();
+            void watcher?.restart();
             logger.info('Plugin watcher re-enabled by settings.');
           } else {
             watcher?.stop();
@@ -66,14 +64,9 @@ export function activate(context: vscode.ExtensionContext): void {
   PythonExtension.api()
     .then((api) => {
       context.subscriptions.push(
-        api.environments.onDidChangeActiveEnvironmentPath(() => {
-          logger.info('Python interpreter changed. Running background check...');
-          vsstubs.checkPlugins(true);
-          if (watcher) {
-            logger.info('Restarting watcher...');
-            watcher.restart();
-          }
-        }),
+        api.environments.onDidChangeActiveEnvironmentPath(() =>
+          onInterpreterChanged(vsstubs, watcher),
+        ),
       );
     })
     .catch((err) => {
@@ -85,4 +78,32 @@ export function activate(context: vscode.ExtensionContext): void {
 
 export function deactivate(): void {
   return;
+}
+
+async function startupInit(vsstubs: VSStubs, shouldAutoGenerate: boolean): Promise<void> {
+  try {
+    if (shouldAutoGenerate) {
+      await vsstubs.generateStubs('activation');
+    }
+    await vsstubs.checkPlugins(true);
+  } catch (err) {
+    logger.error(
+      `Startup initialization failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+}
+
+async function onInterpreterChanged(vsstubs: VSStubs, watcher?: PluginWatcher): Promise<void> {
+  logger.info('Python interpreter changed. Running background check...');
+  try {
+    await vsstubs.checkPlugins(true);
+    if (watcher) {
+      logger.info('Restarting watcher...');
+      await watcher.restart();
+    }
+  } catch (err) {
+    logger.error(
+      `Failed handling interpreter change: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
 }
