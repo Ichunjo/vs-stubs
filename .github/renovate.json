@@ -31,9 +31,12 @@
     {
       "description": "Group all TypeScript definition packages",
       "groupName": "TypeScript definitions",
-      "matchPackageNames": [
-        "/^@types//"
-      ]
+      "matchPackageNames": ["/^@types//"]
+    },
+    {
+      "description": "Do not bump @types/vscode automatically to prevent exceeding engines.vscode",
+      "matchPackageNames": ["@types/vscode"],
+      "enabled": false
     },
     {
       "description": "Group development and linting tools",
