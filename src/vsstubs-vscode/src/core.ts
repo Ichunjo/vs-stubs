@@ -3,7 +3,7 @@
  */
 
 import * as vscode from 'vscode';
-import { VsstubsCli } from './cli.js';
+import { type CliQueryOptions, VsstubsCli } from './cli.js';
 import { CONFIG } from './constants.js';
 import { EnvironmentManager } from './environment.js';
 import {
@@ -15,8 +15,9 @@ import {
 } from './helpers.js';
 import { logger } from './logging.js';
 import { VsstubsStatusBar } from './statusBar.js';
-import {
+import type {
   CheckJSONResponse,
+  PluginInfo,
   PluginPickItem,
   SubCommand,
   VSStubsCommandOptions,
@@ -150,29 +151,20 @@ export class VSStubs implements vscode.Disposable {
     const config = vscode.workspace.getConfiguration(CONFIG.SECTION, resource);
     const extraPluginDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
 
-    let availablePlugins;
-    let existingPlugins;
-    try {
-      [availablePlugins, existingPlugins] = await Promise.all([
-        this.cli.queryPlugins(ctx.pythonPath, {
-          extraPluginDirs,
-          cwd: ctx.workspaceRoot,
-          workspaceRoot: ctx.workspaceRoot,
-        }),
-        (await existsAsync(ctx.stubFile))
-          ? this.cli.queryPlugins(ctx.pythonPath, {
-              stubFile: ctx.stubFile,
-              cwd: ctx.workspaceRoot,
-            })
-          : Promise.resolve([]),
-      ]);
-    } catch (error) {
-      void this.showErrorWithOutput(`Failed to query plugins: ${String(error)}`);
-      return;
-    }
+    const hasStub = await existsAsync(ctx.stubFile);
+    const [availablePlugins, existingPlugins] = await Promise.all([
+      this.queryPluginsSafe(ctx, {
+        extraPluginDirs,
+        workspaceRoot: ctx.workspaceRoot,
+      }),
+      hasStub
+        ? this.queryPluginsSafe(ctx, { stubFile: ctx.stubFile })
+        : Promise.resolve([] as PluginInfo[]),
+    ]);
+    if (!availablePlugins || !existingPlugins) return;
 
     const existingSet = new Set(existingPlugins.map((ns) => ns.namespace));
-    const items: PluginPickItem[] = availablePlugins
+    const items = availablePlugins
       .filter((plugin) => !existingSet.has(plugin.namespace))
       .map((plugin) => ({
         label: plugin.namespace,
@@ -211,18 +203,10 @@ export class VSStubs implements vscode.Disposable {
       return;
     }
 
-    let plugins;
-    try {
-      plugins = await this.cli.queryPlugins(ctx.pythonPath, {
-        stubFile: ctx.stubFile,
-        cwd: ctx.workspaceRoot,
-      });
-    } catch (error) {
-      void this.showErrorWithOutput(`Failed to query plugins: ${String(error)}`);
-      return;
-    }
+    const plugins = await this.queryPluginsSafe(ctx, { stubFile: ctx.stubFile });
+    if (!plugins) return;
 
-    const items: PluginPickItem[] = plugins.map((plugin) => ({
+    const items = plugins.map((plugin) => ({
       label: plugin.namespace,
       description: plugin.description,
       namespace: plugin.namespace,
@@ -333,6 +317,21 @@ export class VSStubs implements vscode.Disposable {
     const ctx = await this.getWorkspaceContext(true);
     if (!ctx) return;
     await this.runPluginSubcommand(ctx, 'update');
+  }
+
+  /**
+   * Helper to query plugins with unified error reporting.
+   */
+  private async queryPluginsSafe(
+    ctx: WorkspaceContext,
+    options: CliQueryOptions,
+  ): Promise<PluginInfo[] | null> {
+    try {
+      return await this.cli.queryPlugins(ctx.pythonPath, { cwd: ctx.workspaceRoot, ...options });
+    } catch (error) {
+      void this.showErrorWithOutput(`Failed to query plugins: ${String(error)}`);
+      return null;
+    }
   }
 
   private async runPluginSubcommand(

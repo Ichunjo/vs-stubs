@@ -5,20 +5,41 @@
 
 import semver from 'semver';
 import { logger } from './logging.js';
-import { CheckJSONResponse, PluginInfo, SubCommand } from './types.js';
+import type { CheckJSONResponse, PluginInfo, SubCommand } from './types.js';
 import { execFile, resolvePathVariables } from './utils.js';
 
-export interface CliBuildOptions {
-  stubFile: string;
-  inputStubFile?: string | undefined;
-  extraPluginDirs?: string[] | undefined;
-  enableCompatApi3?: boolean | undefined;
-  workspaceRoot?: string | undefined;
-}
-
+/** Process execution layer (OS/child_process options). */
 export interface CliExecOptions {
   cwd?: string | undefined;
   signal?: AbortSignal | undefined;
+}
+/** Shared CLI path and workspace resolution options. */
+export interface CliCommonOptions {
+  workspaceRoot?: string | undefined;
+  extraPluginDirs?: string[] | undefined;
+}
+/** CLI flags targeting a specific stub file. */
+export interface CliStubTargetOptions extends CliCommonOptions {
+  stubFile: string;
+  enableCompatApi3?: boolean | undefined;
+}
+
+// Command-Specific Options
+/** Pure CLI argument construction options. */
+export interface CliBuildOptions extends CliStubTargetOptions {
+  inputStubFile?: string | undefined;
+}
+/** Full stub generation (build args + exec options). */
+export type CliGenerateOptions = CliBuildOptions & CliExecOptions;
+/** Check operation options. */
+export type CliCheckOptions = CliStubTargetOptions & CliExecOptions;
+/** Subcommand execution (add, remove, update). */
+export interface CliSubCommandOptions extends CliStubTargetOptions, CliExecOptions {
+  namespaces?: string[] | undefined;
+}
+/** Plugin inspection query (stubFile is optional when extraPluginDirs are provided). */
+export interface CliQueryOptions extends CliCommonOptions, CliExecOptions {
+  stubFile?: string | undefined;
 }
 
 export class VsstubsCli {
@@ -86,16 +107,7 @@ export class VsstubsCli {
   /**
    * Query available plugins as JSON from either existing stub file or extra load dirs.
    */
-  public async queryPlugins(
-    pythonPath: string,
-    options: {
-      stubFile?: string | undefined;
-      extraPluginDirs?: string[] | undefined;
-      cwd?: string | undefined;
-      workspaceRoot?: string | undefined;
-      signal?: AbortSignal | undefined;
-    },
-  ): Promise<PluginInfo[]> {
+  public async queryPlugins(pythonPath: string, options: CliQueryOptions): Promise<PluginInfo[]> {
     const hasExtraDirs = Boolean(options.extraPluginDirs && options.extraPluginDirs.length > 0);
     const args: string[] = [];
 
@@ -130,17 +142,7 @@ export class VsstubsCli {
   /**
    * Run `check --json` against an existing stub file.
    */
-  public async check(
-    pythonPath: string,
-    options: {
-      stubFile: string;
-      extraPluginDirs?: string[] | undefined;
-      enableCompatApi3?: boolean | undefined;
-      cwd?: string | undefined;
-      workspaceRoot?: string | undefined;
-      signal?: AbortSignal | undefined;
-    },
-  ): Promise<CheckJSONResponse> {
+  public async check(pythonPath: string, options: CliCheckOptions): Promise<CheckJSONResponse> {
     const baseArgs = this.buildArgs({
       stubFile: options.stubFile,
       inputStubFile: options.stubFile,
@@ -150,7 +152,6 @@ export class VsstubsCli {
     });
 
     const args = [...baseArgs, 'check', '--json'];
-
     const { stdout } = await this.execute(pythonPath, args, {
       cwd: options.cwd,
       signal: options.signal,
@@ -172,15 +173,7 @@ export class VsstubsCli {
   public async runSubcommand(
     pythonPath: string,
     subcommand: SubCommand,
-    options: {
-      stubFile: string;
-      namespaces?: string[] | undefined;
-      extraPluginDirs?: string[] | undefined;
-      enableCompatApi3?: boolean | undefined;
-      cwd?: string | undefined;
-      workspaceRoot?: string | undefined;
-      signal?: AbortSignal | undefined;
-    },
+    options: CliSubCommandOptions,
   ): Promise<{ stdout: string; stderr: string }> {
     const baseArgs = this.buildArgs({
       stubFile: options.stubFile,
@@ -191,7 +184,6 @@ export class VsstubsCli {
     });
 
     const args = [...baseArgs, subcommand, ...(options.namespaces ?? [])];
-
     return this.execute(pythonPath, args, {
       cwd: options.cwd,
       signal: options.signal,
@@ -203,9 +195,8 @@ export class VsstubsCli {
    */
   public async generate(
     pythonPath: string,
-    options: CliBuildOptions & CliExecOptions,
+    options: CliGenerateOptions,
   ): Promise<{ stdout: string; stderr: string }> {
-    const args = this.buildArgs(options);
-    return this.execute(pythonPath, args, options);
+    return this.execute(pythonPath, this.buildArgs(options), options);
   }
 }
