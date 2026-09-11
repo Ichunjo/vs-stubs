@@ -30,36 +30,34 @@ export function activate(context: vscode.ExtensionContext): void {
   void startupInit(vsstubs, shouldAutoGenerate, shouldCheckOnStartup);
 
   // Plugin directory watcher
+  const watcher = new PluginWatcher(() => vsstubs.generateStubs('watcher'));
+  context.subscriptions.push(watcher);
+
   const shouldWatch = config.get<boolean>(CONFIG.WATCH_PLUGINS, true);
-  let watcher: PluginWatcher | undefined;
-
   if (shouldWatch) {
-    watcher = new PluginWatcher(() => vsstubs.generateStubs('watcher'));
-
-    context.subscriptions.push(watcher);
     void watcher.start();
-
-    // Restart watcher when extraPluginDirs or watchPlugins settings change
-    context.subscriptions.push(
-      vscode.workspace.onDidChangeConfiguration((e) => {
-        if (e.affectsConfiguration(`${CONFIG.SECTION}.${CONFIG.EXTRA_PLUGIN_DIRS}`)) {
-          void watcher?.restart();
-          logger.info('Extra plugin dirs changed. Restarting watcher...');
-        }
-
-        if (e.affectsConfiguration(`${CONFIG.SECTION}.${CONFIG.WATCH_PLUGINS}`)) {
-          const updated = vscode.workspace.getConfiguration(CONFIG.SECTION);
-          if (updated.get<boolean>(CONFIG.WATCH_PLUGINS, true)) {
-            void watcher?.restart();
-            logger.info('Plugin watcher re-enabled by settings.');
-          } else {
-            watcher?.stop();
-            logger.info('Plugin watcher disabled by settings.');
-          }
-        }
-      }),
-    );
   }
+
+  // Restart or toggle watcher when extraPluginDirs or watchPlugins settings change
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration(`${CONFIG.SECTION}.${CONFIG.EXTRA_PLUGIN_DIRS}`)) {
+        void watcher.restart();
+        logger.info('Extra plugin dirs changed. Restarting watcher...');
+      }
+
+      if (e.affectsConfiguration(`${CONFIG.SECTION}.${CONFIG.WATCH_PLUGINS}`)) {
+        const updated = vscode.workspace.getConfiguration(CONFIG.SECTION);
+        if (updated.get<boolean>(CONFIG.WATCH_PLUGINS, true)) {
+          void watcher.restart();
+          logger.info('Plugin watcher re-enabled by settings.');
+        } else {
+          watcher.stop();
+          logger.info('Plugin watcher disabled by settings.');
+        }
+      }
+    }),
+  );
 
   // Subscribe to interpreter changes for background check and watcher restart
   PythonExtension.api()
