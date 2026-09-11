@@ -30,8 +30,8 @@ jobs:
 
       - name: Install Dependencies
         working-directory: src/vsstubs-vscode
-        run: npm install
+        run: vp install
 
       - name: Lint and Type Check
         working-directory: src/vsstubs-vscode
-        run: npm run compile
+        run: vp run compile
