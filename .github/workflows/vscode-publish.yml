@@ -21,6 +21,6 @@ jobs:
 
       - name: Publish to Marketplace
         working-directory: src/vsstubs-vscode
-        run: vp dlx @vscode/vsce publish --no-dependencies --no-prepublish
+        run: vp dlx @vscode/vsce publish --no-dependencies
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
