@@ -28,6 +28,7 @@
     "format": "vp fmt --write \"**/*.{ts,mts,json,yml,html,css}\"",
     "lint": "vp lint src",
     "package": "vp run check-types && vp run lint && rolldown -c --minify",
+    "test": "vp test --run",
     "vscode:prepublish": "vp run package",
     "watch": "npm-run-all -p watch:*",
     "watch:rolldown": "rolldown -c --watch",

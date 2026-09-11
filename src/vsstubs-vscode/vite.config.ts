@@ -1,6 +1,15 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite-plus';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 export default defineConfig({
+  resolve: {
+    alias: {
+      vscode: path.resolve(__dirname, 'test/vscode.mock.ts'),
+    },
+  },
   fmt: {
     semi: true,
     singleQuote: true,
@@ -41,5 +50,9 @@ export default defineConfig({
         specifier: 'vite-plus/oxlint-plugin',
       },
     ],
+  },
+  test: {
+    include: ['test/**/*.test.ts'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/out/**'],
   },
 });
