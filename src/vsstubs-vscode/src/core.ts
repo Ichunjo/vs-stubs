@@ -31,33 +31,12 @@ const COMMAND_TEXT_MAP: Record<SubCommand, { completion: string; pending: string
 };
 
 export class VSStubs implements vscode.Disposable {
-  private cli: VsstubsCli;
-  private env: EnvironmentManager;
-  private statusBar: VsstubsStatusBar;
+  public readonly cli = new VsstubsCli();
+  public readonly env = new EnvironmentManager(this.cli);
+  public readonly statusBar = new VsstubsStatusBar();
+
   private isGenerationInProgress = false;
   private needsRegeneration = false;
-
-  constructor(
-    cli: VsstubsCli = new VsstubsCli(),
-    env?: EnvironmentManager,
-    statusBar?: VsstubsStatusBar,
-  ) {
-    this.cli = cli;
-    this.env = env ?? new EnvironmentManager(this.cli);
-    this.statusBar = statusBar ?? new VsstubsStatusBar();
-  }
-
-  public getStatusBar(): VsstubsStatusBar {
-    return this.statusBar;
-  }
-
-  public getEnvironmentManager(): EnvironmentManager {
-    return this.env;
-  }
-
-  public getCli(): VsstubsCli {
-    return this.cli;
-  }
 
   public dispose(): void {
     this.statusBar.dispose();

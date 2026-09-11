@@ -14,11 +14,8 @@ import { existsAsync, isOnPath, isVapoursynthAvailable } from './utils.js';
 export class EnvironmentManager {
   private isAvailable = false;
   private checkedPythonPath?: string | undefined;
-  private cli: VsstubsCli;
 
-  constructor(cli: VsstubsCli) {
-    this.cli = cli;
-  }
+  constructor(private cli: VsstubsCli) {}
 
   /**
    * Invalidate the cached interpreter status (e.g. when Python interpreter changes).

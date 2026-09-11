@@ -14,15 +14,12 @@ import {
 import { logger } from './logging.js';
 
 export class PluginWatcher implements vscode.Disposable {
-  private onPluginsChanged: () => void;
   private vsWatchers: vscode.FileSystemWatcher[] = [];
   private debounceTimer: ReturnType<typeof setTimeout> | undefined;
   private pluginDir: string | undefined;
   private activeSession = 0;
 
-  constructor(onPluginsChanged: () => void) {
-    this.onPluginsChanged = onPluginsChanged;
-  }
+  constructor(private onPluginsChanged: () => void) {}
 
   public dispose(): void {
     this.stop();

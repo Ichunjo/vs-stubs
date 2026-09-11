@@ -97,7 +97,7 @@ async function startupInit(
 
 async function onInterpreterChanged(vsstubs: VSStubs, watcher?: PluginWatcher): Promise<void> {
   logger.info('Python interpreter changed. Running background check...');
-  vsstubs.getEnvironmentManager().invalidateCache();
+  vsstubs.env.invalidateCache();
   try {
     await vsstubs.checkPlugins(true);
     if (watcher) {
