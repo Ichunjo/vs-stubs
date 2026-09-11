@@ -14,6 +14,7 @@ export function activate(context: vscode.ExtensionContext): void {
   initLogger(context);
 
   const vsstubs = new VSStubs();
+  context.subscriptions.push(vsstubs);
 
   context.subscriptions.push(
     vscode.commands.registerCommand(COMMANDS.GENERATE, () => vsstubs.generateStubs('manual')),
@@ -96,6 +97,7 @@ async function startupInit(
 
 async function onInterpreterChanged(vsstubs: VSStubs, watcher?: PluginWatcher): Promise<void> {
   logger.info('Python interpreter changed. Running background check...');
+  vsstubs.getEnvironmentManager().invalidateCache();
   try {
     await vsstubs.checkPlugins(true);
     if (watcher) {

@@ -1,25 +1,22 @@
 /**
- * Core logic for generating VapourSynth stubs.
+ * High-level orchestration and UI controller for VapourSynth Stubs.
  */
 
-import { join } from 'node:path';
-import semver from 'semver';
 import * as vscode from 'vscode';
-import { CONFIG, FILENAMES, MINIMUM_VSSTUBS_VERSION } from './constants.js';
+import { VsstubsCli } from './cli.js';
+import { CONFIG } from './constants.js';
+import { EnvironmentManager } from './environment.js';
 import {
-  execFile,
   existsAsync,
   getPythonInterpreter,
   getStubFile,
   getWorkspaceRoot,
-  isOnPath,
-  isVapoursynthAvailable,
-  resolvePathVariables,
+  pickWorkspaceFolder,
 } from './helpers.js';
 import { logger } from './logging.js';
+import { VsstubsStatusBar } from './statusBar.js';
 import {
   CheckJSONResponse,
-  PluginInfo,
   PluginPickItem,
   SubCommand,
   VSStubsCommandOptions,
@@ -33,20 +30,59 @@ const COMMAND_TEXT_MAP: Record<SubCommand, { completion: string; pending: string
   update: { completion: 'updated', pending: 'Updating' },
 };
 
-export class VSStubs {
+export class VSStubs implements vscode.Disposable {
+  private cli: VsstubsCli;
+  private env: EnvironmentManager;
+  private statusBar: VsstubsStatusBar;
   private isGenerationInProgress = false;
   private needsRegeneration = false;
-  private isAvailable = false;
-  private checkedPythonPath?: string;
+
+  constructor(
+    cli: VsstubsCli = new VsstubsCli(),
+    env?: EnvironmentManager,
+    statusBar?: VsstubsStatusBar,
+  ) {
+    this.cli = cli;
+    this.env = env ?? new EnvironmentManager(this.cli);
+    this.statusBar = statusBar ?? new VsstubsStatusBar();
+  }
+
+  public getStatusBar(): VsstubsStatusBar {
+    return this.statusBar;
+  }
+
+  public getEnvironmentManager(): EnvironmentManager {
+    return this.env;
+  }
+
+  public getCli(): VsstubsCli {
+    return this.cli;
+  }
+
+  public dispose(): void {
+    this.statusBar.dispose();
+  }
+
+  public [Symbol.dispose](): void {
+    this.dispose();
+  }
 
   /**
-   * Resolve workspace context once per action.
-   * If showWarning is true, an error notification is displayed when no folder is open.
+   * Resolve workspace context.
+   * If interactive is true, prompts user via folder pick if multiple roots exist without an active editor.
    */
-  public async getWorkspaceContext(showWarning = false): Promise<WorkspaceContext | undefined> {
-    const workspaceRoot = getWorkspaceRoot();
+  public async getWorkspaceContext(interactive = false): Promise<WorkspaceContext | undefined> {
+    let workspaceRoot: string | undefined;
+
+    if (interactive) {
+      const folder = await pickWorkspaceFolder();
+      workspaceRoot = folder?.uri.fsPath;
+    } else {
+      workspaceRoot = getWorkspaceRoot();
+    }
+
     if (!workspaceRoot) {
-      if (showWarning) {
+      if (interactive) {
         vscode.window.showWarningMessage('VapourSynth Stubs: No workspace folder is open.');
       }
       return undefined;
@@ -59,11 +95,6 @@ export class VSStubs {
 
   /**
    * Generate VapourSynth stubs.
-   *
-   * @param trigger How generation was triggered:
-   *   - `'manual'`: user ran the command explicitly. No guards, shows progress notification.
-   *   - `'activation'`: workspace open auto-generation. Skips if stubs already exist.
-   *   - `'watcher'`: plugin directory changed. Always regenerates, silent (no popup).
    */
   public async generateStubs(
     trigger: 'manual' | 'activation' | 'watcher' = 'manual',
@@ -83,20 +114,42 @@ export class VSStubs {
     const ctx = await this.getWorkspaceContext(!isSilent);
     if (!ctx) return;
 
-    // On activation, skip if stubs already exist (first-time generation only).
     if (trigger === 'activation' && (await existsAsync(ctx.stubFile))) {
       return;
     }
 
+    const resource = vscode.Uri.file(ctx.workspaceRoot);
+    const config = vscode.workspace.getConfiguration(CONFIG.SECTION, resource);
+    const extraPluginDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
+    const enableCompatApi3 = config.get<boolean>(CONFIG.ENABLE_COMPAT_API3, false);
+
     this.isGenerationInProgress = true;
+    this.statusBar.showGenerating();
+
     try {
-      await this.runVsstubsCommand(ctx, {
-        args: this.buildArgs(ctx),
-        title: 'Generating VapourSynth stubs...',
-        successMessage: 'VapourSynth stubs generated.',
-        errorMessage: 'Stub generation failed.',
-        silent: isSilent,
-      });
+      await this.runWithProgress(
+        ctx,
+        {
+          args: [],
+          title: 'Generating VapourSynth stubs...',
+          successMessage: 'VapourSynth stubs generated.',
+          errorMessage: 'Stub generation failed.',
+          silent: isSilent,
+        },
+        async (signal) => {
+          return this.cli.generate(ctx.pythonPath, {
+            stubFile: ctx.stubFile,
+            extraPluginDirs,
+            enableCompatApi3,
+            cwd: ctx.workspaceRoot,
+            workspaceRoot: ctx.workspaceRoot,
+            signal,
+          });
+        },
+      );
+      this.statusBar.showReady();
+    } catch {
+      this.statusBar.showError();
     } finally {
       this.isGenerationInProgress = false;
       if (this.needsRegeneration) {
@@ -116,16 +169,30 @@ export class VSStubs {
 
     const resource = vscode.Uri.file(ctx.workspaceRoot);
     const config = vscode.workspace.getConfiguration(CONFIG.SECTION, resource);
-    const extraDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
+    const extraPluginDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
 
-    const [availablePlugins, existingNamespaces] = await Promise.all([
-      this.queryPluginsJson(ctx, extraDirs),
-      this.queryPluginsJson(ctx),
-    ]);
+    let availablePlugins;
+    let existingPlugins;
+    try {
+      [availablePlugins, existingPlugins] = await Promise.all([
+        this.cli.queryPlugins(ctx.pythonPath, {
+          extraPluginDirs,
+          cwd: ctx.workspaceRoot,
+          workspaceRoot: ctx.workspaceRoot,
+        }),
+        (await existsAsync(ctx.stubFile))
+          ? this.cli.queryPlugins(ctx.pythonPath, {
+              stubFile: ctx.stubFile,
+              cwd: ctx.workspaceRoot,
+            })
+          : Promise.resolve([]),
+      ]);
+    } catch (error) {
+      void this.showErrorWithOutput(`Failed to query plugins: ${String(error)}`);
+      return;
+    }
 
-    if (!availablePlugins) return;
-
-    const existingSet = new Set((existingNamespaces || []).map((ns) => ns.namespace));
+    const existingSet = new Set(existingPlugins.map((ns) => ns.namespace));
     const items: PluginPickItem[] = availablePlugins
       .filter((plugin) => !existingSet.has(plugin.namespace))
       .map((plugin) => ({
@@ -165,8 +232,16 @@ export class VSStubs {
       return;
     }
 
-    const plugins = await this.queryPluginsJson(ctx);
-    if (!plugins) return;
+    let plugins;
+    try {
+      plugins = await this.cli.queryPlugins(ctx.pythonPath, {
+        stubFile: ctx.stubFile,
+        cwd: ctx.workspaceRoot,
+      });
+    } catch (error) {
+      void this.showErrorWithOutput(`Failed to query plugins: ${String(error)}`);
+      return;
+    }
 
     const items: PluginPickItem[] = plugins.map((plugin) => ({
       label: plugin.namespace,
@@ -192,8 +267,6 @@ export class VSStubs {
 
   /**
    * Check VapourSynth stubs for outdated or new plugins / signature updates.
-   *
-   * @param silent If true (background check), only notify if updates are detected.
    */
   public async checkPlugins(silent = false): Promise<void> {
     const ctx = await this.getWorkspaceContext(!silent);
@@ -204,24 +277,26 @@ export class VSStubs {
       return;
     }
 
-    const result = await this.runPluginSubcommand(ctx, 'check', ['--json'], { silent: true });
-
-    if (!result) {
-      if (!silent) {
-        void this.showErrorWithOutput('Stub check failed. See output channel for details.');
-      }
-      return;
-    }
-
+    this.statusBar.showChecking();
     let report: CheckJSONResponse;
+
     try {
-      report = JSON.parse(result.stdout);
+      const resource = vscode.Uri.file(ctx.workspaceRoot);
+      const config = vscode.workspace.getConfiguration(CONFIG.SECTION, resource);
+      const extraPluginDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
+      const enableCompatApi3 = config.get<boolean>(CONFIG.ENABLE_COMPAT_API3, false);
+
+      report = await this.cli.check(ctx.pythonPath, {
+        stubFile: ctx.stubFile,
+        extraPluginDirs,
+        enableCompatApi3,
+        cwd: ctx.workspaceRoot,
+        workspaceRoot: ctx.workspaceRoot,
+      });
     } catch (error) {
-      logger.error(
-        `Stub check parse error: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      this.statusBar.showError();
       if (!silent) {
-        void this.showErrorWithOutput('Stub check failed. See output channel for details.');
+        void this.showErrorWithOutput(`Stub check failed: ${String(error)}`);
       }
       return;
     }
@@ -258,13 +333,16 @@ export class VSStubs {
           );
         }
       }
-    } else if (!silent) {
-      const resource = vscode.Uri.file(ctx.workspaceRoot);
-      const showNotification = vscode.workspace
-        .getConfiguration(CONFIG.SECTION, resource)
-        .get<boolean>(CONFIG.SHOW_UP_TO_DATE_NOTIFICATION, true);
-      if (showNotification) {
-        vscode.window.showInformationMessage('VapourSynth stubs are up to date.');
+    } else {
+      this.statusBar.showReady();
+      if (!silent) {
+        const resource = vscode.Uri.file(ctx.workspaceRoot);
+        const showNotification = vscode.workspace
+          .getConfiguration(CONFIG.SECTION, resource)
+          .get<boolean>(CONFIG.SHOW_UP_TO_DATE_NOTIFICATION, true);
+        if (showNotification) {
+          vscode.window.showInformationMessage('VapourSynth stubs are up to date.');
+        }
       }
     }
   }
@@ -281,70 +359,49 @@ export class VSStubs {
   private async runPluginSubcommand(
     ctx: WorkspaceContext,
     subcommand: SubCommand,
-    args: string[] = [],
-    options: Partial<VSStubsCommandOptions> = {},
-  ): Promise<{ stdout: string; stderr: string } | undefined> {
+    namespaces: string[] = [],
+  ): Promise<void> {
     if (!(await existsAsync(ctx.stubFile))) {
-      if (!options.silent) {
-        vscode.window.showErrorMessage(`Can't ${subcommand} because there is no stubs file.`);
-      }
-      return undefined;
+      vscode.window.showErrorMessage(`Can't ${subcommand} because there is no stubs file.`);
+      return;
     }
 
     const { completion, pending } = COMMAND_TEXT_MAP[subcommand];
-    const isCheck = subcommand === 'check';
-    const title = `${pending} stubs...`;
-    const successMessage = isCheck ? undefined : `VapourSynth stubs ${completion}.`;
-    const errorMessage = `Stub ${subcommand} failed.`;
+    const resource = vscode.Uri.file(ctx.workspaceRoot);
+    const config = vscode.workspace.getConfiguration(CONFIG.SECTION, resource);
+    const extraPluginDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
+    const enableCompatApi3 = config.get<boolean>(CONFIG.ENABLE_COMPAT_API3, false);
 
-    return this.runVsstubsCommand(ctx, {
-      args: [...this.buildArgs(ctx, ctx.stubFile), subcommand, ...args],
-      title,
-      successMessage,
-      errorMessage,
-      ...options,
-    });
+    await this.runWithProgress(
+      ctx,
+      {
+        args: [],
+        title: `${pending} stubs...`,
+        successMessage: `VapourSynth stubs ${completion}.`,
+        errorMessage: `Stub ${subcommand} failed.`,
+      },
+      (signal) =>
+        this.cli.runSubcommand(ctx.pythonPath, subcommand, {
+          stubFile: ctx.stubFile,
+          namespaces,
+          extraPluginDirs,
+          enableCompatApi3,
+          cwd: ctx.workspaceRoot,
+          workspaceRoot: ctx.workspaceRoot,
+          signal,
+        }),
+    );
   }
 
-  private async queryPluginsJson(
-    ctx: WorkspaceContext,
-    extraDirs?: string[],
-  ): Promise<PluginInfo[] | undefined> {
-    const hasExtraDirs = Boolean(extraDirs && extraDirs.length > 0);
-    if (!hasExtraDirs && !(await existsAsync(ctx.stubFile))) return [];
-
-    const args = [
-      ...(hasExtraDirs
-        ? extraDirs!.flatMap((dir) => ['--load', resolvePathVariables(dir, ctx.workspaceRoot)])
-        : ['-i', ctx.stubFile]),
-      'plugins',
-      '--json',
-    ];
-
-    const res = await this.runVsstubsCommand(ctx, { args, silent: true });
-    if (!res) return undefined;
-    try {
-      return JSON.parse(res.stdout);
-    } catch (error) {
-      logger.error(
-        `Plugins query parse error: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      void this.showErrorWithOutput('Plugins query parse error. See output channel for details.');
-      return undefined;
-    }
-  }
-
-  private async runVsstubsCommand(
+  private async runWithProgress(
     ctx: WorkspaceContext,
     options: VSStubsCommandOptions,
+    action: (signal: AbortSignal) => Promise<{ stdout: string; stderr: string }>,
   ): Promise<{ stdout: string; stderr: string } | undefined> {
     if (!options.skipCheck) {
-      const available = await this.ensureAvailable(ctx, options.silent);
+      const available = await this.env.ensureAvailable(ctx, options.silent);
       if (!available) return undefined;
     }
-
-    const args = ['-m', 'vsstubs', '--quiet', ...options.args];
-    logger.info(`Running: ${ctx.pythonPath} ${args.join(' ')}`);
 
     const progressOptions: vscode.ProgressOptions = {
       location: options.silent
@@ -357,33 +414,21 @@ export class VSStubs {
     try {
       return await vscode.window.withProgress(progressOptions, async (_progress, token) => {
         const abortController = new AbortController();
-        const registration = token.onCancellationRequested(() => {
-          abortController.abort();
-          logger.info('Command execution cancelled by user.');
-        });
+        const reg = token.onCancellationRequested(() => abortController.abort());
 
         let optSub: vscode.Disposable | undefined;
         if (options.cancellationToken) {
-          optSub = options.cancellationToken.onCancellationRequested(() => {
-            abortController.abort();
-          });
+          optSub = options.cancellationToken.onCancellationRequested(() => abortController.abort());
         }
 
         try {
-          const result = await execFile(ctx.pythonPath, args, {
-            cwd: ctx.workspaceRoot,
-            signal: abortController.signal,
-          });
-
-          if (result.stdout) logger.info('Stdout\n' + result.stdout);
-          if (result.stderr) logger.info('Stderr\n' + result.stderr);
-
+          const result = await action(abortController.signal);
           if (options.successMessage && !options.silent) {
             vscode.window.showInformationMessage(options.successMessage);
           }
           return result;
         } finally {
-          registration.dispose();
+          reg.dispose();
           optSub?.dispose();
         }
       });
@@ -391,7 +436,7 @@ export class VSStubs {
       const isAbort =
         error instanceof Error && (error.name === 'AbortError' || error.message.includes('abort'));
       if (isAbort) {
-        logger.info('Command execution aborted.');
+        logger.info('Command execution cancelled.');
         return undefined;
       }
 
@@ -404,110 +449,6 @@ export class VSStubs {
     }
   }
 
-  /**
-   * Build CLI arguments for `python -m vsstubs`.
-   */
-  private buildArgs(ctx: WorkspaceContext, inputStubFile?: string): string[] {
-    const args = ['-o', ctx.stubFile];
-    if (inputStubFile) args.push('-i', inputStubFile);
-
-    const resource = vscode.Uri.file(ctx.workspaceRoot);
-    const config = vscode.workspace.getConfiguration(CONFIG.SECTION, resource);
-    const extraDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
-
-    for (const dir of extraDirs) {
-      args.push('--load', resolvePathVariables(dir, ctx.workspaceRoot));
-    }
-
-    if (config.get<boolean>(CONFIG.ENABLE_COMPAT_API3)) args.push('--compat');
-
-    return args;
-  }
-
-  /**
-   * Ensure `vsstubs` package is available in the current Python environment.
-   */
-  private async ensureAvailable(ctx: WorkspaceContext, silent = false): Promise<boolean> {
-    if (this.isAvailable && this.checkedPythonPath === ctx.pythonPath) {
-      return true;
-    }
-
-    const vsAvailable = await isVapoursynthAvailable(ctx.pythonPath);
-    if (!vsAvailable) {
-      this.isAvailable = false;
-      this.checkedPythonPath = ctx.pythonPath;
-      logger.info(
-        `VapourSynth module not found for interpreter "${ctx.pythonPath}". Silencing extension.`,
-      );
-      if (!silent) {
-        vscode.window.showErrorMessage(
-          `VapourSynth module is not installed for interpreter "${ctx.pythonPath}".`,
-        );
-      }
-      return false;
-    }
-
-    const res = await this.runVsstubsCommand(ctx, {
-      args: ['--version'],
-      silent: true,
-      skipCheck: true,
-    });
-
-    const output = (res?.stdout || res?.stderr || '').trim();
-    const version = semver.coerce(output);
-
-    if (res && version && semver.gte(version, MINIMUM_VSSTUBS_VERSION)) {
-      this.isAvailable = true;
-      this.checkedPythonPath = ctx.pythonPath;
-      return true;
-    }
-
-    this.isAvailable = false;
-    this.checkedPythonPath = ctx.pythonPath;
-
-    logger.info(
-      `"vsstubs" module (v${MINIMUM_VSSTUBS_VERSION}+) not found for interpreter "${ctx.pythonPath}".`,
-    );
-
-    if (silent) {
-      return false;
-    }
-
-    const installCommand = await this.detectInstallCommand(ctx);
-    const choice = await vscode.window.showErrorMessage(
-      `"vsstubs" module (v${MINIMUM_VSSTUBS_VERSION}+) not found for interpreter "${ctx.pythonPath}". ` +
-        'Install it in your current environment.',
-      'Install now',
-      'Copy install command',
-      'Open terminal',
-    );
-
-    switch (choice) {
-      case 'Install now': {
-        const terminal = vscode.window.createTerminal('VSStubs install');
-        terminal.show();
-        terminal.sendText(installCommand);
-        return false;
-      }
-      case 'Copy install command': {
-        await vscode.env.clipboard.writeText(installCommand);
-        vscode.window.showInformationMessage(`Copied: ${installCommand}`);
-        return false;
-      }
-      case 'Open terminal': {
-        const terminal = vscode.window.createTerminal('VSStubs install');
-        terminal.show();
-        terminal.sendText(installCommand, false);
-        return false;
-      }
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * Helper to prompt plugin selection via QuickPick.
-   */
   private async promptPluginSelection(options: {
     title: string;
     placeholder: string;
@@ -522,26 +463,6 @@ export class VSStubs {
     });
 
     return selected ? selected.map((item) => item.namespace) : undefined;
-  }
-
-  /**
-   * Package manager detection for installation prompts.
-   */
-  private async detectInstallCommand(ctx: WorkspaceContext): Promise<string> {
-    const hasUvLock = await existsAsync(join(ctx.workspaceRoot, FILENAMES.UV_LOCK));
-    const hasPyproject = await existsAsync(join(ctx.workspaceRoot, FILENAMES.PYPROJECT));
-    if (hasUvLock && (await isOnPath('uv'))) {
-      return hasPyproject ? 'uv add --dev vsstubs' : 'uv pip install vsstubs';
-    }
-
-    const hasPipfile =
-      (await existsAsync(join(ctx.workspaceRoot, FILENAMES.PIPFILE))) ||
-      (await existsAsync(join(ctx.workspaceRoot, FILENAMES.PIPFILE_LOCK)));
-    if (hasPipfile) {
-      return 'pipenv install --dev vsstubs';
-    }
-
-    return 'pip install vsstubs';
   }
 
   private async showErrorWithOutput(msg: string): Promise<void> {
