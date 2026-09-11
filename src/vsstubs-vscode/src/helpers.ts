@@ -2,26 +2,20 @@
  * Helper functions for VSStubs.
  */
 
-import { execFile as execFileCb, execFileSync } from 'node:child_process';
+import { execFile as execFileCb } from 'node:child_process';
+import { constants } from 'node:fs';
+import { access } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { PythonExtension } from '@vscode/python-extension';
 import * as vscode from 'vscode';
 
-import { access } from 'node:fs/promises';
-import { constants } from 'node:fs';
-
 import { FILENAMES, NAMESPACES, PYTHON_CONFIG } from './constants.js';
 import { logger } from './logging.js';
-import path from 'node:path';
-
-import os from 'node:os';
 
 export const execFile = promisify(execFileCb);
-export const execFileAsync = promisify(
-  (...args: Parameters<typeof execFileSync>): ReturnType<typeof execFileSync> =>
-    execFileSync(...args),
-);
 
 export async function existsAsync(pathStr: string): Promise<boolean> {
   try {
@@ -35,11 +29,11 @@ export async function existsAsync(pathStr: string): Promise<boolean> {
 /**
  * Get the workspace root path.
  * Priority is given to active document workspace folder in multi-root setups.
+ * Does NOT produce UI side-effects on missing workspace.
  */
 export function getWorkspaceRoot(): string | undefined {
   const folders = vscode.workspace.workspaceFolders;
   if (!folders || folders.length === 0) {
-    vscode.window.showWarningMessage('VapourSynth Stubs: No workspace folder is open.');
     return undefined;
   }
 
@@ -57,9 +51,9 @@ export function getWorkspaceRoot(): string | undefined {
 /**
  * Resolve variables like ${workspaceFolder}, ${userHome}, and ~ in path strings.
  */
-export function resolvePathVariables(filePath: string): string {
+export function resolvePathVariables(filePath: string, workspaceRoot?: string): string {
   let resolved = filePath;
-  const root = getWorkspaceRoot();
+  const root = workspaceRoot ?? getWorkspaceRoot();
   if (root) {
     resolved = resolved.replace(/\$\{workspaceFolder\}/g, root);
   }
@@ -74,16 +68,33 @@ export function resolvePathVariables(filePath: string): string {
 }
 
 /**
+ * Get stub output directory from user settings.
+ * Reads `python.analysis.stubPath` (Pylance default: `typings`) and resolves path variables.
+ */
+export function getStubDir(workspaceRoot?: string): string {
+  const root = workspaceRoot ?? getWorkspaceRoot();
+  const resource = root ? vscode.Uri.file(root) : undefined;
+  const config = vscode.workspace.getConfiguration(PYTHON_CONFIG.ANALYSIS_SECTION, resource);
+  const configuredPath = config.get<string>(PYTHON_CONFIG.STUB_PATH) || 'typings';
+  return resolvePathVariables(configuredPath, root);
+}
+
+/**
  * Get absolute path to the vapoursynth stub file inside the workspace.
  */
 export function getStubFile(workspaceRoot: string): string {
-  return path.join(workspaceRoot, getStubDir(), NAMESPACES.VAPOURSYNTH, FILENAMES.STUB_INIT);
+  const stubDir = getStubDir(workspaceRoot);
+  const baseDir = path.isAbsolute(stubDir) ? stubDir : path.join(workspaceRoot, stubDir);
+  return path.join(baseDir, NAMESPACES.VAPOURSYNTH, FILENAMES.STUB_INIT);
 }
 
+/**
+ * Asynchronously check if a command executable is available on the system PATH.
+ */
 export async function isOnPath(command: string): Promise<boolean> {
   try {
     const executable = process.platform === 'win32' ? 'where.exe' : 'which';
-    await execFileAsync(executable, [command], { stdio: 'ignore' });
+    await execFile(executable, [command]);
     return true;
   } catch {
     return false;
@@ -93,36 +104,29 @@ export async function isOnPath(command: string): Promise<boolean> {
 /**
  * Resolve the Python interpreter for the current workspace.
  */
-export async function getPythonInterpreter(): Promise<string> {
+export async function getPythonInterpreter(workspaceRoot?: string): Promise<string> {
+  const root = workspaceRoot ?? getWorkspaceRoot();
+  const resource = root ? vscode.Uri.file(root) : vscode.window.activeTextEditor?.document.uri;
+
   try {
     const api = await PythonExtension.api();
-    const envPath = api.environments.getActiveEnvironmentPath();
+    const envPath = api.environments.getActiveEnvironmentPath(resource);
     const resolved = await api.environments.resolveEnvironment(envPath);
 
     if (resolved?.executable.uri) {
       return resolved.executable.uri.fsPath;
     }
   } catch (error) {
-    // If Python extension is not available, we use fallback settings
-    console.warn('Python extension API not available, falling back to settings:', error);
+    logger.warn(`Python extension API not available, falling back to settings: ${String(error)}`);
   }
 
   // Fallback: check VSCode python.defaultInterpreterPath
-  const pythonConfig = vscode.workspace.getConfiguration(PYTHON_CONFIG.SECTION);
+  const pythonConfig = vscode.workspace.getConfiguration(PYTHON_CONFIG.SECTION, resource);
   const defaultPath = pythonConfig.get<string>(PYTHON_CONFIG.DEFAULT_INTERPRETER);
   if (defaultPath) {
-    return resolvePathVariables(defaultPath);
+    return resolvePathVariables(defaultPath, root);
   }
   return 'python';
-}
-
-/**
- * Get stub output directory from user settings.
- * Reads `python.analysis.stubPath` (Pylance default: `typings`).
- */
-function getStubDir(): string {
-  const config = vscode.workspace.getConfiguration(PYTHON_CONFIG.ANALYSIS_SECTION);
-  return config.get<string>(PYTHON_CONFIG.STUB_PATH) || 'typings';
 }
 
 /**
@@ -136,10 +140,10 @@ export function isPluginFile(filename: string): boolean {
 /**
  * Get the VapourSynth plugin directory.
  */
-export async function resolvePluginDir(): Promise<string | undefined> {
+export async function resolvePluginDir(pythonPath?: string): Promise<string | undefined> {
   try {
-    const pythonPath = await getPythonInterpreter();
-    const { stdout } = await execFile(pythonPath, ['-m', 'vapoursynth', 'get-plugin-dir']);
+    const interpreter = pythonPath ?? (await getPythonInterpreter());
+    const { stdout } = await execFile(interpreter, ['-m', 'vapoursynth', 'get-plugin-dir']);
     const dir = stdout.trim();
     if (dir) {
       logger.info(`Resolved plugin dir: ${dir}`);
