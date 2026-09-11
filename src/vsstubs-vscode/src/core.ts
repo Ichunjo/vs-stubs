@@ -48,32 +48,6 @@ export class VSStubs implements vscode.Disposable {
   }
 
   /**
-   * Resolve workspace context.
-   * If interactive is true, prompts user via folder pick if multiple roots exist without an active editor.
-   */
-  public async getWorkspaceContext(interactive = false): Promise<WorkspaceContext | undefined> {
-    let workspaceRoot: string | undefined;
-
-    if (interactive) {
-      const folder = await pickWorkspaceFolder();
-      workspaceRoot = folder?.uri.fsPath;
-    } else {
-      workspaceRoot = getWorkspaceRoot();
-    }
-
-    if (!workspaceRoot) {
-      if (interactive) {
-        vscode.window.showWarningMessage('VapourSynth Stubs: No workspace folder is open.');
-      }
-      return undefined;
-    }
-
-    const stubFile = getStubFile(workspaceRoot);
-    const pythonPath = await getPythonInterpreter(workspaceRoot);
-    return { workspaceRoot, stubFile, pythonPath };
-  }
-
-  /**
    * Generate VapourSynth stubs.
    */
   public async generateStubs(
@@ -448,5 +422,29 @@ export class VSStubs implements vscode.Disposable {
     if (choice === 'Open Output') {
       logger.show();
     }
+  }
+  /**
+   * Resolve workspace context.
+   * If interactive is true, prompts user via folder pick if multiple roots exist without an active editor.
+   */
+  private async getWorkspaceContext(interactive = false): Promise<WorkspaceContext | undefined> {
+    let workspaceRoot: string | undefined;
+
+    if (interactive) {
+      workspaceRoot = (await pickWorkspaceFolder())?.uri.fsPath;
+    } else {
+      workspaceRoot = getWorkspaceRoot();
+    }
+
+    if (!workspaceRoot) {
+      if (interactive) {
+        vscode.window.showWarningMessage('VapourSynth Stubs: No workspace folder is open.');
+      }
+      return undefined;
+    }
+
+    const stubFile = getStubFile(workspaceRoot);
+    const pythonPath = await getPythonInterpreter(workspaceRoot);
+    return { workspaceRoot, stubFile, pythonPath };
   }
 }
