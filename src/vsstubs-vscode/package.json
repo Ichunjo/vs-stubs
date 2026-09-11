@@ -78,16 +78,19 @@
         "vsstubs.autoGenerate": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Automatically generate stubs when the workspace is opened."
         },
         "vsstubs.checkOnStartup": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Check for plugin updates or missing signatures when the workspace is opened."
         },
         "vsstubs.enableCompatApi3": {
           "type": "boolean",
           "default": false,
+          "scope": "resource",
           "description": "Enable return type compatibility for APIv3 plugins."
         },
         "vsstubs.extraPluginDirs": {
@@ -96,26 +99,32 @@
             "type": "string"
           },
           "default": [],
+          "scope": "resource",
           "markdownDescription": "Additional directories to load plugins from. Each path is passed as `--load` to the `vsstubs` CLI."
         },
         "vsstubs.promptOnPluginChanges": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Show a prompt to regenerate stubs when new, removed, or modified plugins are detected."
         },
         "vsstubs.showUpToDateNotification": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "description": "Show an informational notification when manual check confirms stubs are already up to date."
         },
         "vsstubs.watchPlugins": {
           "type": "boolean",
           "default": true,
+          "scope": "resource",
           "markdownDescription": "Watch VapourSynth plugin directories for changes and automatically regenerate stubs when plugins are added, updated, or removed."
         },
         "vsstubs.watchDebounceTime": {
           "type": "number",
           "default": 3000,
+          "minimum": 500,
+          "scope": "resource",
           "description": "Delay (in milliseconds) between the last plugin change detected and the stub regeneration."
         }
       }
@@ -137,6 +146,6 @@
     }
   },
   "engines": {
-    "vscode": "^1.130.0"
+    "vscode": "^1.90.0"
   }
 }
