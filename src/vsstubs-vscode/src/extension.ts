@@ -34,10 +34,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const watcher = new PluginWatcher(() => vsstubs.generateStubs('watcher'));
   context.subscriptions.push(watcher);
 
-  const shouldWatch = config.get<boolean>(CONFIG.WATCH_PLUGINS, true);
-  if (shouldWatch) {
-    void watcher.start();
-  }
+  if (config.get<boolean>(CONFIG.WATCH_PLUGINS, true)) void watcher.start();
 
   // Restart or toggle watcher when extraPluginDirs or watchPlugins settings change
   context.subscriptions.push(

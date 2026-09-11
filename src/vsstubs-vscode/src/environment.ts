@@ -8,7 +8,7 @@ import * as vscode from 'vscode';
 import { VsstubsCli } from './cli.js';
 import { FILENAMES, MINIMUM_VSSTUBS_VERSION } from './constants.js';
 import { logger } from './logging.js';
-import { WorkspaceContext } from './types.js';
+import { type WorkspaceContext } from './types.js';
 import { existsAsync, isOnPath, isVapoursynthAvailable } from './utils.js';
 
 export class EnvironmentManager {
@@ -33,8 +33,7 @@ export class EnvironmentManager {
       return true;
     }
 
-    const vsAvailable = await isVapoursynthAvailable(ctx.pythonPath);
-    if (!vsAvailable) {
+    if (!(await isVapoursynthAvailable(ctx.pythonPath))) {
       this.isAvailable = false;
       this.checkedPythonPath = ctx.pythonPath;
       logger.info(
