@@ -4,7 +4,7 @@
  */
 
 import semver from 'semver';
-import { type Logger } from './logging.js';
+import type { Logger } from './logging.js';
 import type { CheckJSONResponse, PluginInfo, SubCommand } from './types.js';
 import { execFile, resolvePathVariables } from './utils.js';
 

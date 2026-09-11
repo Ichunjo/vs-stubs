@@ -32,9 +32,7 @@ describe('VsstubsStatusBar', () => {
 
     statusBar.showReady(15);
     expect(item.text).toBe('$(symbol-namespace) VapourSynth');
-    expect(item.tooltip).toBe(
-      'VapourSynth Stubs: 15 plugins loaded. Click to check for updates.',
-    );
+    expect(item.tooltip).toBe('VapourSynth Stubs: 15 plugins loaded. Click to check for updates.');
 
     statusBar.dispose();
   });
