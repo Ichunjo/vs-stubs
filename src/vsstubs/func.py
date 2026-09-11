@@ -158,6 +158,7 @@ def output_stubs(
         console.print("[green]Done![/green]")
 
 
+@register_destroy_cbs()
 def check_stubs(input_file: str | PathLike[str] | IO[str]) -> dict[str, list[str]]:
     """
     Check VapourSynth stubs.
@@ -195,6 +196,7 @@ def check_stubs(input_file: str | PathLike[str] | IO[str]) -> dict[str, list[str
     return {"old": list(only_old), "new": list(only_new), "modified": modified}
 
 
+@register_destroy_cbs()
 def list_plugins(
     input_file: str | PathLike[str] | IO[str] | None = None, load: Sequence[str | PathLike[str]] | None = None
 ) -> list[dict[str, str]]:
