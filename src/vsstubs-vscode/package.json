@@ -29,6 +29,7 @@
     "lint": "vp lint src",
     "package": "vp run check-types && vp run lint && rolldown -c --minify",
     "test": "vp test --run",
+    "test:coverage": "vp test --run --coverage",
     "vscode:prepublish": "vp run package",
     "watch": "npm-run-all -p watch:*",
     "watch:rolldown": "rolldown -c --watch",

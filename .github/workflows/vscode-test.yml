@@ -29,4 +29,4 @@ jobs:
 
       - name: Test
         working-directory: src/vsstubs-vscode
-        run: vp test
+        run: vpr test:coverage
