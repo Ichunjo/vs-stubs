@@ -195,10 +195,10 @@ class SequenceLike(TypeLike):
 @cache
 def parse_type(utype: Any, is_return: bool = False) -> Any:
     if utype is int:
-        return IntLike()
+        return int if is_return else IntLike()
 
     if utype is float:
-        return FloatLike()
+        return float if is_return else FloatLike()
 
     if utype is VideoNode:
         return VideoNodeType()
@@ -226,9 +226,7 @@ def parse_type(utype: Any, is_return: bool = False) -> Any:
                 return UnionLike[*parsed]
 
     if origin is collections.abc.Sequence:
-        if is_return:
-            return GenericAlias(list, parsed)
-        return SequenceLike(parsed)
+        return GenericAlias(list, parsed) if is_return else SequenceLike(parsed)
 
     if origin is collections.abc.Callable:
         return VSCallbackTypeLike()
