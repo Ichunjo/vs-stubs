@@ -1,30 +1,16 @@
 /**
- * Helper functions for VSStubs.
+ * Helper functions for VSStubs with VS Code runtime integration.
  */
 
-import { execFile as execFileCb } from 'node:child_process';
-import { constants } from 'node:fs';
-import { access } from 'node:fs/promises';
-import os from 'node:os';
 import path from 'node:path';
-import { promisify } from 'node:util';
-
 import { PythonExtension } from '@vscode/python-extension';
 import * as vscode from 'vscode';
 
 import { FILENAMES, NAMESPACES, PYTHON_CONFIG } from './constants.js';
 import { logger } from './logging.js';
+import { execFile, existsAsync, isOnPath, isPluginFile, resolvePathVariables } from './utils.js';
 
-export const execFile = promisify(execFileCb);
-
-export async function existsAsync(pathStr: string): Promise<boolean> {
-  try {
-    await access(pathStr, constants.F_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
+export { execFile, existsAsync, isOnPath, isPluginFile, resolvePathVariables };
 
 /**
  * Get the workspace root path.
@@ -49,22 +35,30 @@ export function getWorkspaceRoot(): string | undefined {
 }
 
 /**
- * Resolve variables like ${workspaceFolder}, ${userHome}, and ~ in path strings.
+ * Interactively resolve a workspace folder in multi-root setups.
+ * Prompts user with showWorkspaceFolderPick if no editor is active in a multi-folder workspace.
  */
-export function resolvePathVariables(filePath: string, workspaceRoot?: string): string {
-  let resolved = filePath;
-  const root = workspaceRoot ?? getWorkspaceRoot();
-  if (root) {
-    resolved = resolved.replace(/\$\{workspaceFolder\}/g, root);
+export async function pickWorkspaceFolder(): Promise<vscode.WorkspaceFolder | undefined> {
+  const folders = vscode.workspace.workspaceFolders;
+  if (!folders || folders.length === 0) {
+    return undefined;
   }
-  if (resolved.startsWith('~')) {
-    resolved = path.join(os.homedir(), resolved.slice(1));
+
+  if (folders.length === 1) {
+    return folders[0];
   }
-  resolved = resolved.replace(/\$\{userHome\}/g, os.homedir());
-  if (root && !path.isAbsolute(resolved)) {
-    resolved = path.resolve(root, resolved);
+
+  const activeUri = vscode.window.activeTextEditor?.document.uri;
+  if (activeUri) {
+    const activeFolder = vscode.workspace.getWorkspaceFolder(activeUri);
+    if (activeFolder) {
+      return activeFolder;
+    }
   }
-  return resolved;
+
+  return vscode.window.showWorkspaceFolderPick({
+    placeHolder: 'Select the workspace folder for VapourSynth stubs',
+  });
 }
 
 /**
@@ -86,19 +80,6 @@ export function getStubFile(workspaceRoot: string): string {
   const stubDir = getStubDir(workspaceRoot);
   const baseDir = path.isAbsolute(stubDir) ? stubDir : path.join(workspaceRoot, stubDir);
   return path.join(baseDir, NAMESPACES.VAPOURSYNTH, FILENAMES.STUB_INIT);
-}
-
-/**
- * Asynchronously check if a command executable is available on the system PATH.
- */
-export async function isOnPath(command: string): Promise<boolean> {
-  try {
-    const executable = process.platform === 'win32' ? 'where.exe' : 'which';
-    await execFile(executable, [command]);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 /**
@@ -127,14 +108,6 @@ export async function getPythonInterpreter(workspaceRoot?: string): Promise<stri
     return resolvePathVariables(defaultPath, root);
   }
   return 'python';
-}
-
-/**
- * Check if a filename looks like a native plugin library.
- */
-export function isPluginFile(filename: string): boolean {
-  const lower = filename.toLowerCase();
-  return lower.endsWith('.dll') || lower.endsWith('.so') || lower.endsWith('.dylib');
 }
 
 /**
