@@ -7,7 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   resolve: {
     alias: {
-      vscode: path.resolve(__dirname, 'test/vscode.mock.ts'),
+      vscode: path.resolve(__dirname, 'src/test/vscode.mock.ts'),
     },
   },
   fmt: {
@@ -52,7 +52,10 @@ export default defineConfig({
     ],
   },
   test: {
-    include: ['test/**/*.test.ts'],
+    include: ['src/test/**/*.test.ts'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/out/**'],
+    coverage: {
+      provider: 'v8',
+    },
   },
 });

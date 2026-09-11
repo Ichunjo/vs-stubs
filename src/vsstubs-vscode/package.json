@@ -42,6 +42,7 @@
     "@types/node": "26.5.0",
     "@types/semver": "7.8.0",
     "@types/vscode": "1.136.0",
+    "@vitest/coverage-v8": "4.1.11",
     "npm-run-all2": "9.0.3",
     "rolldown": "1.2.8",
     "typescript": "7.0.2",
