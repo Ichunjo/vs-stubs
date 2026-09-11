@@ -1,3 +1,5 @@
+import * as vscode from 'vscode';
+
 export type SubCommand = 'add' | 'remove' | 'check' | 'update';
 
 export interface CheckJSONResponse {
@@ -17,11 +19,16 @@ export interface PluginInfo {
   description: string;
 }
 
+export interface PluginPickItem extends vscode.QuickPickItem {
+  namespace: string;
+}
+
 export interface VSStubsCommandOptions {
   args: string[];
-  title?: string;
-  successMessage?: string;
-  errorMessage?: string;
-  silent?: boolean;
-  skipCheck?: boolean;
+  title?: string | undefined;
+  successMessage?: string | undefined;
+  errorMessage?: string | undefined;
+  silent?: boolean | undefined;
+  skipCheck?: boolean | undefined;
+  cancellationToken?: vscode.CancellationToken | undefined;
 }

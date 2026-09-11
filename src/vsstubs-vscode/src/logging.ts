@@ -13,4 +13,5 @@ export const logger = {
   info: (msg: string) => channel?.info(msg),
   warn: (msg: string) => channel?.warn(msg),
   error: (msg: string) => channel?.error(msg),
+  show: (preserveFocus?: boolean) => channel?.show(preserveFocus),
 };
