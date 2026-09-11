@@ -24,11 +24,11 @@
   "main": "./dist/extension.cjs",
   "scripts": {
     "check-types": "tsc --noEmit",
-    "compile": "npm run check-types && npm run lint && rolldown -c",
+    "compile": "vp run check-types && vp run lint && rolldown -c",
     "format": "vp fmt --write \"**/*.{ts,mts,json,yml,html,css}\"",
     "lint": "vp lint src",
-    "package": "npm run check-types && npm run lint && rolldown -c --minify",
-    "vscode:prepublish": "npm run package",
+    "package": "vp run check-types && vp run lint && rolldown -c --minify",
+    "vscode:prepublish": "vp run package",
     "watch": "npm-run-all -p watch:*",
     "watch:rolldown": "rolldown -c --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json"
@@ -45,6 +45,9 @@
     "rolldown": "1.2.8",
     "typescript": "7.0.2",
     "vite-plus": "0.3.1"
+  },
+  "overrides": {
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.3.1"
   },
   "contributes": {
     "commands": [
@@ -77,6 +80,16 @@
           "default": true,
           "description": "Automatically generate stubs when the workspace is opened."
         },
+        "vsstubs.checkOnStartup": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check for plugin updates or missing signatures when the workspace is opened."
+        },
+        "vsstubs.enableCompatApi3": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable return type compatibility for APIv3 plugins."
+        },
         "vsstubs.extraPluginDirs": {
           "type": "array",
           "items": {
@@ -85,10 +98,15 @@
           "default": [],
           "markdownDescription": "Additional directories to load plugins from. Each path is passed as `--load` to the `vsstubs` CLI."
         },
-        "vsstubs.enableCompatApi3": {
+        "vsstubs.promptOnPluginChanges": {
           "type": "boolean",
-          "default": false,
-          "description": "Enable return type compatibility for APIv3 plugins."
+          "default": true,
+          "description": "Show a prompt to regenerate stubs when new, removed, or modified plugins are detected."
+        },
+        "vsstubs.showUpToDateNotification": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show an informational notification when manual check confirms stubs are already up to date."
         },
         "vsstubs.watchPlugins": {
           "type": "boolean",
@@ -111,17 +129,14 @@
     "ms-python.python"
   ],
   "icon": "resources/icon.png",
-  "engines": {
-    "vscode": "^1.130.0"
-  },
-  "overrides": {
-    "vite": "npm:@voidzero-dev/vite-plus-core@0.3.1"
-  },
   "devEngines": {
     "packageManager": {
       "name": "npm",
       "version": "12.0.2",
       "onFail": "download"
     }
+  },
+  "engines": {
+    "vscode": "^1.130.0"
   }
 }

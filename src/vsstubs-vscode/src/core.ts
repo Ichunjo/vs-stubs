@@ -195,15 +195,34 @@ export class VSStubs {
       (report.old && report.old.length > 0) ||
       (report.modified && report.modified.length > 0)
     ) {
-      const choice = await vscode.window.showInformationMessage(
-        'New VapourSynth plugins detected.',
-        'Regenerate Stubs',
-      );
-      if (choice === 'Regenerate Stubs') {
-        await this.generateStubs('manual');
+      const config = vscode.workspace.getConfiguration(CONFIG.SECTION);
+      const shouldPrompt = config.get<boolean>(CONFIG.PROMPT_ON_PLUGIN_CHANGES, true);
+
+      if (shouldPrompt || !silent) {
+        const items = shouldPrompt
+          ? (['Regenerate Stubs', "Don't Ask Again"] as const)
+          : (['Regenerate Stubs'] as const);
+        const choice = await vscode.window.showInformationMessage(
+          'New VapourSynth plugins detected.',
+          ...items,
+        );
+        if (choice === 'Regenerate Stubs') {
+          await this.generateStubs('manual');
+        } else if (choice === "Don't Ask Again") {
+          await config.update(
+            CONFIG.PROMPT_ON_PLUGIN_CHANGES,
+            false,
+            vscode.ConfigurationTarget.Global,
+          );
+        }
       }
     } else if (!silent) {
-      vscode.window.showInformationMessage('VapourSynth stubs are up to date.');
+      const showNotification = vscode.workspace
+        .getConfiguration(CONFIG.SECTION)
+        .get<boolean>(CONFIG.SHOW_UP_TO_DATE_NOTIFICATION, true);
+      if (showNotification) {
+        vscode.window.showInformationMessage('VapourSynth stubs are up to date.');
+      }
     }
   }
 

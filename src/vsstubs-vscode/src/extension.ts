@@ -26,7 +26,8 @@ export function activate(context: vscode.ExtensionContext): void {
   // Auto-generate on activation if enabled or run background check if stubs exist
   const config = vscode.workspace.getConfiguration(CONFIG.SECTION);
   const shouldAutoGenerate = config.get<boolean>(CONFIG.AUTO_GENERATE, true);
-  void startupInit(vsstubs, shouldAutoGenerate);
+  const shouldCheckOnStartup = config.get<boolean>(CONFIG.CHECK_ON_STARTUP, true);
+  void startupInit(vsstubs, shouldAutoGenerate, shouldCheckOnStartup);
 
   // Plugin directory watcher
   const shouldWatch = config.get<boolean>(CONFIG.WATCH_PLUGINS, true);
@@ -80,12 +81,14 @@ export function deactivate(): void {
   return;
 }
 
-async function startupInit(vsstubs: VSStubs, shouldAutoGenerate: boolean): Promise<void> {
+async function startupInit(
+  vsstubs: VSStubs,
+  shouldAutoGenerate: boolean,
+  shouldCheckOnStartup: boolean,
+): Promise<void> {
   try {
-    if (shouldAutoGenerate) {
-      await vsstubs.generateStubs('activation');
-    }
-    await vsstubs.checkPlugins(true);
+    if (shouldAutoGenerate) await vsstubs.generateStubs('activation');
+    if (shouldCheckOnStartup) await vsstubs.checkPlugins(true);
   } catch (err) {
     logger.error(
       `Startup initialization failed: ${err instanceof Error ? err.message : String(err)}`,

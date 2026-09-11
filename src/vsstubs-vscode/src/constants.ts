@@ -17,10 +17,13 @@ export const COMMANDS = {
 export const CONFIG = {
   SECTION: 'vsstubs',
   AUTO_GENERATE: 'autoGenerate',
-  EXTRA_PLUGIN_DIRS: 'extraPluginDirs',
+  CHECK_ON_STARTUP: 'checkOnStartup',
   ENABLE_COMPAT_API3: 'enableCompatApi3',
+  EXTRA_PLUGIN_DIRS: 'extraPluginDirs',
+  PROMPT_ON_PLUGIN_CHANGES: 'promptOnPluginChanges',
   WATCH_PLUGINS: 'watchPlugins',
   WATCH_DEBOUNCE_TIME: 'watchDebounceTime',
+  SHOW_UP_TO_DATE_NOTIFICATION: 'showUpToDateNotification',
 } as const;
 
 export const PLUGIN_GLOB = '**/*.{dll,so,dylib}' as const;
