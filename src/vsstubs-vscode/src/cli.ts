@@ -4,7 +4,7 @@
  */
 
 import semver from 'semver';
-import { logger } from './logging.js';
+import { type Logger } from './logging.js';
 import type { CheckJSONResponse, PluginInfo, SubCommand } from './types.js';
 import { execFile, resolvePathVariables } from './utils.js';
 
@@ -42,7 +42,16 @@ export interface CliQueryOptions extends CliCommonOptions, CliExecOptions {
   stubFile?: string | undefined;
 }
 
+const noopLogger: Logger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+  show: () => {},
+};
+
 export class VsstubsCli {
+  constructor(private logger: Logger = noopLogger) {}
+
   /**
    * Construct CLI arguments for `python -m vsstubs`.
    */
@@ -77,15 +86,15 @@ export class VsstubsCli {
     options?: CliExecOptions,
   ): Promise<{ stdout: string; stderr: string }> {
     const fullArgs = ['-m', 'vsstubs', '--quiet', ...args];
-    logger.info(`Running: ${pythonPath} ${fullArgs.join(' ')}`);
+    this.logger.info(`Running: ${pythonPath} ${fullArgs.join(' ')}`);
 
     const result = await execFile(pythonPath, fullArgs, {
       cwd: options?.cwd,
       signal: options?.signal,
     });
 
-    if (result.stdout) logger.info(`Stdout:\n${result.stdout}`);
-    if (result.stderr) logger.info(`Stderr:\n${result.stderr}`);
+    if (result.stdout) this.logger.info(`Stdout:\n${result.stdout}`);
+    if (result.stderr) this.logger.info(`Stderr:\n${result.stderr}`);
 
     return result;
   }
@@ -132,7 +141,7 @@ export class VsstubsCli {
     try {
       return JSON.parse(stdout) as PluginInfo[];
     } catch (error) {
-      logger.error(
+      this.logger.error(
         `Plugins query JSON parse error: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw new Error(`Failed to parse plugins JSON: ${String(error)}`);
@@ -160,7 +169,7 @@ export class VsstubsCli {
     try {
       return JSON.parse(stdout) as CheckJSONResponse;
     } catch (error) {
-      logger.error(
+      this.logger.error(
         `Stub check JSON parse error: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw new Error(`Failed to parse stub check JSON: ${String(error)}`);

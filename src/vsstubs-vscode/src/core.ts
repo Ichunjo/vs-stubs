@@ -32,7 +32,7 @@ const COMMAND_TEXT_MAP: Record<SubCommand, { completion: string; pending: string
 };
 
 export class VSStubs implements vscode.Disposable {
-  public readonly cli = new VsstubsCli();
+  public readonly cli = new VsstubsCli(logger);
   public readonly env = new EnvironmentManager(this.cli);
   public readonly statusBar = new VsstubsStatusBar();
 
