@@ -33,7 +33,6 @@ Access these via the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
 | :--------------------------------- | :------ | :------------------------------------------------------------------------------------------ |
 | `vsstubs.autoGenerate`             | `true`  | Automatically generate stubs when a workspace is opened.                                    |
 | `vsstubs.checkOnStartup`           | `true`  | Check for plugin updates or missing signatures when the workspace is opened.                |
-| `vsstubs.enableCompatApi3`         | `false` | Enable return type compatibility for APIv3 plugins.                                         |
 | `vsstubs.extraPluginDirs`          | `[]`    | Additional directories to search for plugins (e.g., portable plugin folders).               |
 | `vsstubs.promptOnPluginChanges`    | `true`  | Show a prompt to regenerate stubs when new, removed, or modified plugins are detected.      |
 | `vsstubs.showUpToDateNotification` | `true`  | Show an informational notification when manual check confirms stubs are already up to date. |

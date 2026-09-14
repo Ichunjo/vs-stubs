@@ -18,7 +18,6 @@ export const CONFIG = {
   SECTION: 'vsstubs',
   AUTO_GENERATE: 'autoGenerate',
   CHECK_ON_STARTUP: 'checkOnStartup',
-  ENABLE_COMPAT_API3: 'enableCompatApi3',
   EXTRA_PLUGIN_DIRS: 'extraPluginDirs',
   PROMPT_ON_PLUGIN_CHANGES: 'promptOnPluginChanges',
   WATCH_PLUGINS: 'watchPlugins',

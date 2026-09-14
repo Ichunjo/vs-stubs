@@ -69,8 +69,6 @@ class AppConfig:
     """Load plugins from a folder or a single library file."""
     template: Annotated[bool, Parameter(alias="-T", negative=False, group=others_group)] = False
     """Export blank template; excludes existing plugins unless --load or --add is used."""
-    compat: Annotated[bool, Parameter(negative=False, group=others_group)] = False
-    """Enable return type compatibility for APIv3 plugins."""
     quiet: Annotated[bool, Parameter(group=others_group, negative=False)] = False
     """Suppress message output."""
     debug: Annotated[bool, Parameter(show=False)] = False
@@ -151,7 +149,6 @@ def add(plugins: list[str], /, config: Annotated[AppConfig, Parameter(show=False
         update=False,
         add=set(plugins),
         remove=None,
-        compat=cfg.compat,
     )
     raise SystemExit(0)
 
@@ -177,7 +174,6 @@ def remove(plugins: list[str], /, config: Annotated[AppConfig, Parameter(show=Fa
         update=False,
         add=None,
         remove=set(plugins),
-        compat=cfg.compat,
     )
     raise SystemExit(0)
 
@@ -227,7 +223,6 @@ def update(config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG)
         update=True,
         add=None,
         remove=None,
-        compat=cfg.compat,
     )
     raise SystemExit(0)
 
@@ -275,7 +270,6 @@ def cli_main(
             config.template,
             config.load,
             False,
-            compat=config.compat,
         )
         raise SystemExit(0)
 

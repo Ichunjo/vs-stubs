@@ -90,12 +90,6 @@
           "scope": "resource",
           "description": "Check for plugin updates or missing signatures when the workspace is opened."
         },
-        "vsstubs.enableCompatApi3": {
-          "type": "boolean",
-          "default": false,
-          "scope": "resource",
-          "description": "Enable return type compatibility for APIv3 plugins."
-        },
         "vsstubs.extraPluginDirs": {
           "type": "array",
           "items": {
