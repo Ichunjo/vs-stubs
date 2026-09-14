@@ -9,7 +9,7 @@ from itertools import takewhile
 from logging import getLogger
 from os import PathLike
 from pathlib import Path
-from typing import Any, is_typeddict
+from typing import is_typeddict
 
 from vapoursynth import Error, core
 
@@ -25,15 +25,7 @@ from .constants import (
     _callback_signatures,
     _wrappers,
 )
-from .types import (
-    FunctionInterface,
-    Implementation,
-    PluginInterface,
-    VideoNodeType,
-    WrappedFunction,
-    _CoreLike,
-    parse_type,
-)
+from .types import FunctionInterface, Implementation, PluginInterface, WrappedFunction, _CoreLike, parse_type
 from .utils import _get_cores, _get_dir, _get_plugins, _get_typed_dict_repr, _replace_known_callback_signature
 
 log = getLogger(__name__)
@@ -97,7 +89,7 @@ def retrieve_plugins(core_like: Sequence[_CoreLike]) -> Sequence[PluginInterface
     return plugins
 
 
-def construct_implementation(interface: PluginInterface, *, compat: bool) -> Implementation:
+def construct_implementation(interface: PluginInterface) -> Implementation:
     """Contructs a full implementation block with all the functions for all the cores-like."""
 
     functions_map = dict[str, list[WrappedFunction]]()
@@ -117,11 +109,7 @@ def construct_implementation(interface: PluginInterface, *, compat: bool) -> Imp
                 for name in param_names:
                     parameters[name] = _replace_known_callback_signature(parameters[name], interface, function)
 
-            if function.signature.return_annotation == Any and compat:
-                return_annotation = VideoNodeType()
-                log.debug("APIv3 plugin detected: '%s.%s.%s'", core_name, interface.namespace, function.name)
-            else:
-                return_annotation = parse_type(function.signature.return_annotation, True)
+            return_annotation = parse_type(function.signature.return_annotation, True)
 
             signature = function.signature.replace(
                 parameters=(Parameter("self", Parameter.POSITIONAL_ONLY), *parameters.values()),
