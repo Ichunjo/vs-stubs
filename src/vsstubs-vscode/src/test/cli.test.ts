@@ -44,14 +44,6 @@ describe('VsstubsCli', () => {
       expect(args).toContain('--load');
       expect(args.some((arg) => arg.includes('/workspace/plugins'))).toBe(true);
     });
-
-    it('appends --compat when enableCompatApi3 is true', () => {
-      const args = cli.buildArgs({
-        stubFile: '/path/to/stub.pyi',
-        enableCompatApi3: true,
-      });
-      expect(args).toEqual(['-o', '/path/to/stub.pyi', '--compat']);
-    });
   });
 
   describe('logger injection', () => {
@@ -184,14 +176,11 @@ describe('VsstubsCli', () => {
         stderr: '',
       });
 
-      await mockCli.generate('python', {
-        stubFile: '/path/stub.pyi',
-        enableCompatApi3: true,
-      });
+      await mockCli.generate('python', { stubFile: '/path/stub.pyi' });
 
       expect(execSpy).toHaveBeenCalledWith(
         'python',
-        ['-o', '/path/stub.pyi', '--compat'],
+        ['-o', '/path/stub.pyi'],
         expect.objectContaining({ stubFile: '/path/stub.pyi' }),
       );
     });

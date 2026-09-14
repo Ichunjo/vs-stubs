@@ -35,8 +35,6 @@ def output_stubs(
     update: bool = False,
     add: set[str] | None = None,
     remove: set[str] | None = None,
-    *,
-    compat: bool = False,
 ) -> None:
     """
     Generate or update VapourSynth stub output.
@@ -64,7 +62,6 @@ def output_stubs(
         update: If True, only update the current stubs from the input_file.
         add: A set of plugin names to add or update in the stubs.
         remove: A set of plugin names to remove from the stubs.
-        compat: Enable return type compatibility for APIv3 plugins.
     """
     if not running_via_cli():
         console.quiet = True
@@ -84,9 +81,7 @@ def output_stubs(
         if update:
             impl_ns = [i.namespace for i in implementations]
             console.print(f"Found {len(impl_ns)} plugins to update: {impl_ns}")
-            implementations = [
-                construct_implementation(pinter, compat=compat) for pinter in pinters if pinter.namespace in impl_ns
-            ]
+            implementations = [construct_implementation(pinter) for pinter in pinters if pinter.namespace in impl_ns]
 
     elif template:
         tmpl = get_template()
@@ -95,7 +90,7 @@ def output_stubs(
         raise ValueError("You must provide a input file when checking or updating the stubs")
     else:
         tmpl = get_template()
-        implementations = [construct_implementation(pinter, compat=compat) for pinter in pinters]
+        implementations = [construct_implementation(pinter) for pinter in pinters]
 
     if add or remove:
         impl_map = _index_by_namespace(implementations)
@@ -113,7 +108,7 @@ def output_stubs(
                     console.print(warn_msg.format(ns=ns))
                     continue
 
-                impl_map[ns] = construct_implementation(pinters_map[ns], compat=compat)
+                impl_map[ns] = construct_implementation(pinters_map[ns])
 
         if remove:
             for ns in remove:
@@ -176,7 +171,7 @@ def check_stubs(input_file: str | PathLike[str] | IO[str]) -> dict[str, list[str
     implementations = get_implementations_from_input(tmpl)
 
     old_impl = _index_by_namespace(implementations)
-    new_impl = _index_by_namespace(construct_implementation(pinter, compat=False) for pinter in pinters)
+    new_impl = _index_by_namespace(construct_implementation(pinter) for pinter in pinters)
 
     old_keys, new_keys = set(old_impl), set(new_impl)
 
