@@ -1,7 +1,7 @@
 from collections.abc import Callable, Iterator
 from concurrent.futures import Future
 from fractions import Fraction
-from typing import IO, Any, Final, Literal, Self, overload
+from typing import IO, Any, Final, Literal, Self, TypedDict, overload
 
 from typing_extensions import deprecated  # Can be replaced by from warnings for 3.13 and above
 
@@ -24,6 +24,8 @@ class RawNode:
     def __add__(self, other: Self) -> Self: ...
     def __mul__(self, other: int) -> Self: ...
     def __getattr__(self, name: str) -> Plugin: ...
+    @property
+    def gpu_resident(self) -> bool: ...
     @property
     def node_name(self) -> str: ...
     @property
@@ -48,7 +50,11 @@ class RawNode:
     @overload
     def get_frame_async(self, n: _IntLike, cb: Callable[[RawFrame | None, Exception | None], None]) -> None: ...
     def frames(
-        self, prefetch: int | None = None, backlog: int | None = None, close: bool = False
+        self,
+        prefetch: int | None = None,
+        backlog: int | None = None,
+        close: bool = False,
+        collect_garbage: bool = True,
     ) -> Iterator[RawFrame]: ...
     def set_output(self, index: _IntLike = 0) -> None: ...
     def clear_cache(self) -> None: ...
@@ -74,7 +80,11 @@ class VideoNode(RawNode):
         self, n: _IntLike, cb: Callable[[VideoFrame | None, Exception | None], None]
     ) -> None: ...
     def frames(
-        self, prefetch: int | None = None, backlog: int | None = None, close: bool = False
+        self,
+        prefetch: int | None = None,
+        backlog: int | None = None,
+        close: bool = False,
+        collect_garbage: bool = True,
     ) -> Iterator[VideoFrame]: ...
     def set_output(self, index: _IntLike = 0, alpha: Self | None = None, alt_output: Literal[0, 1, 2] = 0) -> None: ...
     def output(
@@ -109,7 +119,11 @@ class AudioNode(RawNode):
         self, n: _IntLike, cb: Callable[[AudioFrame | None, Exception | None], None]
     ) -> None: ...
     def frames(
-        self, prefetch: int | None = None, backlog: int | None = None, close: bool = False
+        self,
+        prefetch: int | None = None,
+        backlog: int | None = None,
+        close: bool = False,
+        collect_garbage: bool = True,
     ) -> Iterator[AudioFrame]: ...
     def output(
         self,
@@ -123,6 +137,27 @@ class AudioNode(RawNode):
 
 # <plugins/bound/AudioNode>
 # </plugins/bound/AudioNode>
+
+class _VulkanDeviceEntry(TypedDict):
+    index: int
+    name: str
+    api_version: tuple[int, int, int]
+    type: str
+    device_memory: int
+    usable: bool
+    reason: str
+    uuid: str
+
+class _VulkanDeviceInfo(TypedDict):
+    name: str
+    device_memory: int
+    budget: int
+    allocated: int
+    limit: int
+    uuid: str
+    export_handle_type: int
+    semaphore_export_handle_type: int
+    unified_memory: bool
 
 class Core:
     timings: Final[CoreTimings]
@@ -145,7 +180,16 @@ class Core:
     @property
     def used_cache_size(self) -> int: ...
     @property
+    def max_vram_cache_size(self) -> int: ...
+    @max_vram_cache_size.setter
+    def max_vram_cache_size(self, mb: int) -> None: ...
+    @property
     def flags(self) -> int: ...
+    @property
+    def vulkan_device_info(self) -> _VulkanDeviceInfo: ...
+    @property
+    def vulkan_devices(self) -> list[_VulkanDeviceEntry]: ...
+    def set_vulkan_device(self, index: int = -1) -> None: ...
     def plugins(self) -> Iterator[Plugin]: ...
     def query_video_format(
         self,
