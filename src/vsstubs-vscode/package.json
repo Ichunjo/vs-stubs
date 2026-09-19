@@ -45,7 +45,7 @@
     "@types/vscode": "1.90.0",
     "@vitest/coverage-v8": "4.1.11",
     "npm-run-all2": "9.0.3",
-    "rolldown": "1.2.8",
+    "rolldown": "1.2.9",
     "typescript": "7.0.2",
     "vite-plus": "0.3.2"
   },
