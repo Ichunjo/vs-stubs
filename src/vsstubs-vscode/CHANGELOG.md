@@ -2,6 +2,10 @@
 
 All notable changes to the **VapourSynth Stubs** extension will be documented in this file.
 
+## [0.5.0] - 2026-09-25
+
+- Remove `vsstubs.enableCompatApi3` configuration option.
+
 ## [0.4.0] - 2026-09-11
 
 - Add status bar item displaying generation and check progress with quick actions
