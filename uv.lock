@@ -644,7 +644,7 @@ requires-dist = [
     { name = "rich", specifier = ">=15.0.0" },
     { name = "typing-extensions", specifier = ">=4.15.0" },
     { name = "uv-build", specifier = ">=0.12.0" },
-    { name = "vapoursynth", specifier = ">=74" },
+    { name = "vapoursynth", specifier = ">=80" },
 ]
 
 [package.metadata.requires-dev]

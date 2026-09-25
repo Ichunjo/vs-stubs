@@ -75,7 +75,6 @@ export class VSStubs implements vscode.Disposable {
     const resource = vscode.Uri.file(ctx.workspaceRoot);
     const config = vscode.workspace.getConfiguration(CONFIG.SECTION, resource);
     const extraPluginDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
-    const enableCompatApi3 = config.get<boolean>(CONFIG.ENABLE_COMPAT_API3, false);
 
     this.isGenerationInProgress = true;
     this.statusBar.showGenerating();
@@ -94,7 +93,6 @@ export class VSStubs implements vscode.Disposable {
           return this.cli.generate(ctx.pythonPath, {
             stubFile: ctx.stubFile,
             extraPluginDirs,
-            enableCompatApi3,
             cwd: ctx.workspaceRoot,
             workspaceRoot: ctx.workspaceRoot,
             signal,
@@ -221,12 +219,10 @@ export class VSStubs implements vscode.Disposable {
       const resource = vscode.Uri.file(ctx.workspaceRoot);
       const config = vscode.workspace.getConfiguration(CONFIG.SECTION, resource);
       const extraPluginDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
-      const enableCompatApi3 = config.get<boolean>(CONFIG.ENABLE_COMPAT_API3, false);
 
       report = await this.cli.check(ctx.pythonPath, {
         stubFile: ctx.stubFile,
         extraPluginDirs,
-        enableCompatApi3,
         cwd: ctx.workspaceRoot,
         workspaceRoot: ctx.workspaceRoot,
       });
@@ -322,7 +318,6 @@ export class VSStubs implements vscode.Disposable {
     const resource = vscode.Uri.file(ctx.workspaceRoot);
     const config = vscode.workspace.getConfiguration(CONFIG.SECTION, resource);
     const extraPluginDirs = config.get<string[]>(CONFIG.EXTRA_PLUGIN_DIRS, []);
-    const enableCompatApi3 = config.get<boolean>(CONFIG.ENABLE_COMPAT_API3, false);
 
     await this.runWithProgress(
       ctx,
@@ -337,7 +332,6 @@ export class VSStubs implements vscode.Disposable {
           stubFile: ctx.stubFile,
           namespaces,
           extraPluginDirs,
-          enableCompatApi3,
           cwd: ctx.workspaceRoot,
           workspaceRoot: ctx.workspaceRoot,
           signal,

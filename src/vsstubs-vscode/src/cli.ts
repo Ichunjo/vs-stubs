@@ -21,7 +21,6 @@ export interface CliCommonOptions {
 /** CLI flags targeting a specific stub file. */
 export interface CliStubTargetOptions extends CliCommonOptions {
   stubFile: string;
-  enableCompatApi3?: boolean | undefined;
 }
 
 // Command-Specific Options
@@ -68,10 +67,6 @@ export class VsstubsCli {
           : dir;
         args.push('--load', resolved);
       }
-    }
-
-    if (options.enableCompatApi3) {
-      args.push('--compat');
     }
 
     return args;
@@ -156,7 +151,6 @@ export class VsstubsCli {
       stubFile: options.stubFile,
       inputStubFile: options.stubFile,
       extraPluginDirs: options.extraPluginDirs,
-      enableCompatApi3: options.enableCompatApi3,
       workspaceRoot: options.workspaceRoot,
     });
 
@@ -188,7 +182,6 @@ export class VsstubsCli {
       stubFile: options.stubFile,
       inputStubFile: options.stubFile,
       extraPluginDirs: options.extraPluginDirs,
-      enableCompatApi3: options.enableCompatApi3,
       workspaceRoot: options.workspaceRoot,
     });
 
