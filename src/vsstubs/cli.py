@@ -8,9 +8,7 @@ from pathlib import Path
 from typing import IO, Annotated
 
 from cyclopts import App, Group, Parameter
-from cyclopts.help import HelpPanel
-from cyclopts.help.formatters import DefaultFormatter
-from rich.console import Console, ConsoleOptions
+from rich.console import Console
 from rich.logging import RichHandler
 from rich.pretty import pretty_repr
 
@@ -23,25 +21,7 @@ log = getLogger(__name__)
 io_group = Group("I/O", sort_key=0)
 others_group = Group("Others", sort_key=1)
 commands_group = Group("Commands", sort_key=2)
-
-
-class CleanHelpFormatter(DefaultFormatter):
-    def __call__(self, console: Console, options: ConsoleOptions, panel: HelpPanel) -> None:
-        panel.entries = [
-            entry.copy(positive_names=entry.positive_names[1:])
-            if len(entry.positive_names) > 1 and not entry.positive_names[0].startswith("-")
-            else entry
-            for entry in panel.entries
-        ]
-        super().__call__(console, options, panel)
-
-
-app = App(
-    name="vsstubs",
-    console=console,
-    group_commands=commands_group,
-    help_formatter=CleanHelpFormatter.with_newline_metadata(),  # type: ignore[no-untyped-call]
-)
+app = App(name="vsstubs", console=console, group_commands=commands_group)
 
 
 @Parameter(name="*")
@@ -129,7 +109,7 @@ def _get_effective_config(cmd_config: AppConfig) -> AppConfig:
 
 
 @app.command
-def add(plugins: list[str], /, config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG) -> None:
+def add(plugins: list[str], /, *, config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG) -> None:
     """Add or update the specified plugins in the stubs.
 
     Args:
@@ -154,7 +134,7 @@ def add(plugins: list[str], /, config: Annotated[AppConfig, Parameter(show=False
 
 
 @app.command
-def remove(plugins: list[str], /, config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG) -> None:
+def remove(plugins: list[str], /, *, config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG) -> None:
     """Remove the specified plugins from the stubs.
 
     Args:
@@ -180,6 +160,7 @@ def remove(plugins: list[str], /, config: Annotated[AppConfig, Parameter(show=Fa
 
 @app.command
 def check(
+    *,
     config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG,
     output_json: Annotated[bool, Parameter(name="json", group=io_group, negative=False)] = False,
 ) -> None:
@@ -207,7 +188,7 @@ def check(
 
 
 @app.command
-def update(config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG) -> None:
+def update(*, config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG) -> None:
     """Update the current signatures from the input."""
     cfg = _get_effective_config(config)
     input_file, output_file = cfg.process("update")
@@ -229,6 +210,7 @@ def update(config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG)
 
 @app.command
 def plugins(
+    *,
     config: Annotated[AppConfig, Parameter(show=False)] = DEFAULT_CONFIG,
     output_json: Annotated[bool, Parameter(name="json", group=io_group, negative=False)] = False,
 ) -> None:
