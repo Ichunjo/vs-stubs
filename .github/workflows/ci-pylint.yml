@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.13, 3.14]
+        python-version: ["3.13", "3.14", "3.15", "3.15t"]
 
     runs-on: ubuntu-latest
 
@@ -29,17 +29,17 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync --locked --all-extras --no-install-package vapoursynth
+        run: uv sync --locked
 
       - name: Run Ruff check
         id: ruff-check
-        run: uv run --no-sync ruff check .
+        run: uv run ruff check .
 
       - name: Run Ruff format
         id: ruff-format
         if: success() || (failure() && steps.ruff-check.conclusion == 'failure')
-        run: uv run --no-sync ruff format --check --diff
+        run: uv run ruff format --check --diff
 
-      - name: Running mypy
+      - name: Running Pyrefly
         if: success() || (failure() && (steps.ruff-check.conclusion == 'failure' || steps.ruff-format.conclusion == 'failure'))
-        run: uv run --no-sync mypy .
+        run: uv run pyrefly check
