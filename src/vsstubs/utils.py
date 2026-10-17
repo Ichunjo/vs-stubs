@@ -40,7 +40,7 @@ def _get_typed_dict_repr(d: type) -> str:
 
     def _pretty_type(value: Any) -> str:
         if isinstance(value, type):
-            return str(value.__name__)
+            return value.__name__
         return parse_type(value, True)
 
     sig = "{" + ", ".join(f'"{n}": {_pretty_type(v)}' for n, v in d.__annotations__.items()) + "}"
@@ -57,7 +57,7 @@ def _replace_known_callback_signature(
     )
 
     if not isinstance(param.annotation, VSCallbackTypeLike):
-        ann = UnionLike[*(ann if isinstance(arg, VSCallbackTypeLike) else arg for arg in param.annotation.__args__)]
+        ann = UnionLike(*(ann if isinstance(arg, VSCallbackTypeLike) else arg for arg in param.annotation.__args__))
 
     return param.replace(annotation=ann)
 

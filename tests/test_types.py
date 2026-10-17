@@ -1,5 +1,4 @@
 import collections.abc
-import sys
 from collections.abc import Callable
 from types import GenericAlias
 from typing import Union
@@ -7,7 +6,6 @@ from typing import Union
 from vapoursynth import AudioNode, VideoNode
 
 from vsstubs.types import (
-    AnyStr,
     AudioNodeType,
     FloatLike,
     IntLike,
@@ -35,10 +33,7 @@ def test_parse_type_union() -> None:
 
 def test_parse_type_anystr() -> None:
     parsed = parse_type(Union[str, bytes, bytearray])  # noqa: UP007
-    if sys.version_info >= (3, 14):
-        assert isinstance(parsed, AnyStr)
-    else:
-        assert isinstance(parsed, UnionLike)
+    assert isinstance(parsed, UnionLike)
     assert repr(parsed) == "_AnyStr"
 
 

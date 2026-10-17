@@ -3,6 +3,9 @@
 # flake8: noqa
 # fmt: off
 # isort: skip_file
+# pyrefly: ignore-errors
+# ty: ignore
+# type: ignore
 
 from collections.abc import Buffer, Callable, Iterable, Iterator, Mapping, MutableMapping
 from concurrent.futures import Future
@@ -832,9 +835,9 @@ class FrameProps(MutableMapping[str, _PropValue]):
     @overload
     def setdefault(self, key: str, default: Literal[0] = 0, /) -> _PropValue | Literal[0]: ...
     @overload
-    def setdefault(self, key: str, default: _PropValueInputs, /) -> _PropValue: ...  # pyright: ignore[reportIncompatibleMethodOverride]
+    def setdefault(self, key: str, default: _PropValueInputs, /) -> _PropValue: ...
     def copy(self) -> dict[str, _PropValue]: ...
-    @overload  # type: ignore[override]
+    @overload
     def get(
         self,
         key: Literal[
@@ -892,7 +895,7 @@ class FrameProps(MutableMapping[str, _PropValue]):
     @overload
     def get(self, key: str, /) -> _PropValue | None: ...
     @overload
-    def get[T](self, key: str, default: T, /) -> _PropValue | T: ...  # pyright: ignore[reportIncompatibleMethodOverride]
+    def get[T](self, key: str, default: T, /) -> _PropValue | T: ...
 
 class FuncData:
     def __call__(self, **kwargs: Any) -> Any: ...
@@ -1572,9 +1575,9 @@ class _Wrapper_VideoNode_bound_trt_rtx_Model:
 class FramePtr: ...
 
 # These memoryview-likes don't exist at runtime.
-class _video_view(memoryview):  # type: ignore[misc]
-    def __getitem__(self, index: tuple[int, int]) -> float: ...  # type: ignore[override]
-    def __setitem__(self, index: tuple[int, int], other: float) -> None: ...  # type: ignore[override]
+class _video_view(memoryview):  # pyrefly: ignore[invalid-inheritance]
+    def __getitem__(self, index: tuple[int, int]) -> float: ...
+    def __setitem__(self, index: tuple[int, int], other: float) -> None: ...
     @property
     def shape(self) -> tuple[int, int]: ...
     @property
@@ -1582,12 +1585,12 @@ class _video_view(memoryview):  # type: ignore[misc]
     @property
     def ndim(self) -> Literal[2]: ...
     @property
-    def obj(self) -> FramePtr: ...  # type: ignore[override]
-    def tolist(self) -> list[float]: ...  # type: ignore[override]
+    def obj(self) -> FramePtr: ...
+    def tolist(self) -> list[float]: ...
 
-class _audio_view(memoryview):  # type: ignore[misc]
-    def __getitem__(self, index: int) -> float: ...  # type: ignore[override]
-    def __setitem__(self, index: int, other: float) -> None: ...  # type: ignore[override]
+class _audio_view(memoryview):  # pyrefly: ignore[invalid-inheritance]
+    def __getitem__(self, index: int) -> float: ...
+    def __setitem__(self, index: int, other: float) -> None: ...
     @property
     def shape(self) -> tuple[int]: ...
     @property
@@ -1595,8 +1598,8 @@ class _audio_view(memoryview):  # type: ignore[misc]
     @property
     def ndim(self) -> Literal[1]: ...
     @property
-    def obj(self) -> FramePtr: ...  # type: ignore[override]
-    def tolist(self) -> list[float]: ...  # type: ignore[override]
+    def obj(self) -> FramePtr: ...
+    def tolist(self) -> list[float]: ...
 
 class RawFrame:
     def __repr__(self) -> str: ...
@@ -1704,12 +1707,10 @@ class VideoNode(RawNode):
     fps_den: Final[int]
     fps: Final[Fraction]
     def get_frame(self, n: _IntLike) -> VideoFrame: ...
-    @overload  # type: ignore[override]
+    @overload
     def get_frame_async(self, n: _IntLike) -> Future[VideoFrame]: ...
     @overload
-    def get_frame_async(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, n: _IntLike, cb: Callable[[VideoFrame | None, Exception | None], None]
-    ) -> None: ...
+    def get_frame_async(self, n: _IntLike, cb: Callable[[VideoFrame | None, Exception | None], None]) -> None: ...
     def frames(
         self,
         prefetch: int | None = None,
@@ -1755,12 +1756,10 @@ class AudioNode(RawNode):
     @property
     def channels(self) -> ChannelLayout: ...
     def get_frame(self, n: _IntLike) -> AudioFrame: ...
-    @overload  # type: ignore[override]
+    @overload
     def get_frame_async(self, n: _IntLike) -> Future[AudioFrame]: ...
     @overload
-    def get_frame_async(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, n: _IntLike, cb: Callable[[AudioFrame | None, Exception | None], None]
-    ) -> None: ...
+    def get_frame_async(self, n: _IntLike, cb: Callable[[AudioFrame | None, Exception | None], None]) -> None: ...
     def frames(
         self,
         prefetch: int | None = None,

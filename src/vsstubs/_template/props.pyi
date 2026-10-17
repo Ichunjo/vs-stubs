@@ -83,9 +83,9 @@ class FrameProps(MutableMapping[str, _PropValue]):
     @overload
     def setdefault(self, key: str, default: Literal[0] = 0, /) -> _PropValue | Literal[0]: ...
     @overload
-    def setdefault(self, key: str, default: _PropValueInputs, /) -> _PropValue: ...  # pyright: ignore[reportIncompatibleMethodOverride]
+    def setdefault(self, key: str, default: _PropValueInputs, /) -> _PropValue: ...
     def copy(self) -> dict[str, _PropValue]: ...
-    @overload  # type: ignore[override]
+    @overload
     def get(
         self,
         key: Literal[
@@ -143,4 +143,4 @@ class FrameProps(MutableMapping[str, _PropValue]):
     @overload
     def get(self, key: str, /) -> _PropValue | None: ...
     @overload
-    def get[T](self, key: str, default: T, /) -> _PropValue | T: ...  # pyright: ignore[reportIncompatibleMethodOverride]
+    def get[T](self, key: str, default: T, /) -> _PropValue | T: ...

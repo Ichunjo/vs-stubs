@@ -75,6 +75,9 @@ def get_template() -> str:
     noqa += "# flake8: noqa\n"
     noqa += "# fmt: off\n"
     noqa += "# isort: skip_file\n"
+    noqa += "# pyrefly: ignore-errors\n"
+    noqa += "# ty: ignore\n"
+    noqa += "# type: ignore\n"
 
     imports = defaultdict[str, set[str]](set)
     code = ""

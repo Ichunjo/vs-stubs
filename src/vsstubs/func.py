@@ -85,7 +85,7 @@ def output_stubs(
 
     elif template:
         tmpl = get_template()
-        implementations = []
+        implementations = list[Implementation]()
     elif update:
         raise ValueError("You must provide a input file when checking or updating the stubs")
     else:

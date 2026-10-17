@@ -1,20 +1,11 @@
 from __future__ import annotations
 
 import collections.abc
-import sys
 from collections.abc import Mapping, Sequence
 from functools import cache
 from inspect import Signature
 from types import GenericAlias, NoneType
-from typing import (
-    Any,
-    NamedTuple,
-    Protocol,
-    Union,  # pyright: ignore[reportDeprecated]
-    get_args,
-    get_origin,
-    runtime_checkable,
-)
+from typing import Any, NamedTuple, Protocol, Union, get_args, get_origin, runtime_checkable
 
 from vapoursynth import AudioNode, Core, Func, VideoNode
 
@@ -123,40 +114,27 @@ class FloatLike(TypeLike):
         return "_FloatLike"
 
 
-if sys.version_info >= (3, 14):
-    UnionLike = Union  # pyright: ignore[reportDeprecated]
-else:
+class UnionLike(TypeLike):
+    """Union-like type to represent Union types formatted with the modern | operator."""
 
-    class UnionTypeLike(type):
-        def __getitem__(cls, t: tuple[Any, ...]) -> UnionLike:
-            return UnionLike(*t)
+    __slots__ = ("__args__",)
 
-    class UnionLike(TypeLike, metaclass=UnionTypeLike):
-        """
-        Union-like type to represent Union types with the modern | operator.
-        Only needed for python <3.14, see <https://docs.python.org/3/whatsnew/3.14.html#typing>
-        """
+    def __init__(self, *args: Any) -> None:
+        self.__args__ = args
 
-        __slots__ = ("__args__",)
-
-        def __init__(self, *t: Any) -> None:
-            self.__args__ = t
-
-        def __repr__(self) -> str:
-            repr_types = list[str]()
-
-            for t in self.__args__:
-                if t is NoneType:
-                    repr_types.append("None")
-                elif isinstance(t, type):
-                    repr_types.append(t.__name__)
-                elif isinstance(t, GenericAlias):
-                    parameters = ", ".join(ta.__name__ for ta in t.__args__)
-                    repr_types.append(t.__origin__.__name__ + f"[{parameters}]")
-                else:
-                    repr_types.append(repr(t))
-
-            return " | ".join(repr_types)
+    def __repr__(self) -> str:
+        repr_types = list[str]()
+        for t in self.__args__:
+            if t is NoneType:
+                repr_types.append("None")
+            elif isinstance(t, type):
+                repr_types.append(t.__name__)
+            elif isinstance(t, GenericAlias):
+                parameters = ", ".join(ta.__name__ for ta in t.__args__)
+                repr_types.append(f"{t.__origin__.__name__}[{parameters}]")
+            else:
+                repr_types.append(repr(t))
+        return " | ".join(repr_types)
 
 
 class VSCallbackTypeLike(TypeLike):
@@ -189,7 +167,7 @@ class SequenceLike(TypeLike):
         self.repr = "_SequenceLike"
 
     def __repr__(self) -> str:
-        return self.repr + "[" + ", ".join(ta.__name__ for ta in self._args) + "]"
+        return self.repr + "[" + ", ".join(str(ta.__name__) for ta in self._args) + "]"
 
 
 @cache
@@ -215,15 +193,15 @@ def parse_type(utype: Any, is_return: bool = False) -> Any:
     if origin is Union:  # pyright: ignore[reportDeprecated]
         match parsed:
             case (func_t, VSCallbackTypeLike(), *_) if issubclass(func_t, Func):
-                return UnionLike[VSCallbackTypeLike(), *parsed[2:]]
+                return UnionLike(VSCallbackTypeLike(), *parsed[2:])
 
             case parsed if set(parsed) >= {str, bytes, bytearray}:
                 parsed = list(parsed)
                 parsed[parsed.index(str) : parsed.index(bytearray) + 1] = [AnyStr()]
-                return UnionLike[*parsed]
+                return UnionLike(*parsed)
 
             case _:
-                return UnionLike[*parsed]
+                return UnionLike(*parsed)
 
     if origin is collections.abc.Sequence:
         return GenericAlias(list, parsed) if is_return else SequenceLike(parsed)

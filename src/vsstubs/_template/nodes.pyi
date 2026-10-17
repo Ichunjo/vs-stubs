@@ -73,12 +73,10 @@ class VideoNode(RawNode):
     fps_den: Final[int]
     fps: Final[Fraction]
     def get_frame(self, n: _IntLike) -> VideoFrame: ...
-    @overload  # type: ignore[override]
+    @overload
     def get_frame_async(self, n: _IntLike) -> Future[VideoFrame]: ...
     @overload
-    def get_frame_async(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, n: _IntLike, cb: Callable[[VideoFrame | None, Exception | None], None]
-    ) -> None: ...
+    def get_frame_async(self, n: _IntLike, cb: Callable[[VideoFrame | None, Exception | None], None]) -> None: ...
     def frames(
         self,
         prefetch: int | None = None,
@@ -112,12 +110,10 @@ class AudioNode(RawNode):
     @property
     def channels(self) -> ChannelLayout: ...
     def get_frame(self, n: _IntLike) -> AudioFrame: ...
-    @overload  # type: ignore[override]
+    @overload
     def get_frame_async(self, n: _IntLike) -> Future[AudioFrame]: ...
     @overload
-    def get_frame_async(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, n: _IntLike, cb: Callable[[AudioFrame | None, Exception | None], None]
-    ) -> None: ...
+    def get_frame_async(self, n: _IntLike, cb: Callable[[AudioFrame | None, Exception | None], None]) -> None: ...
     def frames(
         self,
         prefetch: int | None = None,
