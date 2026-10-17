@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vite-plus';
+import { type Plugin, defineConfig } from 'vite-plus';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -14,12 +14,27 @@ const watchMatcherPlugin = () => ({
   },
 });
 
+function fixVitestVscodeDeprecation(): Plugin {
+  return {
+    name: 'fix-vitest-vscode-deprecation',
+    configResolved(config) {
+      const plugin = config.plugins.find((p) => p.name === 'vitest:vscode-extension');
+      const vitestApi = plugin?.api?.vitest;
+      if (vitestApi?.experimental?.ignoreFsModuleCache !== undefined) {
+        vitestApi.ignoreFsModuleCache = vitestApi.experimental.ignoreFsModuleCache;
+        delete vitestApi.experimental.ignoreFsModuleCache;
+      }
+    },
+  };
+}
+
 export default defineConfig({
   resolve: {
     alias: {
       vscode: path.resolve(__dirname, 'src/test/vscode.mock.ts'),
     },
   },
+  plugins: [fixVitestVscodeDeprecation()],
   pack: {
     entry: {
       extension: 'src/extension.ts',
