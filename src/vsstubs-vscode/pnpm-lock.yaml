@@ -165,7 +165,7 @@ settings:
 catalogs:
   default:
     '@types/node':
-      specifier: ^24
+      specifier: 24.19.2
       version: 24.19.2
     '@types/semver':
       specifier: 7.8.0
