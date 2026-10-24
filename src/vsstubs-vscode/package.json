@@ -128,16 +128,16 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": "^12.0.0",
+      "version": "12.15.0",
       "onFail": "download"
     },
     "runtime": {
       "name": "node",
-      "version": "^24.22.1",
+      "version": "v24.22.1",
       "onFail": "download"
     }
   },
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "1.143.1"
   }
 }
