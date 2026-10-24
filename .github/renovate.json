@@ -45,7 +45,7 @@
       "rangeStrategy": "replace"
     }
   ],
-  "pnpm": {
+  "npm": {
     "rangeStrategy": "pin"
   }
 }
