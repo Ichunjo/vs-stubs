@@ -40,7 +40,7 @@
     },
     {
       "description": "Preserve semver range for package.json engines",
-      "matchManagers": ["pnpm"],
+      "matchManagers": ["npm"],
       "matchDepTypes": ["engines"],
       "rangeStrategy": "replace"
     }
