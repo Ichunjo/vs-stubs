@@ -29,4 +29,4 @@ jobs:
 
       - name: Lint and Type Check
         working-directory: src/vsstubs-vscode
-        run: vp run compile
+        run: vpr compile

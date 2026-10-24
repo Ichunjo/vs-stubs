@@ -14,7 +14,7 @@
     "exactOptionalPropertyTypes": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "types": ["node"]
+    "types": ["node", "vscode"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]

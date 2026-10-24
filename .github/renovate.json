@@ -39,29 +39,13 @@
       "enabled": false
     },
     {
-      "description": "Group development and linting tools",
-      "matchManagers": ["npm"],
-      "matchDepTypes": ["devDependencies"],
-      "matchPackageNames": [
-        "typescript",
-        "eslint",
-        "prettier",
-        "esbuild",
-        "npm-run-all",
-        "sort-package-json",
-        "/^eslint-plugin-/",
-        "/^typescript-eslint/"
-      ],
-      "groupName": "Development tools"
-    },
-    {
       "description": "Preserve semver range for package.json engines",
-      "matchManagers": ["npm"],
+      "matchManagers": ["pnpm"],
       "matchDepTypes": ["engines"],
       "rangeStrategy": "replace"
     }
   ],
-  "npm": {
+  "pnpm": {
     "rangeStrategy": "pin"
   }
 }
