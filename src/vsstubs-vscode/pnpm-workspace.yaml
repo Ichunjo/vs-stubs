@@ -1,7 +1,7 @@
 catalogMode: prefer
 
 catalog:
-  '@types/node': ^24
+  '@types/node': 24.19.2
   '@types/semver': 7.8.0
   '@types/vscode': 1.90.0
   '@vitest/coverage-v8': 5.0.5
