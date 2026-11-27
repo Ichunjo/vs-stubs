@@ -6,8 +6,8 @@ catalog:
   '@types/vscode': 1.90.0
   '@vitest/coverage-v8': 5.1.1
   typescript: 7.0.2
-  vite: npm:@voidzero-dev/vite-plus-core@8.3.8000
-  vite-plus: 1.7.0
+  vite: npm:@voidzero-dev/vite-plus-core@8.3.8001
+  vite-plus: 1.8.0
   vitest: 5.1.1
 overrides:
   vite@*: 'catalog:'
